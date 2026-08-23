@@ -5,13 +5,13 @@ description: 根据已确认学校要求检查、打包并冻结最终学位论�
 
 # 打包学位论文归档版本
 
-首先完整阅读 `docs/mds/story-workflow/writing-workflow-conventions.md`。解析明确的 `deposit` 里程碑，冻结前必须取得作者确认。
+首先完整阅读 `docs/mds/story-workflow/writing-workflow-conventions.md`。解析学位层级及明确且适用于该层级的 `deposit` 里程碑，冻结前必须取得作者确认。
 
 预检所有硬性门槛：
 
 1. `bash execs/run.sh` 和 `bash execs/scpts/lint.sh` 通过；
 2. `degree/requirements.md` 中每个必需复选框都已勾选并附有来源；
-3. 委员会批准和里程碑事实均已记录；
+3. 该学位层级要求的每项批准和里程碑事实均已记录；
 4. `tasks/` 下不存在未兑现的承诺；
 5. 论断与引用审计没有尚未解决的硬性失败；
 6. 发表内容复用、作者归属和许可均已解决；

@@ -2,8 +2,9 @@
 
 **语言：** [English](writing-workflow-skills.md) | 简体中文
 
-这些 skill 构成博士论文流水线，但不是僵硬的线性步骤。每次选择拥有目标文件的最小 skill。
+这些 skill 构成硕士/博士学位论文流水线，但不是僵硬的线性步骤。每次选择拥有目标文件的最小 skill。
 新克隆不预置 `notes/*.md`：下表中的主要产物在首次使用时由负责它的 skill 创建，下游 skill 把缺失视为阶段尚未初始化。
+在开展层级相关的综合叙事、提纲、审查、答辩或归档工作前，先在 `degree/profile.tex` 中写入经作者确认的 `% degree_level: master|doctoral`。两种模式采用相同的证据与归属契约；贡献范围和里程碑关口按所选层级及已确认学校规则确定。
 
 ```mermaid
 flowchart LR
@@ -35,9 +36,9 @@ flowchart LR
 | `story-copy-editor` | 统一声音、术语、过渡或删减重复 | 正文修改、报告或 `notes/style.md` |
 | `story-clms-auditor` | 检查数字和贡献论断的可追溯性 | 论断结论与任务 |
 | `story-cite-auditor` | 检查引用键与文献陈述 | 引用报告与任务 |
-| `story-exam-reviewer` | 进行真实感较强的模拟外审 | 里程碑审查文件 |
+| `story-exam-reviewer` | 进行适合学位层级的模拟审查 | 里程碑审查文件 |
 | `story-revs-resolver` | 导师、委员会、外审或归档反馈到达 | 逐点记录、回复与承诺 |
-| `story-defn-builder` | 准备答辩叙事或演示文稿 | 答辩计划与演示产物 |
+| `story-defn-builder` | 准备适用的答辩叙事或演示文稿 | 答辩计划与演示产物 |
 | `story-depo-packer` | 最终检查、打包并冻结版本 | 归档包与记录 |
 | `story-flow-status` | 不清楚下一步做什么 | 只读状态摘要 |
 

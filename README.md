@@ -6,27 +6,27 @@
 
 **Language:** English | [简体中文](README.zh-CN.md)
 
-STORY is a repository template and AI-assisted workflow for writing a complete doctoral dissertation. It organizes years of research, published papers, experimental evidence, chapter drafts, committee feedback, degree requirements, defense materials, corrections, and the final deposit without losing provenance or authorship boundaries.
+STORY is a repository template and AI-assisted workflow for writing a complete master's thesis or doctoral dissertation. It organizes graduate research, published papers where applicable, experimental evidence, chapter drafts, committee feedback, degree requirements, defense materials, corrections, and the final deposit without losing provenance or authorship boundaries.
 
-The three repositories form a progression:
+## STAR · STAGE · STORY
 
-```text
-STAR   conducts research and produces evidence
-STAGE  turns one research contribution into a paper
-STORY  synthesizes years of contributions into a dissertation
-```
+The three projects cover successive scales of a researcher's work. Use any one independently, or connect them through fingerprinted evidence. STORY can combine any number of STAR research repositories, STAGE paper repositories, and manually registered sources.
 
-STORY works with any combination of STAR repositories, STAGE paper repositories, and manually registered evidence. Pairing is optional.
+| Project | Scope | Links |
+| --- | --- | --- |
+| **STAR** — Systematic Toolchain for AI Research | Runs one research project from idea through reproducible experiments and paper-ready evidence. | [Website](https://wanghao9610.github.io/STAR/) · [GitHub](https://github.com/wanghao9610/STAR) |
+| **STAGE** — Systematic Toolchain for Authoring, Guiding, and Editing | Turns one research contribution into a traceable paper, review cycle, and submission package. | [Website](https://wanghao9610.github.io/STAGE/) · [GitHub](https://github.com/wanghao9610/STAGE) |
+| **STORY** — Systematic Toolchain for Organizing Research over Years | Shapes graduate research into a defensible master's thesis or doctoral dissertation, defense, and deposit. | **Current project** · [Website](https://wanghao9610.github.io/STORY/) · [GitHub](https://github.com/wanghao9610/STORY) |
 
 ## What STORY provides
 
-- Generic, compilable English and Simplified Chinese dissertation templates with front matter, chapters, appendices, figures, tables, and bibliography separated cleanly.
+- Generic, compilable English and Simplified Chinese master's/doctoral thesis templates with front matter, chapters, appendices, figures, tables, and bibliography separated cleanly.
 - A fingerprinted, read-only evidence store under `mates/`, supporting multiple research and paper repositories.
 - A thesis-level narrative, contribution map, publication/reuse map, outline, notation table, and claim ledger created on demand under `notes/`.
 - User-confirmed institutional requirements and committee records under `degree/`.
-- Durable milestone records for proposal, annual review, pre-defense, defense, corrections, and deposit.
+- Durable milestone records for whichever proposal, review, pre-defense, defense, correction, and deposit stages the confirmed program requires.
 - Deterministic build, formatting, import, and lint entrypoints under `execs/`.
-- Sixteen focused workflow skills available to Codex, Claude Code, Cursor, DeepSeek Harness, Kimi Code, Pi, and Qwen Code.
+- Sixteen degree-aware workflow skills available to Codex, Claude Code, Cursor, DeepSeek Harness, Kimi Code, Pi, and Qwen Code.
 - Paired English and Simplified Chinese Markdown documentation, workflow instructions, and harness entry points.
 - Project-owned memory under `.story/memory/` for facts not owned by another repository file.
 
@@ -34,7 +34,7 @@ STORY works with any combination of STAR repositories, STAGE paper repositories,
 
 ```text
 STORY/
-├── manus/                         # Dissertation source
+├── manus/                         # Thesis source
 │   ├── main.tex
 │   ├── main-zh.tex                 # Buildable Simplified Chinese starter
 │   ├── fronts/                    # Abstract, acknowledgements, declarations
@@ -47,7 +47,7 @@ STORY/
 ├── mates/                         # Fingerprinted evidence snapshots; read-only
 ├── degree/                        # Institutional profile, requirements, committee
 ├── notes/                         # Narrative and writing metadata; created on demand
-│   ├── story.md                   # Central argument and doctoral research arc
+│   ├── story.md                   # Central argument and degree research arc
 │   ├── contributions.md           # Contribution → evidence/publication/chapter
 │   ├── publications.md            # Authorship, reuse, permissions, overlap
 │   ├── outline.md                 # Chapter plan
@@ -71,8 +71,8 @@ STORY/
 ## Quick start
 
 ```bash
-git clone https://github.com/wanghao9610/STORY.git my-dissertation
-cd my-dissertation
+git clone https://github.com/wanghao9610/STORY.git my-thesis
+cd my-thesis
 cp .env.example .env
 bash execs/run.sh
 bash execs/scpts/lint.sh
@@ -101,7 +101,7 @@ codex plugin marketplace add .
 codex plugin add story@story
 ```
 
-Use `$story` with no argument for the current dissertation status, or pass a request such as `$story audit the claims in chapter 3`. The plugin reads the same `.agents/commands/story.md` roster as the other harnesses' `/story` wrappers, preserves explicit confirmation for the six † workflows, and adds no second routing table.
+Use `$story` with no argument for the current thesis status, or pass a request such as `$story audit the claims in chapter 3`. The plugin reads the same `.agents/commands/story.md` roster as the other harnesses' `/story` wrappers, preserves explicit confirmation for the six † workflows, and adds no second routing table.
 
 `execs/update.sh` updates every harness by default. Set `STORY_HARNESSES=claude,pi` in `.env`, or pass `--harnesses claude,pi` for one run, to touch only those private trees. `all` selects every harness and `none` selects only the shared skeleton. Unselected trees are neither installed nor updated; `.agents/skills/`, `.agents/commands/`, workflow documentation, scripts, and `AGENTS.md` remain shared and always update. When Codex is selected, the same run installs or updates `.codex/plugins/` and its single `.agents/plugins/marketplace.json` discovery link. The same selection applies to `--adopt` and narrows `--skill` to the shared skill plus the selected private copies.
 
@@ -111,7 +111,14 @@ bash execs/update.sh --harnesses codex,cursor --skill story-flow-status
 bash execs/update.sh --harnesses none --diff
 ```
 
-Fill `degree/profile.tex` and `degree/requirements.md` only from official university or program material confirmed by the author. Then run `$story-proj-adopt` for an existing draft, or start with `$story-syns-coach` and `$story-outl-planner`.
+Fill `degree/profile.tex` and `degree/requirements.md` only from official university or program material confirmed by the author. Set exactly one canonical mode in the profile:
+
+```tex
+% degree_level: master
+% or: degree_level: doctoral
+```
+
+The level is deliberately not an `.env` variable: it is durable institutional metadata. Missing values remain `unknown`; invalid values and title/degree wording that conflicts with the selected level fail lint. Then run `$story-proj-adopt` for an existing draft, or start with `$story-syns-coach` and `$story-outl-planner`.
 
 A fresh clone intentionally contains only `notes/.gitkeep` and `notes/refs/.gitkeep`.
 The files shown under `notes/` in the logical layout above are materialized by their owning workflow skills on first use; `story-flow-status` reports an absent file as an uninitialized stage.
@@ -129,7 +136,7 @@ bash execs/run.sh
 bash execs/scpts/lint.sh
 ```
 
-`STORY_MAIN` selects the default entry point; `--main` overrides it for a single command. Relative `STORY_MAIN` paths are resolved from the repository root. `main-zh.tex` selects XeLaTeX when `LATEX_ENGINE` is empty. Title-page fields in `degree/profile.tex` use `\storylocalized{English}{中文}` so the two entry points select matching metadata automatically. Before adopting Chinese as the canonical dissertation language, confirm the institutional rule and change `dissertation_language` in `degree/profile.tex` to `zh`. The template localizes structure; it does not translate existing content or invent degree metadata.
+`STORY_MAIN` selects the default entry point; `--main` overrides it for a single command. Relative `STORY_MAIN` paths are resolved from the repository root. `main-zh.tex` selects XeLaTeX when `LATEX_ENGINE` is empty. Title-page fields in `degree/profile.tex` use `\storylocalized{English}{中文}` so the two entry points select matching metadata automatically. Before adopting Chinese as the canonical thesis language, confirm the institutional rule and change `dissertation_language` in `degree/profile.tex` to `zh`. The template localizes structure; it does not translate existing content or invent degree metadata.
 
 Import each research source separately:
 
@@ -141,16 +148,16 @@ bash execs/scpts/import.sh --diff --source ../my-star-project --slug project-a
 
 ## Workflow
 
-1. `$story-proj-adopt` inventories and adopts an existing dissertation safely.
+1. `$story-proj-adopt` inventories and adopts an existing thesis safely.
 2. `$story-evid-curator` imports, registers, and audits evidence.
-3. `$story-syns-coach` establishes the thesis-level research arc and contributions.
+3. `$story-syns-coach` establishes a degree-appropriate thesis-level research arc and contributions.
 4. `$story-outl-planner` creates a coherent chapter architecture.
 5. `$story-chap-drafter` drafts one chapter from evidence and its brief.
 6. `$story-tabs-builder` and `$story-figs-designer` build traceable visuals.
 7. `$story-refs-curator` maintains verified bibliography records and reading notes.
 8. `$story-copy-editor` harmonizes voice, terminology, and cross-chapter flow.
 9. `$story-clms-auditor` and `$story-cite-auditor` audit numbers, claims, and citations.
-10. `$story-exam-reviewer` simulates an examiner or committee review.
+10. `$story-exam-reviewer` simulates a degree-appropriate examiner or committee review.
 11. `$story-revs-resolver` tracks and resolves feedback without editing received comments.
 12. `$story-defn-builder` prepares and checks the defense deck.
 13. `$story-depo-packer` preflights and freezes the final deposit package.
@@ -164,7 +171,7 @@ Every quantitative or comparative claim must lead to a registered `mates/` artif
 
 ## Institutional formats
 
-The bundled class is intentionally generic. Official university templates and rules are user-supplied facts. Keep the generic manuscript intact; generate or maintain institution-specific packaging as a separate deposit milestone so a format conversion cannot silently rewrite the dissertation's source of truth.
+The bundled class is intentionally generic. Official university templates and rules are user-supplied facts. Keep the generic manuscript intact; generate or maintain institution-specific packaging as a separate deposit milestone so a format conversion cannot silently rewrite the thesis's source of truth.
 
 ## Requirements
 

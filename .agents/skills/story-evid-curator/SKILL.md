@@ -1,9 +1,9 @@
 ---
 name: story-evid-curator
-description: Import, register, refresh, and integrity-check dissertation evidence under mates/ with provenance and fingerprints; use for STAR/STAGE/STORY sources or manual research artifacts, never for editing evidence in place.
+description: Import, register, refresh, and integrity-check master's or doctoral thesis evidence under mates/ with provenance and fingerprints; use for STAR/STAGE/STORY sources or manual research artifacts, never for editing evidence in place.
 ---
 
-# Curate dissertation evidence
+# Curate thesis evidence
 
 Read `docs/mds/story-workflow/writing-workflow-conventions.md` first.
 

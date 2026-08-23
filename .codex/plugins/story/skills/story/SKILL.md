@@ -1,6 +1,6 @@
 ---
 name: story
-description: Route an explicitly invoked $story request to exactly one STORY dissertation workflow skill. With no request, show the current dissertation status. Do not use after a specific story-* skill has already been selected.
+description: Route an explicitly invoked $story request to exactly one master's or doctoral STORY thesis workflow skill. With no request, show the current thesis status. Do not use after a specific story-* skill has already been selected.
 ---
 
 # Route a STORY request

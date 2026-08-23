@@ -2,11 +2,12 @@
 set -euo pipefail
 
 # execs/update.sh — sync STORY-managed content from the upstream template (the
-# shared skill source, six harness entry trees, the Codex $story router plugin,
-# all hook trees, docs/mds/story-workflow/, the shared agent instructions, and
+# shared skill source, six harness entry trees, the Codex $story and Kimi
+# /story router plugins, all hook trees, docs/mds/story-workflow/, the shared
+# agent instructions, and
 # every script under execs/ — both entrypoints, this one included, and the three
 # utilities in execs/scpts/), or install the STORY skeleton into an existing
-# dissertation repo with --adopt.
+# thesis repo with --adopt.
 
 STORY_REF="main"
 SKILL_NAME=""
@@ -50,7 +51,7 @@ DOCS_TREE="docs/mds/story-workflow"
 # answers a file-edit permission prompt at INVOLVE=low (§7), in the two trees
 # whose harness lets a hook decide one. One copy of each per harness, because
 # every runtime spells the event and the output field differently. Overwritten
-# on update like the skills — the memory store itself is the dissertation's and is
+# on update like the skills — the memory store itself is the thesis's and is
 # never synced.
 HOOK_TREES=(
     ".claude/hooks"
@@ -63,7 +64,7 @@ HOOK_TREES=(
 )
 
 # Single STORY-managed files an update overwrites alongside the trees above.
-# execs/run.sh is here because the skills call it by name and by flag — a dissertation
+# execs/run.sh is here because the skills call it by name and by flag — a thesis
 # repo that syncs a skill using `run.sh --main` while keeping a run.sh that
 # predates the flag gets a run that fails at its build step. The three utilities
 # under execs/scpts/ are here for the same reason and it is not weaker: sixteen
@@ -98,12 +99,14 @@ SYNC_FILES=(
 # Synced paths a ref is allowed not to have. Each arrived later than the tree it
 # sits in, so pinning an older ref is a legitimate reason for it to be missing,
 # and that is a skipped line rather than a stopped update: the session hooks,
-# which arrived after the skills, and fmt.sh, which arrived after the other two
-# utilities. Anything else missing is a broken ref and still fatal.
+# which arrived after the skills; fmt.sh, which arrived after the other two
+# utilities; and the Kimi /story router plugin, which arrived after the harness
+# entry trees. Anything else missing is a broken ref and still fatal.
 is_optional_path() {
     case "$1" in
         .*/hooks*)            return 0 ;;
         "execs/scpts/fmt.sh") return 0 ;;
+        ".kimi-code/plugins") return 0 ;;
     esac
     return 1
 }
@@ -123,7 +126,7 @@ AGENT_RULES_TREE=".cursor/rules"
 # guarded expansion that needs.
 #
 # The last three register the hooks. They are kept rather than overwritten
-# because a dissertation repo may have added its own settings to them — so a repo
+# because a thesis repo may have added its own settings to them — so a repo
 # adopted before a hook existed keeps a config that does not register it, which
 # HOOK_CONFIGS below turns into a printed line instead of a hook that silently
 # never fires.
@@ -299,7 +302,8 @@ Usage: bash execs/update.sh [ref] [--harnesses LIST] [--skill NAME] [--force]
 Overwrite the STORY-managed content — the shared agent instructions (AGENTS.md
 and the Cursor rule that copies its body), the neutral skill source plus six
 harness entry trees (.agents, .claude, .cursor, .dsh, .kimi-code, .pi, .qwen),
-Codex's per-skill manifests and $story router plugin, harness commands/prompts,
+Codex's per-skill manifests and $story router plugin, Kimi Code's /story router
+plugin, harness commands/prompts,
 the session hooks that inject project memory and model provenance,
 docs/mds/story-workflow/, and every script under execs/ — the two entrypoints,
 run.sh and this one, and the three utilities in execs/scpts/: import.sh,
@@ -349,11 +353,11 @@ configuration above is overwritten instead of kept. It widens nothing — the
 path list is unchanged, and a file upstream does not have is still left alone.
 Combined with --diff it previews that scope without changing anything.
 
---adopt installs the STORY skeleton into an already-started dissertation repo instead
+--adopt installs the STORY skeleton into an already-started thesis repo instead
 of updating this one. It runs against the current working directory, which
 must be a git repository root, and never overwrites a file that is already
 there: every existing path is kept and reported. Run `story-proj-adopt` in
-your agent afterwards to wire the dissertation up.
+your agent afterwards to wire the thesis up.
 
 The upstream repository is STORY_REPOSITORY (environment first, then .env);
 default https://github.com/wanghao9610/STORY.git.
@@ -368,7 +372,7 @@ Examples:
   bash execs/update.sh --harnesses claude
   bash execs/update.sh --harnesses claude,pi --diff
 
-  cd /path/to/my-dissertation
+  cd /path/to/my-thesis
   curl -fsSL https://raw.githubusercontent.com/wanghao9610/STORY/main/execs/update.sh -o /tmp/story-update.sh
   bash /tmp/story-update.sh --adopt
 EOF
@@ -498,6 +502,8 @@ if [[ "${ADOPT}" == true ]]; then
         # Codex owns the repo-local $story router plugin. Its .agents discovery
         # entry is installed separately as one narrow file link.
         ".codex/plugins"
+        # Kimi Code owns the repo-local /story router plugin.
+        ".kimi-code/plugins"
         "${HARNESS_ASSET_TREES[@]}"
         "${HOOK_TREES[@]}"
         "${AGENT_RULES_TREE}"
@@ -517,7 +523,7 @@ if [[ "${ADOPT}" == true ]]; then
         ".dsh/cordis.patch.yml"
         ".pi/APPEND_SYSTEM.md"
         ".pi/APPEND_SYSTEM.zh-CN.md"
-        # The memory store's index. The store is the dissertation's own from here on;
+        # The memory store's index. The store is the thesis's own from here on;
         # only this seed file, which documents the line format, comes from
         # upstream.
         ".story/memory/MEMORY.md"
@@ -525,7 +531,7 @@ if [[ "${ADOPT}" == true ]]; then
         ".env.example"
         ".gitignore"
         # The line-break rule fmt.sh applies and .vscode/settings.json points
-        # at, plus the editor-side half of the same convention; a dissertation that
+        # at, plus the editor-side half of the same convention; a thesis that
         # already has either keeps its own, like every file here.
         ".latexindent.yaml"
         ".editorconfig"
@@ -536,8 +542,8 @@ if [[ "${ADOPT}" == true ]]; then
         "execs/scpts/fmt.sh"
         "manus/main.tex"
         # The three template-layer files main.tex loads by path or by name: the
-        # generic dissertation class, the authoring package, and the bibliography style its
-        # \bibliographystyle line names. A dissertation that already has any of them
+        # generic thesis class, the authoring package, and the bibliography style its
+        # \bibliographystyle line names. A thesis that already has any of them
         # keeps its own, like every file here.
         "manus/stys/story.cls"
         "manus/stys/story.sty"
@@ -609,6 +615,7 @@ else
         "${SKILL_ROOTS[@]}"
         "${CODEX_MANIFEST_ROOT}"
         ".codex/plugins"
+        ".kimi-code/plugins"
         ".agents/plugins/marketplace.json"
         "${HARNESS_ASSET_TREES[@]}"
         "${HOOK_TREES[@]}"
@@ -633,7 +640,7 @@ fi
 # tree.
 if [[ "${ADOPT}" == false ]]; then
     [[ -f "${ROOT_DIR}/execs/run.sh" ]] || \
-        fail "${ROOT_DIR} is not a STORY project (no execs/run.sh). This script updates the project it lives in: copy it to <dissertation>/execs/update.sh and run it there, or pass --adopt to install STORY into the current directory."
+        fail "${ROOT_DIR} is not a STORY project (no execs/run.sh). This script updates the project it lives in: copy it to <thesis>/execs/update.sh and run it there, or pass --adopt to install STORY into the current directory."
 fi
 
 # Upstream resolution: environment wins, then .env, then the public default.
@@ -851,7 +858,7 @@ if [[ "${ADOPT}" == false ]]; then
     exit 0
 fi
 
-# --adopt: install into an existing dissertation repo, never overwriting anything.
+# --adopt: install into an existing thesis repo, never overwriting anything.
 installed=0
 skipped=0
 
@@ -938,7 +945,7 @@ if [[ -e "${ROOT_DIR}/.gitignore" ]]; then
 fi
 report_unregistered_hooks
 
-log "Next: copy .env.example to .env, then run story-proj-adopt in your agent to wire the dissertation up."
+log "Next: confirm degree_level in degree/profile.tex, copy .env.example to .env, then run story-proj-adopt in your agent to wire the thesis up."
 if is_selected codex; then
     log "      Codex only: run 'codex plugin marketplace add .' then 'codex plugin add story@story', and start a new session."
 fi

@@ -1,6 +1,6 @@
 interface:
   display_name: "Defense Builder"
-  short_description: "Plan and check the doctoral defense deck"
+  short_description: "Plan and check a degree defense deck"
   brand_color: "#173B57"
   default_prompt: "Use $story-defn-builder to prepare the final defense narrative and slide plan."
 policy:

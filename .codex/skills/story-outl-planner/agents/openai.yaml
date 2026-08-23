@@ -1,5 +1,5 @@
 interface:
-  display_name: "Dissertation Outliner"
+  display_name: "Thesis Outliner"
   short_description: "Turn the research arc into a chapter plan"
   brand_color: "#173B57"
   default_prompt: "Use $story-outl-planner to create a coherent chapter architecture from the confirmed story."

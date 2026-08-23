@@ -4,11 +4,12 @@
 
 > 本文件是 [`AGENTS.md`](AGENTS.md) 的中文对照版。Agent 的运行时权威指令仍以英文原文件为准；路径、ID、状态值和命令保持英文。
 
-本仓库使用 STORY——**Systematic Toolchain for Organizing Research over Years**——把多年博士研究整理成连贯、可答辩、可归档的学位论文。
+本仓库使用 STORY——**Systematic Toolchain for Organizing Research over Years**——把研究生阶段的研究整理成连贯、可答辩、可归档的硕士或博士学位论文。
 
 ## 1. 范围与权限
 
-- 一个仓库对应一部博士学位论文。
+- 一个仓库对应一部硕士或博士学位论文。
+- `degree/profile.tex` 记录 `degree_level: master|doctoral`。缺失或非法值一律视为未知，不得从题名或学位名称推断，并且只应用已确认学位层级的标准和里程碑。
 - `degree/` 保存经用户确认的学校和学位事实。不得虚构截止日期、格式规则、委员会决定、作者贡献声明或归档要求。
 - `mates/` 是证据库。除通过 `execs/scpts/import.sh` 和 `$story-evid-curator` 外，保持只读。
 - `manus/` 是学位论文源文件。论文正文使用 `degree/profile.tex` 中记录的论文语言；结构键、ID、路径和状态保持英文。
@@ -25,14 +26,14 @@
 ## 3. 学位论文层面的连贯性
 
 - `notes/story.md` 负责论文级问题、中心论点、研究主线和综合结论。
-- `notes/contributions.md` 把博士贡献映射到证据、出版物、章节和候选答辩论断。
+- `notes/contributions.md` 把学位贡献映射到证据、出版物、章节和候选答辩论断；博士与硕士贡献须分别按照已确认的层级要求判断。
 - `notes/publications.md` 记录作者、章节复用、许可和内容重叠。协作成果不得暗示为作者独立完成。
 - `notes/outline.md` 负责章节顺序和章节简报。章节草稿必须服务于全篇论证，不能只是复刻一篇论文。
 - `notes/claims.md` 是论断记录表。引入、移动、削弱或核验论断时，必须在同一次修改中更新它。
 
 ## 4. 学位里程碑
 
-- 每次开题、年度考核、预答辩、答辩、修改轮次或归档尝试都放在 `milestones/<slug>/` 下。
+- 每项适用的开题、考核、预答辩、答辩、修改轮次或归档尝试都放在 `milestones/<slug>/` 下；不得仅因另一学位层级采用某里程碑而强制要求它。
 - `milestone.yml` 保存用户确认的事实；`feedback/` 原样保留收到的意见；`response/` 记录处理决定；`RECORD_<date>.md` 冻结结果。
 - 委员会反馈绝不能原地修改。回复必须区分已完成、计划完成、有理由不同意和需要作者决定的事项。
 - `degree/requirements.md` 中仍有必需检查未完成，或 `tasks/` 中仍有未兑现承诺时，不得宣称归档包已经就绪。

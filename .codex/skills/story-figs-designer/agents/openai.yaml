@@ -1,6 +1,6 @@
 interface:
   display_name: "Figure Designer"
-  short_description: "Build one traceable dissertation figure"
+  short_description: "Build one traceable thesis figure"
   brand_color: "#173B57"
   default_prompt: "Use $story-figs-designer to design the synthesis figure from registered evidence."
 policy:

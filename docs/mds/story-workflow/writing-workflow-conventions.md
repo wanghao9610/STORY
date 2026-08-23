@@ -1,8 +1,8 @@
-# STORY dissertation-workflow conventions
+# STORY thesis-workflow conventions
 
 **Language:** English | [简体中文](writing-workflow-conventions.zh-CN.md)
 
-This document is the shared contract for every `story-*` skill. STORY means **Systematic Toolchain for Organizing Research over Years**. One repository represents one doctoral dissertation.
+This document is the shared contract for every `story-*` skill. STORY means **Systematic Toolchain for Organizing Research over Years**. One repository represents one master's thesis or doctoral dissertation.
 
 ## 1. Sources of truth
 
@@ -10,8 +10,8 @@ This document is the shared contract for every `story-*` skill. STORY means **Sy
 | --- | --- |
 | What degree and institutional rules apply? | `degree/profile.tex`, `degree/requirements.md` |
 | Who is on the committee? | `degree/committee.md` |
-| What is the dissertation's central argument? | `notes/story.md` |
-| What are the doctoral contributions? | `notes/contributions.md` |
+| What is the thesis's central argument? | `notes/story.md` |
+| What are the degree contributions? | `notes/contributions.md` |
 | What published material is reused and how? | `notes/publications.md` |
 | What is each chapter supposed to do? | `notes/outline.md` |
 | Where is a claim stated and evidenced? | `notes/claims.md` |
@@ -20,6 +20,17 @@ This document is the shared contract for every `story-*` skill. STORY means **Sy
 | What remains unresolved? | `tasks/` |
 
 Chat history and `.story/memory/` never override these files.
+
+### Degree-level contract
+
+`degree/profile.tex` records the author-confirmed `% degree_level: master|doctoral` value. These are the only valid values. A missing or invalid value is `unknown`: read-only workflows report it, while any workflow that would make level-specific judgments stops and asks the author to confirm and record it. Never infer the level from the title, degree name, chapter count, publications, or conversation.
+
+Use *thesis* as the generic workflow term; use *master's thesis*, *doctoral dissertation*, or an institution's official wording when the level or document title matters. Institutional rules in `degree/requirements.md` always override generic expectations.
+
+- In `doctoral` mode, test whether the work makes the original, significant, and thesis-level contribution required by the confirmed doctoral rules, including cross-study synthesis where the research arc calls for it.
+- In `master` mode, frame a bounded degree contribution appropriate to the confirmed master's rules. It may be an original result, application, replication, validation, design, or evidence-based synthesis. Do not require publications, multiple studies, field-level originality, or a separate synthesis chapter unless the program or confirmed research design requires them.
+- Both modes retain the same evidence, citation, attribution, reproducibility, and no-invention standards. Degree level changes the expected scope and examination rubric, never the provenance bar.
+- Create and gate only milestones required by the confirmed program. A proposal, annual review, pre-defense, external examination, or oral defense is not universal merely because it appears in the generic roster.
 
 ### Lazy creation of writing metadata
 
@@ -59,7 +70,7 @@ Claim IDs use `C001`, `C002`, and so on. Valid statuses are:
 - `unsourced`: stated content lacks sufficient evidence;
 - `retired`: intentionally removed and no longer stated.
 
-Contribution IDs use `D001`, `D002`, and so on. A contribution row must name its research question, evidence, publications, chapters, attribution, and status. A chapter is not automatically a contribution; a publication is not automatically a doctoral contribution.
+Degree-contribution IDs use `D001`, `D002`, and so on; `D` means *degree*, not *doctoral*. A contribution row must name its research question, evidence, publications when any, chapters, attribution, and status. A chapter is not automatically a contribution; a publication is not automatically a degree contribution.
 
 ## 4. Publication reuse and attribution
 
@@ -67,7 +78,7 @@ Before adapting substantial text, figures, tables, or structure from a paper, ad
 
 - complete authorship;
 - the author's contribution;
-- candidate dissertation chapters;
+- candidate thesis chapters;
 - reused or adapted material;
 - copyright, license, or program policy status;
 - overlap that must be rewritten or disclosed.
@@ -78,13 +89,13 @@ Never describe collaborative work as solely the candidate's. Never infer permiss
 
 Chapter files are `manus/chaps/<n>_<slug>.tex`. The numeric prefix, `notes/outline.md`, and `manus/main.tex` input order must agree.
 
-Each chapter brief states its purpose, research questions, contribution IDs, claim IDs, required evidence, planned figures/tables, dependencies, and exit condition. Research chapters must be rewritten into the dissertation arc; concatenating paper introductions and conclusions is not synthesis.
+Each chapter brief states its purpose, research questions, contribution IDs, claim IDs, required evidence, planned figures/tables, dependencies, and exit condition. When published work is reused, research chapters must be rewritten into the thesis arc; concatenating paper introductions and conclusions is not synthesis. Do not impose a publication-based architecture or separate synthesis chapter on a master's thesis without a confirmed reason.
 
 Front matter lives in `manus/fronts/`; appendices and other back matter live in `manus/backs/`. Project-specific LaTeX commands belong in `manus/main.tex`, not the reusable class or package.
 
 ## 6. Milestone contract
 
-Each durable event lives in `milestones/<slug>/`, with a user-confirmed `milestone.yml`. Recommended fields are:
+Each applicable durable event lives in `milestones/<slug>/`, with a user-confirmed `milestone.yml`. Recommended fields are:
 
 ```yaml
 kind: defense
@@ -98,14 +109,14 @@ confirmed_on: ""
 
 Received feedback is copied unchanged into `feedback/`. A response point ledger in `response/` maps every item to a disposition: `accepted`, `completed`, `planned`, `disagreed`, or `needs-author`. Promised changes also become checkboxes under `tasks/`.
 
-The final `deposit` milestone is blocked by unresolved `\todo` markers, failed lint, unchecked institutional requirements, open feedback promises, missing reuse permissions, or an unrecorded committee approval.
+The final `deposit` milestone is blocked by unresolved `\todo` markers, failed lint, unchecked institutional requirements, open feedback promises, missing reuse permissions, or any required approval that is not recorded.
 
 ## 7. Interaction, language, and provenance
 
 - `INVOLVE=low|medium|high` controls how often a skill asks before judgment calls. It never bypasses confirmation of institutional facts, attribution, deletion, overwriting, or final freeze.
 - `STORY_LANG=en|zh` controls replies and newly written Markdown. Empty follows the conversation. Existing files retain their language.
 - `STORY_MAIN` selects the default manuscript entry point for build and lint. A command-line `--main` overrides it; neither setting changes the manuscript language recorded in `degree/profile.tex`.
-- Manuscript language comes from `degree/profile.tex`; do not switch it because the conversation uses another language.
+- Degree level and manuscript language come from `degree/profile.tex`; do not switch either because of wording in the conversation.
 - Dated artifacts use the system date. When model provenance is recorded, use the session-provided model ID; never invent one.
 - A skill edits only the files it owns. It routes work to another skill when ownership changes.
 

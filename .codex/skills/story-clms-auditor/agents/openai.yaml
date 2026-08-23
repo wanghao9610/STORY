@@ -2,6 +2,6 @@ interface:
   display_name: "Claims Auditor"
   short_description: "Audit numbers, claims, and evidence links"
   brand_color: "#173B57"
-  default_prompt: "Use $story-clms-auditor to verify the dissertation's quantitative and contribution claims."
+  default_prompt: "Use $story-clms-auditor to verify the thesis's quantitative and contribution claims."
 policy:
   allow_implicit_invocation: true

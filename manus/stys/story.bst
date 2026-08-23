@@ -9,7 +9,7 @@
 %%      empty string. The fields stay legal in ENTRY and stay in
 %%      manus/bibs/reference.bib, where a DOI is provenance and the input to
 %%      story-refs-curator's verification fetches; they are simply not
-%%      typeset, keeping the generic dissertation bibliography compact.
+%%      typeset, keeping the generic thesis bibliography compact.
 %%
 %%   2. `eprint', `archiveprefix' and `primaryclass' are added to ENTRY and
 %%      rendered by `format.eprint' in a misc-type entry. Without it an

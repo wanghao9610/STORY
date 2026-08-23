@@ -1,6 +1,7 @@
 %% Canonical degree profile. Populate only from author-confirmed records.
 %% Machine-readable workflow fields remain comments; title-page fields compile.
 %% Each \storylocalized field stores its English form first and Chinese form second.
+% degree_level:
 % dissertation_language: en
 % thesis_type: monograph
 % official_template:
@@ -9,12 +10,13 @@
 % confirmed_on:
 % max_pages:
 
-\title{\storylocalized{Untitled Doctoral Dissertation}{未命名博士学位论文}}
+\title{\storylocalized{Untitled Thesis}{未命名学位论文}}
 \author{\storylocalized{Author Name}{作者姓名}}
 \university{\storylocalized{University Name}{学校名称}}
 \department{\storylocalized{Department or Program}{院系或培养单位}}
-\degree{\storylocalized{Doctor of Philosophy}{博士学位}}
+\degree{\storylocalized{Degree Name}{学位名称}}
 \advisor{\storylocalized{Advisor Name}{导师姓名}}
-\committee{\storylocalized{Committee Members}{学位评定委员会成员}}
+%% Optional title-page field; leave empty when the confirmed template omits it.
+\committee{}
 \graduationdate{\storylocalized{Graduation Date}{完成日期}}
 \copyrightyear{\the\year}

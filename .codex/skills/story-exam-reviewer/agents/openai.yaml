@@ -1,7 +1,7 @@
 interface:
   display_name: "Mock Examiner"
-  short_description: "Run a rigorous simulated doctoral examination"
+  short_description: "Run a degree-appropriate mock examination"
   brand_color: "#173B57"
-  default_prompt: "Use $story-exam-reviewer to review the built dissertation as a doctoral examiner."
+  default_prompt: "Use $story-exam-reviewer to review the built thesis against its confirmed degree level."
 policy:
   allow_implicit_invocation: true

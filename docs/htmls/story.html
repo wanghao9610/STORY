@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="STORY — Systematic Toolchain for Organizing Research over Years. The dissertation companion to STAR and STAGE: every claim traced to fingerprinted evidence, every milestone on file.">
+<meta name="description" content="STORY — a degree-aware master's thesis and doctoral dissertation workflow: every claim traced to fingerprinted evidence, every applicable milestone on file.">
 <title>STORY — Systematic Toolchain for Organizing Research over Years</title>
 <link rel="icon" href="./srcs/story-project-icon.png">
 <style>
@@ -343,6 +343,60 @@
     color: var(--text-dim);
     font-size: 1.02rem;
   }
+
+  /* ---------- STAR family ---------- */
+  .family-grid {
+    margin-top: 3rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  .family-grid .family-card { min-height: 280px; display: flex; flex-direction: column; grid-column: auto; }
+  .family-card.current {
+    border-color: rgba(255, 216, 107, 0.45);
+    box-shadow: inset 0 0 0 1px rgba(255, 216, 107, 0.08);
+  }
+  .family-card-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .family-step {
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    letter-spacing: 0.12em;
+    color: var(--card-c);
+  }
+  .family-current {
+    padding: 0.25rem 0.65rem;
+    border: 1px solid rgba(255, 216, 107, 0.35);
+    border-radius: 999px;
+    color: var(--gold);
+    background: rgba(255, 216, 107, 0.07);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .family-card h3 { margin-top: 1.15rem; font-size: 1.45rem; letter-spacing: 0.08em; }
+  .family-full {
+    margin-top: 0.25rem;
+    min-height: 2.6rem;
+    color: var(--text-faint);
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+  .family-card > p:last-of-type { margin-top: 1rem; color: var(--text-dim); font-size: 0.92rem; }
+  .family-links { margin-top: auto; padding-top: 1.4rem; display: flex; gap: 0.65rem; flex-wrap: wrap; }
+  .family-links a {
+    padding: 0.42rem 0.78rem;
+    border: 1px solid var(--line-hi);
+    border-radius: 999px;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+  }
+  .family-links a:hover { border-color: var(--card-c); color: var(--card-c); }
+  @media (max-width: 760px) {
+    .family-grid { grid-template-columns: 1fr; }
+    .family-card, .family-full { min-height: 0; }
+  }
+
+
 
   /* scroll reveal */
   .reveal { opacity: 0; transform: translateY(26px); transition: opacity 0.7s ease, transform 0.7s ease; }
@@ -713,6 +767,7 @@
     STORY
   </a>
   <div class="nav-links">
+    <a href="#family">Family</a>
     <a href="#pillars">Why STORY</a>
     <a href="#structure">Structure</a>
     <a href="#workflow">Workflow</a>
@@ -736,9 +791,9 @@
   <h1>STORY</h1>
   <p class="hero-sub">A <a class="inline-link" href="https://wanghao9610.github.io/STAR/" target="_blank" rel="noopener">STAR</a> takes the <a class="inline-link" href="https://wanghao9610.github.io/STAGE/" target="_blank" rel="noopener">STAGE</a> to tell a STORY</p>
   <p class="hero-desc">
-    The dissertation companion to <strong><a class="inline-link" href="https://wanghao9610.github.io/STAR/" target="_blank" rel="noopener">STAR</a></strong> and
-    <strong><a class="inline-link" href="https://wanghao9610.github.io/STAGE/" target="_blank" rel="noopener">STAGE</a></strong> — it synthesizes years of research,
-    published papers, and fingerprinted evidence into <strong>one defensible, deposit-ready dissertation</strong>:
+    The master's and doctoral thesis companion to <strong><a class="inline-link" href="https://wanghao9610.github.io/STAR/" target="_blank" rel="noopener">STAR</a></strong> and
+    <strong><a class="inline-link" href="https://wanghao9610.github.io/STAGE/" target="_blank" rel="noopener">STAGE</a></strong> — it shapes graduate research,
+    applicable publications, and fingerprinted evidence into <strong>one defensible, deposit-ready thesis</strong>:
     every number traces to an evidence file or is visibly marked as missing, every reused publication keeps
     its attribution, and every committee comment and degree requirement stays on file.
   </p>
@@ -752,23 +807,73 @@
     <div class="stat"><b>2</b><span>Languages · EN 中文</span></div>
     <div class="stat"><b>MIT</b><span>Open Source</span></div>
   </div>
-  <a class="scroll-hint" href="#pillars" aria-label="Scroll down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></a>
+  <a class="scroll-hint" href="#family" aria-label="Scroll down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></a>
 </header>
+
+<!-- ==================== STAR FAMILY ==================== -->
+<section id="family">
+  <div class="wrap">
+    <p class="kicker reveal">The STAR family</p>
+    <h2 class="reveal">One research life cycle.<br>Three focused toolchains.</h2>
+    <p class="section-lead reveal">
+      Each works independently. Connect them when you want upstream work to flow downstream as fingerprinted, read-only evidence.
+    </p>
+    <div class="family-grid">
+      <article class="card family-card reveal" style="--card-c: #ffd86b; --card-glow: rgba(255,216,107,0.18)">
+        <div class="family-card-head">
+          <span class="family-step">01 · RESEARCH</span>
+        </div>
+        <h3>STAR</h3>
+        <p class="family-full">Systematic Toolchain for AI Research</p>
+        <p>Runs one research project from idea through reproducible experiments to paper-ready evidence.</p>
+        <div class="family-links">
+          <a href="https://wanghao9610.github.io/STAR/" target="_blank" rel="noopener">Website ↗</a>
+          <a href="https://github.com/wanghao9610/STAR" target="_blank" rel="noopener">GitHub ↗</a>
+        </div>
+      </article>
+      <article class="card family-card reveal" style="--card-c: #8b93ff; --card-glow: rgba(139,147,255,0.18)">
+        <div class="family-card-head">
+          <span class="family-step">02 · PAPER</span>
+        </div>
+        <h3>STAGE</h3>
+        <p class="family-full">Systematic Toolchain for Authoring, Guiding, and Editing</p>
+        <p>Turns one contribution into a traceable paper, review cycle, and submission package.</p>
+        <div class="family-links">
+          <a href="https://wanghao9610.github.io/STAGE/" target="_blank" rel="noopener">Website ↗</a>
+          <a href="https://github.com/wanghao9610/STAGE" target="_blank" rel="noopener">GitHub ↗</a>
+        </div>
+      </article>
+      <article class="card family-card reveal current" style="--card-c: #4cc3ff; --card-glow: rgba(76,195,255,0.18)">
+        <div class="family-card-head">
+          <span class="family-step">03 · THESIS</span>
+          <span class="family-current">Current</span>
+        </div>
+        <h3>STORY</h3>
+        <p class="family-full">Systematic Toolchain for Organizing Research over Years</p>
+        <p>Shapes graduate research into a defensible master's thesis or doctoral dissertation, defense, and deposit.</p>
+        <div class="family-links">
+          <a href="https://wanghao9610.github.io/STORY/" target="_blank" rel="noopener">Website ↗</a>
+          <a href="https://github.com/wanghao9610/STORY" target="_blank" rel="noopener">GitHub ↗</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
 
 <!-- ==================== PILLARS ==================== -->
 <section id="pillars">
   <div class="wrap">
     <p class="kicker reveal">Why STORY</p>
-    <h2 class="reveal">Years of work.<br>One defensible dissertation.</h2>
+    <h2 class="reveal">Graduate research.<br>One defensible thesis.</h2>
     <p class="section-lead reveal">
-      A dissertation rots when evidence lives in old repositories, numbers live in chat history,
+      A thesis rots when evidence lives in old repositories, numbers live in chat history,
       and attribution lives in someone's head. STORY moves the whole chain of custody —
       evidence, claims, publications, milestones — into the repository itself.
     </p>
     <div class="bento">
       <div class="card reveal" style="--card-glow: rgba(255,216,107,0.14); --card-c: #ffd86b">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
-        <h3>One repository, one dissertation</h3>
+        <h3>One repository, one degree thesis</h3>
         <p>Front matter, chapters, appendices, figures, tables, and bibliography each have one predictable home under <code>manus/</code> — and the template compiles out of the box, in English or 简体中文.</p>
       </div>
       <div class="card reveal" style="--card-glow: rgba(139,147,255,0.16); --card-c: #8b93ff">
@@ -784,7 +889,7 @@
       <div class="card wide reveal" style="--card-glow: rgba(62,230,192,0.14); --card-c: #3ee6c0">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 11.5l2 2 4-4"/></svg></div>
         <h3>The fabrication boundary</h3>
-        <p>Every quantitative claim in <code>manus/</code> either traces to a fingerprinted <code>mates/</code> entry or is written as <code>\todo{...}</code> — no third state. Institutional rules enter <code>degree/</code> only as author-confirmed facts; a published paper is evidence, never automatically the dissertation's final wording. A visible <code>\todo</code> is a state; a plausible invented number is a defect.</p>
+        <p>Every quantitative claim in <code>manus/</code> either traces to a fingerprinted <code>mates/</code> entry or is written as <code>\todo{...}</code> — no third state. Institutional rules and <code>degree_level: master|doctoral</code> enter <code>degree/</code> only as author-confirmed facts; a published paper is evidence, never automatically the thesis's final wording. A visible <code>\todo</code> is a state; a plausible invented number is a defect.</p>
       </div>
       <div class="card wide reveal" style="--card-glow: rgba(255,126,182,0.14); --card-c: #ff7eb6">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
@@ -794,7 +899,7 @@
       <div class="card wide reveal" style="--card-glow: rgba(245,166,35,0.14); --card-c: #f5a623">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></div>
         <h3>Milestones as data</h3>
-        <p>Proposal, annual review, pre-defense, defense, corrections, and deposit each live in <code>milestones/&lt;slug&gt;/</code> — received feedback preserved verbatim, point-by-point responses, and a frozen outcome record. A deposit package cannot be declared ready while a required check or an open promise remains unresolved.</p>
+        <p>Each proposal, review, defense, correction, or deposit stage that the confirmed degree program requires lives in <code>milestones/&lt;slug&gt;/</code> — received feedback preserved verbatim, point-by-point responses, and a frozen outcome record. A deposit package cannot be declared ready while a required check or an open promise remains unresolved.</p>
       </div>
       <div class="card wide reveal" style="--card-glow: rgba(139,147,255,0.14); --card-c: #8b93ff">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="9" width="14" height="11" rx="2"/><path d="M12 9V5"/><circle cx="12" cy="3.5" r="1.2"/><path d="M2.5 14v2"/><path d="M21.5 14v2"/><path d="M9.5 13.5v2"/><path d="M14.5 13.5v2"/></svg></div>
@@ -818,10 +923,10 @@
       <div class="tree-window reveal">
         <div class="window-bar">
           <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-          <span class="window-title">tree ~/my-dissertation</span>
+          <span class="window-title">tree ~/my-thesis</span>
         </div>
         <div class="tree-body"><span class="hl">STORY/</span>
-├── <span class="dir">manus/</span>       <span class="cm"># the dissertation</span>
+├── <span class="dir">manus/</span>       <span class="cm"># the thesis</span>
 │   ├── <span class="file">main.tex</span>  <span class="cm"># entry — always compiles</span>
 │   ├── <span class="file">main-zh.tex</span> <span class="cm"># buildable 中文 starter</span>
 │   ├── <span class="dir">fronts/</span>  <span class="cm"># abstract, acknowledgements, declarations</span>
@@ -847,7 +952,7 @@
 └── <span class="file">AGENTS.md</span>    <span class="cm"># shared human + agent instructions</span></div>
       </div>
       <div class="legend reveal">
-        <div class="legend-row"><code>manus/</code><span><strong>Manuscripts</strong> — the dissertation's LaTeX sources</span></div>
+        <div class="legend-row"><code>manus/</code><span><strong>Manuscripts</strong> — the thesis's LaTeX sources</span></div>
         <div class="legend-row"><code>mates/</code><span><strong>Materials</strong> — fingerprinted evidence snapshots, read-only</span></div>
         <div class="legend-row"><code>degree/</code><span><strong>Degree facts</strong> — author-confirmed institutional record</span></div>
         <div class="legend-row"><code>notes/</code><span><strong>Writing metadata</strong> — story, outline, and the claim ledger</span></div>
@@ -863,11 +968,11 @@
 <!-- ==================== WORKFLOW ==================== -->
 <section id="workflow">
   <div class="wrap">
-    <p class="kicker reveal">Dissertation workflow</p>
+    <p class="kicker reveal">Degree-aware thesis workflow</p>
     <h2 class="reveal">Sixteen skills.<br>One research arc.</h2>
     <p class="section-lead reveal">
       From imported evidence to a frozen deposit — each skill writes its state into project files,
-      so the whole dissertation is auditable and resumable at any point.
+      so the whole thesis is auditable and resumable at any point.
     </p>
 
     <div class="phases">
@@ -877,7 +982,7 @@
           <h3>Set up<small>Wire the repo and bring in fingerprinted evidence.</small></h3>
         </div>
         <div class="skills">
-          <div class="skill"><code>$story-proj-adopt</code><p>Inventory and adopt an existing dissertation without disturbing it — survey, record, and keep every institutional fact author-confirmed.</p></div>
+          <div class="skill"><code>$story-proj-adopt</code><p>Inventory and adopt an existing master's or doctoral thesis without disturbing it — survey, record, and keep every institutional fact author-confirmed.</p></div>
           <div class="skill"><code>$story-evid-curator</code><p>Import from STAR or STAGE repositories, register manual drops, refresh fingerprints, and integrity-check <em>mates/</em>.</p></div>
         </div>
       </div>
@@ -888,7 +993,7 @@
           <h3>Plan<small>Shape the thesis argument and the chapter architecture.</small></h3>
         </div>
         <div class="skills">
-          <div class="skill"><code>$story-syns-coach</code><p>Establish the thesis-level research arc and the doctoral contributions it defends.</p></div>
+          <div class="skill"><code>$story-syns-coach</code><p>Establish the research arc and degree contributions at the confirmed master's or doctoral level.</p></div>
           <div class="skill"><code>$story-outl-planner</code><p>Turn the arc into a coherent chapter architecture, each chapter serving the thesis-wide argument.</p></div>
           <div class="skill"><code>$story-refs-curator</code><p>Verified bibliography records and reading notes behind every literature assertion.</p></div>
         </div>
@@ -924,9 +1029,9 @@
           <h3>Examination<small>Review, respond, defend, deposit.</small></h3>
         </div>
         <div class="skills">
-          <div class="skill"><code>$story-exam-reviewer</code><p>A simulated examiner pass over the built dissertation — originality, coherence, evidence, defense readiness.</p></div>
+          <div class="skill"><code>$story-exam-reviewer</code><p>A level-appropriate examiner pass over the built thesis — contribution scope, coherence, evidence, defense readiness.</p></div>
           <div class="skill"><code>$story-revs-resolver</code><p>Track and resolve committee feedback point by point — received comments are never edited in place.</p></div>
-          <div class="skill"><code>$story-defn-builder</code><p>Prepare and check the defense deck against the dissertation it presents.</p></div>
+          <div class="skill"><code>$story-defn-builder</code><p>Prepare and check an applicable defense deck against the thesis it presents.</p></div>
           <div class="skill"><code>$story-depo-packer</code><p>Preflight the deposit package against <em>degree/</em> requirements and freeze the final record.</p></div>
         </div>
       </div>
@@ -949,7 +1054,7 @@
     </p>
 
     <figure class="workflow-map reveal">
-      <img src="./srcs/story-writing-workflow.svg" alt="STORY dissertation workflow: fingerprinted evidence flows through thesis synthesis and chapter writing to examination, defense, and deposit" loading="lazy">
+      <img src="./srcs/story-writing-workflow.svg" alt="STORY master's and doctoral thesis workflow: fingerprinted evidence flows through synthesis and chapter writing to applicable examination, defense, and deposit stages" loading="lazy">
       <figcaption>The full arc — evidence in, degree out, and where every stage writes its state.</figcaption>
     </figure>
   </div>
@@ -959,7 +1064,7 @@
 <section id="quickstart">
   <div class="wrap">
     <p class="kicker reveal">Quick start</p>
-    <h2 class="reveal">Five steps to a compiling dissertation.</h2>
+    <h2 class="reveal">Six steps to a compiling thesis.</h2>
     <p class="section-lead reveal">
       Start fresh from the template — the generic class compiles immediately, and institutional
       templates and degree rules enter <code style="font-family:var(--mono);color:var(--gold)">degree/</code>
@@ -968,23 +1073,26 @@
     <div class="term reveal">
       <div class="window-bar">
         <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-        <span class="window-title">zsh — my-dissertation</span>
+        <span class="window-title">zsh — my-thesis</span>
       </div>
-      <div class="term-body"><span class="c"># 1 · Start a dissertation repo from the STORY template — one dissertation, one repo</span>
-<span class="p">❯</span> <span class="cmd">git clone https://github.com/wanghao9610/STORY my-dissertation <span class="flag">&amp;&amp;</span> cd my-dissertation</span>
+      <div class="term-body"><span class="c"># 1 · Start a thesis repo from the STORY template — one degree thesis, one repo</span>
+<span class="p">❯</span> <span class="cmd">git clone https://github.com/wanghao9610/STORY my-thesis <span class="flag">&amp;&amp;</span> cd my-thesis</span>
 <span class="p">❯</span> <span class="cmd">rm <span class="flag">-rf</span> .git <span class="flag">&amp;&amp;</span> git init</span>   <span class="c"># drop STORY's history</span>
 
-<span class="c"># 2 · Configure the local runtime</span>
+<span class="c"># 2 · Confirm master or doctoral in the durable degree profile</span>
+<span class="p">❯</span> <span class="cmd"><span class="str">$EDITOR</span> degree/profile.tex</span>   <span class="c"># degree_level: master | doctoral</span>
+
+<span class="c"># 3 · Configure the local runtime</span>
 <span class="p">❯</span> <span class="cmd">cp .env.example .env <span class="flag">&amp;&amp;</span> <span class="str">$EDITOR</span> .env</span>   <span class="c"># RESEARCH_HOME (optional) · STORY_MAIN · LATEX_ENGINE · STORY_LANG</span>
 
-<span class="c"># 3 · Import evidence from a paired STAR or STAGE repo — or drop files into mates/manual/</span>
+<span class="c"># 4 · Import evidence from a paired STAR or STAGE repo — or drop files into mates/manual/</span>
 <span class="p">❯</span> <span class="cmd">bash execs/scpts/import.sh <span class="flag">--source</span> ../my-stage-paper <span class="flag">--slug</span> paper-a</span>
 
-<span class="c"># 4 · Build &amp; lint — a fresh checkout compiles out of the box</span>
+<span class="c"># 5 · Build &amp; lint — a fresh checkout compiles out of the box</span>
 <span class="p">❯</span> <span class="cmd">bash execs/run.sh</span>
 <span class="p">❯</span> <span class="cmd">bash execs/scpts/lint.sh</span>
 
-<span class="c"># 5 · Pick up the workflow — it names the single next action for you</span>
+<span class="c"># 6 · Pick up the workflow — it names the single next action for you</span>
 <span class="p">❯</span> <span class="cmd">$story-flow-status</span>
 <span class="p">❯</span> <span class="cursor-blink"></span></div>
     </div>
@@ -995,10 +1103,10 @@
 <section class="cta-final">
   <div class="wrap">
     <p class="kicker reveal">Ready when you are</p>
-    <h2 class="reveal">Give your years of research a<br><span>dissertation worth defending.</span></h2>
+    <h2 class="reveal">Give your graduate research a<br><span>thesis worth defending.</span></h2>
     <p class="section-lead reveal">
       STORY is free, MIT-licensed, and agent-agnostic.
-      Use it as a GitHub template, or adopt it into the dissertation you already have.
+      Use it as a GitHub template, or adopt it into the master's or doctoral thesis you already have.
     </p>
     <div class="hero-ctas reveal">
       <a class="btn btn-primary" href="https://github.com/wanghao9610/STORY" target="_blank" rel="noopener">✦ Use the Template</a>

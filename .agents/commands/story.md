@@ -1,25 +1,25 @@
 # Route a STORY request
 
-Use the roster below to route a dissertation request to exactly one workflow skill.
+Use the roster below to route a master's or doctoral thesis request to exactly one workflow skill. Degree-aware skills read `% degree_level: master|doctoral` from `degree/profile.tex`; the router never guesses it.
 
 | Skill | | Purpose |
 | --- | --- | --- |
 | `story-chap-drafter` | | Draft or revise one evidence-bound chapter |
 | `story-cite-auditor` | | Audit citation keys, literature assertions, and bibliography hygiene |
-| `story-clms-auditor` | | Audit numbers, comparisons, contributions, and source anchors |
+| `story-clms-auditor` | | Audit numbers, comparisons, degree contributions, and source anchors |
 | `story-copy-editor` | | Edit voice, terminology, transitions, and consistency without changing claims |
 | `story-defn-builder` | † | Build a defense narrative and deck from confirmed rules and claims |
 | `story-depo-packer` | † | Preflight and freeze a named deposit package |
 | `story-evid-curator` | | Import, register, refresh, or integrity-check evidence |
-| `story-exam-reviewer` | | Simulate an examiner or committee review |
-| `story-figs-designer` | | Build one evidence-backed dissertation figure |
+| `story-exam-reviewer` | | Simulate a degree-appropriate examiner or committee review |
+| `story-figs-designer` | | Build one evidence-backed thesis figure |
 | `story-flow-status` | | Report repository status and exactly one next action |
 | `story-outl-planner` | † | Turn the confirmed story into chapter architecture and briefs |
-| `story-proj-adopt` | † | Safely adopt an existing dissertation or thesis draft |
+| `story-proj-adopt` | † | Safely adopt an existing master's or doctoral thesis draft |
 | `story-refs-curator` | | Curate bibliography records and reading notes |
 | `story-revs-resolver` | † | Turn received feedback into dispositions and tracked promises |
 | `story-syns-coach` | † | Confirm or revise the thesis-wide argument and contribution framing |
-| `story-tabs-builder` | | Build one evidence-backed dissertation table |
+| `story-tabs-builder` | | Build one evidence-backed thesis table |
 
 The six skills marked † are explicit-only because each controls an author-owned thesis-wide, milestone, or institutional decision. This generic `/story` router never starts one: ask for explicit confirmation, give the exact `/story-<name> <argument>` command, and wait. The other ten may be selected when the request plainly matches.
 

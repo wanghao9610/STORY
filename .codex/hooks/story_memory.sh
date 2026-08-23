@@ -10,7 +10,7 @@
 # belongs in the store, and the format of both, is
 # docs/mds/story-workflow/memory_spec.md.
 #
-# Nothing is printed when the store holds no entries, so a fresh dissertation pays
+# Nothing is printed when the store holds no entries, so a fresh thesis pays
 # nothing: the rule that creates the first memory is AGENTS.md section 8, which
 # is loaded anyway.
 #

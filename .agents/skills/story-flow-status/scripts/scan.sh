@@ -27,6 +27,12 @@ else
 fi
 
 heading 'Degree'
+degree_level="$(sed -nE 's/^[[:space:]]*%[[:space:]]*degree_level:[[:space:]]*([^[:space:]]+)[[:space:]]*$/\1/p' degree/profile.tex 2>/dev/null | tail -1)"
+case "${degree_level}" in
+    master|doctoral) printf 'degree-level: %s\n' "${degree_level}" ;;
+    "") printf 'degree-level: unknown (set degree_level to master or doctoral in degree/profile.tex)\n' ;;
+    *) printf 'degree-level: invalid (%s; expected master or doctoral)\n' "${degree_level}" ;;
+esac
 show_file degree/profile.tex
 show_file degree/requirements.md
 show_file degree/committee.md

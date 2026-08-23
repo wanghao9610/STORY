@@ -2,8 +2,9 @@
 
 **Language:** English | [简体中文](writing-workflow-skills.zh-CN.md)
 
-The skills form a dissertation pipeline rather than a rigid sequence. Use the smallest skill that owns the requested artifact.
+The skills form a master's/doctoral thesis pipeline rather than a rigid sequence. Use the smallest skill that owns the requested artifact.
 A fresh clone has no prefilled `notes/*.md` files: each primary output below is created by its owning skill on first use, and downstream skills treat absence as an uninitialized stage.
+Before level-specific synthesis, planning, examination, defense, or deposit work, set the author-confirmed `% degree_level: master|doctoral` in `degree/profile.tex`. The same evidence and attribution contract applies in both modes; contribution scope and milestone gates follow the selected level and confirmed institutional rules.
 
 ```mermaid
 flowchart LR
@@ -35,9 +36,9 @@ flowchart LR
 | `story-copy-editor` | Voice, terminology, transitions, or repetition need polishing | manuscript edits, a report, or `notes/style.md` |
 | `story-clms-auditor` | Numbers and contribution claims need traceability checks | claim verdicts and tasks |
 | `story-cite-auditor` | Citation keys or literature assertions need checking | citation report and tasks |
-| `story-exam-reviewer` | The dissertation needs a realistic mock examination | milestone review file |
+| `story-exam-reviewer` | The thesis needs a degree-appropriate mock examination | milestone review file |
 | `story-revs-resolver` | Supervisor, committee, examiner, or deposit feedback arrived | point ledger, responses, promises |
-| `story-defn-builder` | The defense narrative or deck needs preparation | defense plan and deck artifacts |
+| `story-defn-builder` | An applicable defense narrative or deck needs preparation | defense plan and deck artifacts |
 | `story-depo-packer` | A final package needs preflight and a freeze record | deposit bundle and record |
 | `story-flow-status` | The next action is unclear | read-only status summary |
 

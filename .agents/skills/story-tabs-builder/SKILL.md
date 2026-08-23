@@ -1,6 +1,6 @@
 ---
 name: story-tabs-builder
-description: Build or revise one dissertation table from fingerprinted evidence, with source anchors for every data row and synchronized claim/outline records; use for results, comparisons, mappings, and synthesis tables.
+description: Build or revise one master's or doctoral thesis table from fingerprinted evidence, with source anchors for every data row and synchronized claim/outline records; use for results, comparisons, mappings, and synthesis tables.
 ---
 
 # Build one evidence-backed table

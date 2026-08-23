@@ -163,7 +163,7 @@ while IFS= read -r rel; do
         printf -- '- source-commit: %s\n' "${SOURCE_COMMIT}"
         printf -- '- sha256: %s\n' "$(sha256 "${dst}")"
         printf -- '- imported: %s\n' "${TODAY}"
-        printf -- '- covers: imported doctoral-research evidence\n'
+        printf -- '- covers: imported graduate-research evidence\n'
     } > "${block}"
     replace_entry "${key}" "${block}"
     count=$((count + 1))

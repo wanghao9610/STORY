@@ -260,6 +260,10 @@ for script in execs/run.sh execs/update.sh execs/scpts/import.sh execs/scpts/lin
 done
 (( script_errors == 0 )) && ok 'shell scripts parse and managed entrypoints are executable'
 
+if ! bash .github/scripts/test_degree_levels.sh; then
+    fail 'degree-level lint cases failed'
+fi
+
 grep -q 'Systematic Toolchain for Organizing Research over Years' README.md || fail 'README.md lacks the official expansion'
 grep -q 'A STAR takes the STAGE to tell a STORY' README.md || fail 'README.md lacks the official tagline'
 for path in degree/profile.tex degree/requirements.md notes/.gitkeep notes/refs/.gitkeep mates/MANIFEST.md manus/main.tex manus/stys/story.cls manus/stys/story.sty milestones/.gitkeep tasks/.gitkeep; do

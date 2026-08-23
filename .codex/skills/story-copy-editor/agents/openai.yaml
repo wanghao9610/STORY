@@ -1,7 +1,7 @@
 interface:
-  display_name: "Dissertation Copy Editor"
+  display_name: "Thesis Copy Editor"
   short_description: "Polish cross-chapter prose without changing facts"
   brand_color: "#173B57"
-  default_prompt: "Use $story-copy-editor to harmonize terminology and flow across the dissertation."
+  default_prompt: "Use $story-copy-editor to harmonize terminology and flow across the thesis."
 policy:
   allow_implicit_invocation: true

@@ -2,6 +2,6 @@ interface:
   display_name: "Citation Auditor"
   short_description: "Audit citations and literature assertions"
   brand_color: "#173B57"
-  default_prompt: "Use $story-cite-auditor to check the dissertation's citation keys and literature claims."
+  default_prompt: "Use $story-cite-auditor to check the thesis's citation keys and literature claims."
 policy:
   allow_implicit_invocation: true

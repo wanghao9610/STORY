@@ -1,12 +1,14 @@
 ---
 name: story-proj-adopt
 disable-model-invocation: true
-description: 安全地把已有博士论文、学位论文草稿或 Overleaf 导出接入 STORY：先盘点并确认文件映射，再保留原源文件、登记无来源论断并验证构建。
+description: 安全地把已有硕士或博士学位论文草稿、Overleaf 导出接入 STORY：先盘点并确认文件映射，再保留原源文件、登记无来源论断并验证构建。
 ---
 
 # 接入已有学位论文
 
 首先完整阅读 `docs/mds/story-workflow/writing-workflow-conventions.md`。
+
+读取 `degree/profile.tex` 中的 `degree_level`。缺失或非法时可以继续盘点，但在映射层级相关的前置材料、里程碑或要求前，必须请作者确认 `master` 或 `doctoral`；不得从导入稿的标题页推断。
 
 1. 只读盘点草稿：入口文件、章节输入、前后置部分、图、表、参考文献、样式、构建命令、学校模板线索与候选证据。
 2. 判断源文件位于仓库内还是外部；外部源目录只复制，不修改。

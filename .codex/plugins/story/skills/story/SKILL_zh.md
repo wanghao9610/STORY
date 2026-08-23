@@ -1,6 +1,6 @@
 ---
 name: story
-description: 将显式调用的 $story 请求准确路由到一个 STORY 博士论文工作流 skill。无请求参数时显示当前论文状态。已经选定具体 story-* skill 后不要再使用本路由器。
+description: 将显式调用的 $story 请求准确路由到一个 STORY 硕士或博士学位论文工作流 skill。无请求参数时显示当前论文状态。已经选定具体 story-* skill 后不要再使用本路由器。
 ---
 
 # 路由 STORY 请求

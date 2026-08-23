@@ -1,6 +1,6 @@
 ---
 name: story-cite-auditor
-description: Audit dissertation citation keys, bibliography hygiene, literature assertions, missing citations, and cross-chapter citation consistency against verified records and reading notes; never silently repair prose.
+description: Audit thesis citation keys, bibliography hygiene, literature assertions, missing citations, and cross-chapter citation consistency against verified records and reading notes; use for master's or doctoral work and never silently repair prose.
 ---
 
 # Audit citations and literature assertions

@@ -1,6 +1,6 @@
 ---
 name: story-refs-curator
-description: Add, verify, deduplicate, read, and organize dissertation references using fetched bibliographic records and reading notes; use when bibliography entries or literature assertions need trustworthy source records.
+description: Add, verify, deduplicate, read, and organize master's or doctoral thesis references using fetched bibliographic records and reading notes; use when bibliography entries or literature assertions need trustworthy source records.
 ---
 
 # Curate references and reading notes

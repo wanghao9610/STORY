@@ -2,14 +2,15 @@
 
 **Language:** English | [简体中文](AGENTS.zh-CN.md)
 
-This repository uses STORY — **Systematic Toolchain for Organizing Research over Years** — to turn a body of doctoral research into a coherent, defensible, and deposit-ready dissertation.
+This repository uses STORY — **Systematic Toolchain for Organizing Research over Years** — to turn a body of graduate research into a coherent, defensible, and deposit-ready master's thesis or doctoral dissertation.
 
 ## 1. Scope and authority
 
-- One repository represents one doctoral dissertation.
+- One repository represents one master's thesis or doctoral dissertation.
+- `degree/profile.tex` records `degree_level: master|doctoral`. Treat a missing or invalid value as unknown, never infer it from a title or degree name, and apply only the confirmed level's standards and milestones.
 - `degree/` contains user-confirmed institutional facts. Never invent a deadline, formatting rule, committee decision, authorship statement, or deposit requirement.
 - `mates/` is the evidence store. It is read-only except through `execs/scpts/import.sh` and `$story-evid-curator`.
-- `manus/` is the dissertation source. Write manuscript prose in the dissertation language recorded in `degree/profile.tex`; structural keys, IDs, paths, and statuses remain English.
+- `manus/` is the thesis source. Write manuscript prose in the language recorded in `degree/profile.tex`; structural keys, IDs, paths, and statuses remain English.
 - Ask before a choice that changes the thesis-wide argument, chapter boundaries, attribution, publication reuse, or a degree requirement. Make safe local choices without interrupting the user.
 
 ## 2. Evidence before prose
@@ -18,19 +19,19 @@ This repository uses STORY — **Systematic Toolchain for Organizing Research ov
 - Missing evidence is written visibly as `\todo{...}`. A plausible invented value is never acceptable.
 - Assertions about cited work must be checkable against `notes/refs/` or imported reference material.
 - Fix incorrect evidence at its source and re-import it. Never silently edit a snapshot under `mates/`.
-- A published paper is evidence, not automatically the dissertation's final wording. Reconcile terminology, scope, attribution, and overlap before reuse.
+- A published paper is evidence, not automatically the thesis's final wording. Reconcile terminology, scope, attribution, and overlap before reuse.
 
-## 3. Dissertation-level coherence
+## 3. Thesis-level coherence
 
 - `notes/story.md` owns the thesis-level problem, central argument, research arc, and synthesis.
-- `notes/contributions.md` maps doctoral contributions to evidence, publications, chapters, and candidate examination claims.
+- `notes/contributions.md` maps degree contributions to evidence, publications, chapters, and candidate examination claims. Doctoral and master's contributions are judged against different confirmed degree expectations.
 - `notes/publications.md` records authorship, chapter reuse, permissions, and overlap. Do not imply sole authorship when work was collaborative.
 - `notes/outline.md` owns chapter order and chapter briefs. A chapter draft must serve the thesis-wide argument, not merely reproduce a paper.
 - `notes/claims.md` is the claim ledger. Update it in the same change that introduces, moves, weakens, or verifies a claim.
 
 ## 4. Degree milestones
 
-- Each proposal, annual review, pre-defense, defense, correction round, or deposit attempt lives under `milestones/<slug>/`.
+- Each applicable proposal, review, pre-defense, defense, correction round, or deposit attempt lives under `milestones/<slug>/`; do not require a milestone merely because another degree level uses it.
 - `milestone.yml` contains user-confirmed facts; `feedback/` preserves received comments; `response/` records dispositions; `RECORD_<date>.md` freezes an outcome.
 - Committee feedback is never edited in place. Responses distinguish completed changes, planned changes, reasoned disagreements, and questions requiring the author.
 - A deposit package cannot be declared ready while required checks in `degree/requirements.md` or open promises in `tasks/` remain unresolved.

@@ -83,7 +83,27 @@ if (( TODO_COUNT > 0 )); then
     hard "${TODO_COUNT} visible \\todo marker(s) remain under manus/."
 fi
 
-if grep -Eq 'Untitled Doctoral Dissertation|University Name|Author Name|Advisor Name|Graduation Date' degree/profile.tex; then
+DEGREE_LEVEL="$(sed -nE 's/^[[:space:]]*%[[:space:]]*degree_level:[[:space:]]*([^[:space:]]+)[[:space:]]*$/\1/p' degree/profile.tex 2>/dev/null | tail -1)"
+case "${DEGREE_LEVEL}" in
+    master|doctoral)
+        log "Degree level: ${DEGREE_LEVEL}."
+        ;;
+    "")
+        warn 'degree_level is unset in degree/profile.tex; confirm master or doctoral before level-specific review.'
+        ;;
+    *)
+        hard "invalid degree_level '${DEGREE_LEVEL}' in degree/profile.tex; expected master or doctoral."
+        ;;
+esac
+
+PROFILE_DISPLAY="$(grep -E '^[[:space:]]*\\(title|degree)\{' degree/profile.tex 2>/dev/null || true)"
+if [[ "${DEGREE_LEVEL}" == master ]] && grep -Eqi 'Doctor(al)?|博士' <<< "${PROFILE_DISPLAY}"; then
+    hard 'master degree_level conflicts with doctoral wording in the title or degree field.'
+elif [[ "${DEGREE_LEVEL}" == doctoral ]] && grep -Eqi 'Master([^a-z]|$)|硕士' <<< "${PROFILE_DISPLAY}"; then
+    hard 'doctoral degree_level conflicts with master wording in the title or degree field.'
+fi
+
+if grep -Eq 'Untitled Thesis|Degree Name|未命名学位论文|学位名称|University Name|Author Name|Advisor Name|Graduation Date' degree/profile.tex; then
     warn 'title-page placeholders remain in degree/profile.tex.'
 fi
 

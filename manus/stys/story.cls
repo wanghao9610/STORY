@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{stys/story}[2026/08/23 v0.2 English and Chinese STORY dissertation class]
+\ProvidesClass{stys/story}[2026/08/23 v0.3 English and Chinese STORY thesis class]
 
 \newif\ifstory@draft
 \newif\ifstory@chinese
@@ -57,19 +57,19 @@
 \ifstory@chinese
   \newcommand{\story@university}{学校名称}
   \newcommand{\story@department}{院系或培养单位}
-  \newcommand{\story@degree}{博士学位}
+  \newcommand{\story@degree}{学位名称}
   \newcommand{\story@advisor}{导师姓名}
-  \newcommand{\story@committee}{学位评定委员会成员}
+  \newcommand{\story@committee}{}
   \newcommand{\story@graduationdate}{完成日期}
   \newcommand{\story@submissionstatement}{学位论文}
 \else
   \newcommand{\story@university}{University Name}
   \newcommand{\story@department}{Department or Program}
-  \newcommand{\story@degree}{Doctor of Philosophy}
+  \newcommand{\story@degree}{Degree Name}
   \newcommand{\story@advisor}{Advisor Name}
-  \newcommand{\story@committee}{Committee Members}
+  \newcommand{\story@committee}{}
   \newcommand{\story@graduationdate}{Graduation Date}
-  \newcommand{\story@submissionstatement}{A dissertation submitted in partial fulfillment of the requirements for the degree of}
+  \newcommand{\story@submissionstatement}{A thesis submitted in partial fulfillment of the requirements for the degree of}
 \fi
 \newcommand{\story@copyrightyear}{\the\year}
 
@@ -108,12 +108,16 @@
     \vfill
     \ifstory@chinese
       {指导教师：\story@advisor\par}
-      \vspace{0.4cm}
-      {学位评定委员会：\story@committee\par}
+      \ifx\story@committee\@empty\else
+        \vspace{0.4cm}
+        {学位评定委员会：\story@committee\par}
+      \fi
     \else
       {Advisor: \story@advisor\par}
-      \vspace{0.4cm}
-      {Committee: \story@committee\par}
+      \ifx\story@committee\@empty\else
+        \vspace{0.4cm}
+        {Committee: \story@committee\par}
+      \fi
     \fi
     \vfill
     {\copyright\ \story@copyrightyear\ \@author\par}

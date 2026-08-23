@@ -1,6 +1,6 @@
 ---
 name: story-figs-designer
-description: Plan, create, or revise one dissertation figure with an editable source, evidence mappings for claim-bearing marks and captions, and a rendered PDF under manus/figs/; use for conceptual, method, result, and synthesis figures.
+description: Plan, create, or revise one master's or doctoral thesis figure with an editable source, evidence mappings for claim-bearing marks and captions, and a rendered PDF under manus/figs/; use for conceptual, method, result, and synthesis figures.
 ---
 
 # Design one traceable figure

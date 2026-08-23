@@ -6,17 +6,17 @@
 
 **语言：** [English](README.md) | 简体中文
 
-STORY 是一个面向完整博士学位论文的仓库模板与 AI 辅助工作流。它把多年研究、已发表论文、实验证据、章节草稿、导师和委员会反馈、学位要求、答辩材料、答辩后修改以及最终归档放进同一条可追溯的链路中，同时守住证据与作者贡献边界。
+STORY 是一个同时面向完整硕士与博士学位论文的仓库模板和 AI 辅助工作流。它把研究生阶段的研究、适用时的已发表论文、实验证据、章节草稿、导师和委员会反馈、学位要求、答辩材料、答辩后修改以及最终归档放进同一条可追溯链路，同时守住证据与作者贡献边界。
 
-三个仓库形成自然递进：
+## STAR · STAGE · STORY
 
-```text
-STAR   推进研究并产生证据
-STAGE  将单项研究写成论文并投稿
-STORY  将多年研究综合成完整博士学位论文
-```
+三个项目覆盖研究者工作的不同尺度。它们可以各自独立使用，也可以通过带指纹的证据彼此衔接。STORY 可以同时接入任意数量的 STAR 研究仓库、STAGE 论文仓库和人工登记材料。
 
-STORY 可以同时接入多个 STAR 研究仓库、多个 STAGE 论文仓库和人工登记的材料，也可以完全独立使用。
+| 项目 | 范围 | 链接 |
+| --- | --- | --- |
+| **STAR** — Systematic Toolchain for AI Research | 推进一个研究项目：从想法出发，经可复现实验，产出可直接用于论文的证据。 | [官网](https://wanghao9610.github.io/STAR/) · [GitHub](https://github.com/wanghao9610/STAR) |
+| **STAGE** — Systematic Toolchain for Authoring, Guiding, and Editing | 把一项研究贡献写成可追溯的论文，贯穿评审、回复与投稿打包。 | [官网](https://wanghao9610.github.io/STAGE/) · [GitHub](https://github.com/wanghao9610/STAGE) |
+| **STORY** — Systematic Toolchain for Organizing Research over Years | 把研究生阶段的研究组织成可答辩、可归档的硕士或博士学位论文。 | **当前项目** · [官网](https://wanghao9610.github.io/STORY/) · [GitHub](https://github.com/wanghao9610/STORY) |
 
 ## STORY 提供什么
 
@@ -24,9 +24,9 @@ STORY 可以同时接入多个 STAR 研究仓库、多个 STAGE 论文仓库和�
 - `mates/` 下带指纹的只读证据层，支持多研究项目与多论文来源。
 - 按需创建在 `notes/` 下的总叙事、贡献映射、发表与复用映射、提纲、符号表及论断记录表。
 - `degree/` 下由用户确认的学校要求和委员会记录。
-- 面向开题、年度考核、预答辩、答辩、修改与归档的持久化里程碑记录。
+- 为培养项目实际要求的开题、考核、预答辩、答辩、修改与归档阶段建立持久化里程碑记录。
 - `execs/` 下统一的构建、格式化、证据导入与机械检查入口。
-- 供 Codex、Claude Code、Cursor、DeepSeek Harness、Kimi Code、Pi 和 Qwen Code 使用的十六个博士论文工作流 skill。
+- 供 Codex、Claude Code、Cursor、DeepSeek Harness、Kimi Code、Pi 和 Qwen Code 使用的十六个学位层级感知工作流 skill。
 - 成对维护的英文与简体中文 Markdown 文档、工作流指令和 harness 入口。
 - `.story/memory/` 下属于项目自己的跨会话记忆。
 
@@ -47,7 +47,7 @@ STORY/
 ├── mates/                         # 带指纹的证据快照，只读
 ├── degree/                        # 学位档案、学校要求、委员会
 ├── notes/                         # 总叙事与写作元数据；按需创建
-│   ├── story.md                   # 中心论点与博士研究主线
+│   ├── story.md                   # 中心论点与学位研究主线
 │   ├── contributions.md           # 贡献 → 证据/论文/章节
 │   ├── publications.md            # 作者贡献、内容复用、许可与重叠
 │   ├── outline.md                 # 章节提纲
@@ -71,8 +71,8 @@ STORY/
 ## 快速开始
 
 ```bash
-git clone https://github.com/wanghao9610/STORY.git my-dissertation
-cd my-dissertation
+git clone https://github.com/wanghao9610/STORY.git my-thesis
+cd my-thesis
 cp .env.example .env
 bash execs/run.sh
 bash execs/scpts/lint.sh
@@ -111,7 +111,14 @@ bash execs/update.sh --harnesses codex,cursor --skill story-flow-status
 bash execs/update.sh --harnesses none --diff
 ```
 
-仅根据学校或培养项目的正式材料填写 `degree/profile.tex` 与 `degree/requirements.md`。已有草稿时运行 `$story-proj-adopt`；从零开始时先运行 `$story-syns-coach`，再运行 `$story-outl-planner`。
+仅根据学校或培养项目的正式材料填写 `degree/profile.tex` 与 `degree/requirements.md`，并在档案中设置唯一的规范模式：
+
+```tex
+% degree_level: master
+% 或：degree_level: doctoral
+```
+
+学位层级特意不放在 `.env`：它是持久的学校事实。缺失值保持为 `unknown`；非法值以及与所选层级冲突的题名/学位措辞会使 lint 失败。已有草稿时运行 `$story-proj-adopt`；从零开始时先运行 `$story-syns-coach`，再运行 `$story-outl-planner`。
 
 新克隆有意只保留 `notes/.gitkeep` 和 `notes/refs/.gitkeep`。
 上方逻辑结构中列出的 `notes/` 文件会在首次使用时由负责它们的工作流 skill 创建；`story-flow-status` 会把缺失文件报告为尚未初始化的阶段。
@@ -143,14 +150,14 @@ bash execs/scpts/import.sh --diff --source ../my-star-project --slug project-a
 
 1. `$story-proj-adopt`：盘点并安全接入已有学位论文。
 2. `$story-evid-curator`：导入、登记和审计证据。
-3. `$story-syns-coach`：确立博士论文主线、中心论点与贡献。
+3. `$story-syns-coach`：确立适合学位层级的研究主线、中心论点与贡献。
 4. `$story-outl-planner`：建立跨章节连贯的整体结构。
 5. `$story-chap-drafter`：依据章节简报和证据逐章写作。
 6. `$story-tabs-builder`、`$story-figs-designer`：制作可追溯的表格和图。
 7. `$story-refs-curator`：维护可核验的文献记录与阅读笔记。
 8. `$story-copy-editor`：统一术语、声音和跨章节衔接。
 9. `$story-clms-auditor`、`$story-cite-auditor`：审计数字、论断与引用。
-10. `$story-exam-reviewer`：模拟外审专家或答辩委员会审查。
+10. `$story-exam-reviewer`：模拟适合学位层级的外审专家或答辩委员会审查。
 11. `$story-revs-resolver`：保留原始反馈并逐点跟踪处理结果。
 12. `$story-defn-builder`：准备和检查答辩演示文稿。
 13. `$story-depo-packer`：检查、打包并冻结最终归档版本。
