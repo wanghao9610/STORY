@@ -20,13 +20,14 @@ STORY 可以同时接入多个 STAR 研究仓库、多个 STAGE 论文仓库和�
 
 ## STORY 提供什么
 
-- 一套开箱可编译、基于 `book` 的通用学位论文模板，前置部分、章节、附录、图、表和参考文献各归其位。
+- 开箱可编译的英文与简体中文通用学位论文模板，前置部分、章节、附录、图、表和参考文献各归其位。
 - `mates/` 下带指纹的只读证据层，支持多研究项目与多论文来源。
 - `notes/` 下的总叙事、贡献映射、发表与复用映射、提纲、符号表及论断记录表。
 - `degree/` 下由用户确认的学校要求和委员会记录。
 - 面向开题、年度考核、预答辩、答辩、修改与归档的持久化里程碑记录。
 - `execs/` 下统一的构建、格式化、证据导入与机械检查入口。
-- 分别供 Codex、Claude Code、Cursor 和 Kimi Code 使用的十六个博士论文工作流 skill。
+- 供 Codex、Claude Code、Cursor、DeepSeek Harness、Kimi Code、Pi 和 Qwen Code 使用的十六个博士论文工作流 skill。
+- 成对维护的英文与简体中文 Markdown 文档、工作流指令和 harness 入口。
 - `.story/memory/` 下属于项目自己的跨会话记忆。
 
 ## 仓库结构
@@ -35,6 +36,7 @@ STORY 可以同时接入多个 STAR 研究仓库、多个 STAGE 论文仓库和�
 STORY/
 ├── manus/                         # 学位论文源文件
 │   ├── main.tex
+│   ├── main-zh.tex                 # 可直接构建的简体中文起始模板
 │   ├── fronts/                    # 摘要、致谢、声明等前置部分
 │   ├── chaps/                     # <n>_<slug>.tex 章节
 │   ├── backs/                     # 附录等后置部分
@@ -58,7 +60,10 @@ STORY/
 ├── wkdrs/                         # 构建产物和临时报告，git 忽略
 ├── execs/                         # 构建/更新入口与工具脚本
 ├── docs/mds/story-workflow/       # 工作流规范与 skill 指南
-└── .agents/.claude/.cursor/.kimi-code
+├── .agents/skills/                # 中立的共用 skill 源
+├── .agents/commands/              # 共用的 /story 分流名册
+├── .codex/skills/                 # Codex 专属的逐 skill manifest
+└── .claude/.cursor/.dsh/.kimi-code/.pi/.qwen  # 各宿主拥有的入口树
 ```
 
 ## 快速开始
@@ -71,7 +76,46 @@ bash execs/run.sh
 bash execs/scpts/lint.sh
 ```
 
+## Agent harness
+
+所有 harness 树共用同一份事实源。与工具无关的 skill 文件只保存在 `.agents/skills/`；六棵私有入口树中逐字相同的文件通过相对软链接指向它。完整的 `/story` 路由器只在 `.agents/commands/` 编写一次；Claude、Cursor、Pi 和 Qwen 仅暴露把请求传给它的薄包装。Codex 专属的 `openai.yaml` manifest 位于 `.codex/skills/`，再链接回 Codex 会发现的路径。只有 harness 专属的 frontmatter、命令语法、prompt、hook 和设置保留在各自目录中。
+
+| Harness | Skill 入口 | 项目设置 |
+| --- | --- | --- |
+| Codex | `.agents/skills/` 下的 `$story-*` | 用 `/hooks` 批准 `.codex/hooks.json` |
+| Claude Code | `.claude/skills/` 下的 `/story-*` | 自动加载 `.claude/settings.json` |
+| Cursor | `.cursor/skills/` 下的 `/story-*` | 自动加载 `.cursor/hooks.json` 与 rules |
+| DeepSeek Harness | `.dsh/skills/` 下的 `/skill:story-*` | 每台机器运行一次 `bash .dsh/hooks/install.sh` |
+| Kimi Code | `.kimi-code/skills/` 下的 `/skill:story-*` | 每台机器运行一次 `bash .kimi-code/hooks/install.sh` |
+| Pi | 由 `.pi/skills/` 支持的 `/story-*` prompt | 信任项目后才会加载 `.pi/extensions/` |
+| Qwen Code | `.qwen/skills/` 下的 `/story-*` | 自动加载 `.qwen/settings.json` |
+
+Claude、Cursor、Pi 和 Qwen 可用 `/story` 把描述出来的请求准确路由到一个工作流 skill；空请求选择 `story-flow-status`。匹配明确时，路由器可以启动未标记的 skill；对于 † skill，它只返回准确的显式命令并等待确认。维护者在 `.agents/skills/` 修改中立内容，在 `.agents/commands/` 修改共享路由器，然后运行 `bash .github/scripts/port.sh --write`；CI 会同时检查生成的 guard、共用链接、路由名册与薄包装。`execs/update.sh` 安装到其他项目时会展开 skill 链接，因此单独使用任一 harness 仍然是自包含的。
+
+`execs/update.sh` 默认更新全部 harness。在 `.env` 中设置 `STORY_HARNESSES=claude,pi`，或者为单次运行传入 `--harnesses claude,pi`，即可只处理这些私有目录。`all` 选择全部 harness，`none` 只选择共用骨架。未选中的目录既不会安装，也不会更新；`.agents/skills/`、`.agents/commands/`、工作流文档、脚本和 `AGENTS.md` 属于共用范围，始终更新。同一选择也适用于 `--adopt`，并把 `--skill` 限定为共用 skill 及选中的私有副本。
+
+```bash
+bash execs/update.sh --harnesses claude
+bash execs/update.sh --harnesses codex,cursor --skill story-flow-status
+bash execs/update.sh --harnesses none --diff
+```
+
 仅根据学校或培养项目的正式材料填写 `degree/profile.tex` 与 `degree/requirements.md`。已有草稿时运行 `$story-proj-adopt`；从零开始时先运行 `$story-syns-coach`，再运行 `$story-outl-planner`。
+
+### 简体中文论文模板
+
+共用的 `story.cls` 默认使用英文；增加 `zh` 类选项后，会启用中文标题页标签、章节与前置部分名称、交叉引用名称、摘要关键词以及 CTeX 中文排版。仓库提供了可直接构建的中文起始模板：
+
+```bash
+# .env
+STORY_MAIN=manus/main-zh.tex
+LATEX_ENGINE=
+
+bash execs/run.sh
+bash execs/scpts/lint.sh
+```
+
+`STORY_MAIN` 选择默认入口，单次命令中的 `--main` 优先于它；相对路径从仓库根目录解析。当 `LATEX_ENGINE` 留空时，`main-zh.tex` 会自动选择 XeLaTeX。`degree/profile.tex` 中的封面字段采用 `\storylocalized{English}{中文}`，两个入口会自动选择匹配的元数据。正式采用中文前，须先确认学校对论文语言的要求，并将 `degree/profile.tex` 中的 `dissertation_language` 改为 `zh`。模板只负责本地化结构，不会自动翻译已有内容，也不会虚构学位信息。
 
 每个研究或论文仓库分别导入：
 
@@ -111,7 +155,7 @@ bash execs/scpts/import.sh --diff --source ../my-star-project --slug project-a
 ## 环境要求
 
 - Bash 3.2+
-- 带 `latexmk` 的较完整 TeX Live
+- 带 `latexmk` 的较完整 TeX Live；中文模板还需要 CTeX 和 XeLaTeX 或 LuaLaTeX
 - `pdfinfo` 用于页数统计，`texcount` 可选用于字数统计
 
 ## 许可证
