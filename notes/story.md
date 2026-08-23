@@ -6,6 +6,8 @@ updated: ""
 
 # Dissertation story
 
+**Language:** English | [简体中文](story.zh-CN.md)
+
 ## One-sentence thesis
 
 ## Doctoral problem

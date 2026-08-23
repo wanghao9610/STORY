@@ -1,5 +1,7 @@
 # Dissertation style profile
 
+**Language:** English | [简体中文](style.zh-CN.md)
+
 - Manuscript language: from `degree/profile.tex`
 - Voice:
 - Terminology rules:

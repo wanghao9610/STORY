@@ -1,5 +1,7 @@
 # Committee
 
+**Language:** English | [简体中文](committee.zh-CN.md)
+
 | Role | Name | Affiliation | Confirmed | Notes |
 | --- | --- | --- | --- | --- |
 | Advisor |  |  | no |  |

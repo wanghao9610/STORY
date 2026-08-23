@@ -4,7 +4,7 @@ set -euo pipefail
 EXEC_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 ROOT_DIR="$(cd -- "${EXEC_DIR}/.." && pwd -P)"
 ENV_FILE="${ROOT_DIR}/.env"
-MAIN_TEX="${ROOT_DIR}/manus/main.tex"
+MAIN_TEX=""
 BUILD_DIR=""
 
 log() { printf '[STORY run] %s\n' "$*"; }
@@ -14,8 +14,10 @@ usage() {
     printf '%s\n' \
         'Usage: bash execs/run.sh [--main FILE.tex] [--outdir DIR] [latexmk args...]' \
         '' \
-        'Builds manus/main.tex out-of-tree in wkdrs/builds/. LATEX_ENGINE may be' \
-        'pdflatex, xelatex, or lualatex; the default is pdflatex.'
+        'Builds the entry point selected by --main, STORY_MAIN, or manus/main.tex' \
+        'out-of-tree in wkdrs/builds/. LATEX_ENGINE may be' \
+        'pdflatex, xelatex, or lualatex. If it is unset, a % !TeX program line' \
+        'in the entry point is honored before falling back to pdflatex.'
 }
 
 while (( $# > 0 )); do
@@ -41,7 +43,19 @@ env_value() {
     printf '%s' "${val}"
 }
 
+if [[ -z "${MAIN_TEX}" ]]; then
+    MAIN_TEX="${STORY_MAIN:-$(env_value STORY_MAIN)}"
+    MAIN_TEX="${MAIN_TEX:-manus/main.tex}"
+    [[ "${MAIN_TEX}" == /* ]] || MAIN_TEX="${ROOT_DIR}/${MAIN_TEX}"
+fi
+[[ -f "${MAIN_TEX}" ]] || fail "Entry point not found: ${MAIN_TEX}"
+
 LATEX_ENGINE="${LATEX_ENGINE:-$(env_value LATEX_ENGINE)}"
+if [[ -z "${LATEX_ENGINE}" ]]; then
+    LATEX_ENGINE="$(sed -nE \
+        '1,20{s/^[[:space:]]*%[[:space:]]*![Tt][Ee][Xx][[:space:]]+program[[:space:]]*=[[:space:]]*(pdflatex|xelatex|lualatex)[[:space:]]*$/\1/p;}' \
+        "${MAIN_TEX}" | head -1)"
+fi
 LATEX_ENGINE="${LATEX_ENGINE:-pdflatex}"
 case "${LATEX_ENGINE}" in
     pdflatex) ENGINE_FLAG='-pdf' ;;
@@ -51,7 +65,6 @@ case "${LATEX_ENGINE}" in
 esac
 
 command -v latexmk >/dev/null 2>&1 || fail 'latexmk not found; install TeX Live or MacTeX.'
-[[ -f "${MAIN_TEX}" ]] || fail "Entry point not found: ${MAIN_TEX}"
 
 MAIN_DIR="$(cd -- "$(dirname -- "${MAIN_TEX}")" && pwd -P)"
 MAIN_BASE="$(basename -- "${MAIN_TEX}" .tex)"
@@ -66,7 +79,7 @@ mkdir -p "${BUILD_DIR}"
 
 export TEXINPUTS="${MAIN_DIR}/stys:${TEXINPUTS:-}"
 export BSTINPUTS="${MAIN_DIR}/stys:${BSTINPUTS:-}"
-log "Engine: ${LATEX_ENGINE}; output: ${BUILD_DIR}"
+log "Main: ${MAIN_TEX}; engine: ${LATEX_ENGINE}; output: ${BUILD_DIR}"
 
 if ! latexmk "${ENGINE_FLAG}" -interaction=nonstopmode -halt-on-error -cd \
         -outdir="${BUILD_DIR}" ${1+"$@"} "${MAIN_TEX}"; then

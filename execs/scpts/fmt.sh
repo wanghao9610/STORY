@@ -39,9 +39,9 @@ Usage: bash execs/scpts/fmt.sh [--check] [PATH ...]
 Reformat the manuscript's LaTeX to one sentence per line — latexindent's
 oneSentencePerLine, configured by .latexindent.yaml at the repository root.
 
-With no PATH, the manuscript's own sources: manus/main.tex, manus/fronts/,
-manus/chaps/, manus/backs/, and manus/tabs/. A PATH may be a file or a
-directory; directories are searched for *.tex.
+With no PATH, the manuscript's own sources: manus/main.tex, the Chinese starter
+manus/main-zh.tex, manus/fronts/, manus/chaps/, manus/backs/, and manus/tabs/.
+A PATH may be a file or a directory; directories are searched for *.tex.
 
 Two trees are never formatted, named or not: manus/stys/ and an official
 institutional template under milestones/*/template/. Those are reusable or
@@ -126,7 +126,7 @@ expand_target() {
 # ---- the file list ----------------------------------------------------------
 FILES=""
 if [[ -z "${TARGETS}" ]]; then
-    for t in "manus/main.tex" "manus/fronts" "manus/chaps" "manus/backs" "manus/tabs"; do
+    for t in "manus/main.tex" "manus/main-zh.tex" "manus/fronts" "manus/chaps" "manus/backs" "manus/tabs"; do
         FILES="${FILES}$(expand_target "${t}")
 "
     done

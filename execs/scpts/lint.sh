@@ -3,9 +3,9 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 ROOT_DIR="$(cd -- "${SCRIPT_DIR}/../.." && pwd -P)"
+ENV_FILE="${ROOT_DIR}/.env"
 BUILD_DIR="${ROOT_DIR}/wkdrs/builds"
-LOG_FILE="${BUILD_DIR}/main.log"
-PDF_FILE="${BUILD_DIR}/main.pdf"
+MAIN_TEX=""
 NO_BUILD=false
 HARD=0
 WARNS=0
@@ -17,19 +17,48 @@ warn() { printf '[STORY lint] WARN: %s\n' "$*"; WARNS=$((WARNS + 1)); }
 while (( $# > 0 )); do
     case "$1" in
         --no-build) NO_BUILD=true ;;
+        --main)
+            (( $# >= 2 )) || { printf '[STORY lint] ERROR: --main requires a .tex path.\n' >&2; exit 2; }
+            MAIN_TEX="$2"
+            [[ "${MAIN_TEX}" == /* ]] || MAIN_TEX="${PWD}/${MAIN_TEX}"
+            shift
+            ;;
         -h|--help)
-            printf '%s\n' 'Usage: bash execs/scpts/lint.sh [--no-build]'
+            printf '%s\n' \
+                'Usage: bash execs/scpts/lint.sh [--main FILE.tex] [--no-build]' \
+                '' \
+                'Checks the entry point selected by --main, STORY_MAIN, or manus/main.tex.'
             exit 0 ;;
         *) printf '[STORY lint] ERROR: unknown argument %s\n' "$1" >&2; exit 2 ;;
     esac
     shift
 done
 
+env_value() {
+    local key="$1" val
+    [[ -f "${ENV_FILE}" ]] || return 0
+    val="$(sed -n "s/^[[:space:]]*${key}=//p" "${ENV_FILE}" | tail -1)"
+    val="${val%$'\r'}"; val="${val%\"}"; val="${val#\"}"; val="${val%\'}"; val="${val#\'}"
+    printf '%s' "${val}"
+}
+
+if [[ -z "${MAIN_TEX}" ]]; then
+    MAIN_TEX="${STORY_MAIN:-$(env_value STORY_MAIN)}"
+    MAIN_TEX="${MAIN_TEX:-manus/main.tex}"
+    [[ "${MAIN_TEX}" == /* ]] || MAIN_TEX="${ROOT_DIR}/${MAIN_TEX}"
+fi
+
 cd "${ROOT_DIR}"
+[[ -f "${MAIN_TEX}" ]] || { printf '[STORY lint] ERROR: entry point not found: %s\n' "${MAIN_TEX}" >&2; exit 2; }
+MAIN_BASE="$(basename -- "${MAIN_TEX}" .tex)"
+MAIN_DIR="$(cd -- "$(dirname -- "${MAIN_TEX}")" && pwd -P)"
+LOG_FILE="${BUILD_DIR}/${MAIN_BASE}.log"
+PDF_FILE="${BUILD_DIR}/${MAIN_BASE}.pdf"
+log "Entry point: ${MAIN_TEX}."
 if [[ "${NO_BUILD}" == false ]]; then
-    bash execs/run.sh
+    bash execs/run.sh --main "${MAIN_TEX}"
 elif [[ ! -f "${LOG_FILE}" || ! -f "${PDF_FILE}" ]]; then
-    hard '--no-build requested but wkdrs/builds/main.log or main.pdf is absent.'
+    hard "--no-build requested but wkdrs/builds/${MAIN_BASE}.log or ${MAIN_BASE}.pdf is absent."
 fi
 
 if [[ -f "${LOG_FILE}" ]]; then
@@ -84,7 +113,7 @@ if ! bash execs/scpts/fmt.sh --check >/dev/null 2>&1; then
 fi
 
 if command -v texcount >/dev/null 2>&1; then
-    WORDS="$(cd manus && TEXINPUTS="$(pwd -P)/stys:${TEXINPUTS:-}" texcount -inc -sum -1 main.tex 2>/dev/null | tail -1 || true)"
+    WORDS="$(cd "${MAIN_DIR}" && TEXINPUTS="${ROOT_DIR}/manus/stys:${TEXINPUTS:-}" texcount -inc -sum -1 "$(basename -- "${MAIN_TEX}")" 2>/dev/null | tail -1 || true)"
     [[ "${WORDS}" =~ ^[0-9]+$ ]] && log "Approximate words: ${WORDS}."
 fi
 

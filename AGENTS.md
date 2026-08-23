@@ -1,5 +1,7 @@
 # STORY Agent Instructions
 
+**Language:** English | [简体中文](AGENTS.zh-CN.md)
+
 This repository uses STORY — **Systematic Toolchain for Organizing Research over Years** — to turn a body of doctoral research into a coherent, defensible, and deposit-ready dissertation.
 
 ## 1. Scope and authority
@@ -50,6 +52,7 @@ This repository uses STORY — **Systematic Toolchain for Organizing Research ov
 - Run deterministic checks with `bash execs/scpts/lint.sh`.
 - Use `bash execs/scpts/fmt.sh` to preserve one sentence per line without changing typeset text.
 - Runtime configuration comes from `.env`, copied from `.env.example`; do not hardcode machine paths.
+- `.env` `STORY_MAIN` selects the default manuscript entry point for both build and lint; `--main` overrides it for one command.
 - Use the actual system date whenever a dated artifact is created.
 
 ## 7. Workflow
@@ -63,6 +66,7 @@ This repository uses STORY — **Systematic Toolchain for Organizing Research ov
 ## 8. Language and project memory
 
 - `.env` `STORY_LANG=en|zh` controls replies and newly written Markdown; unset follows the conversation. It does not silently translate existing files.
+- Keep every English Markdown file paired with a Simplified Chinese counterpart: use `*.zh-CN.md` for ordinary documents and `SKILL_zh.md` for skill instructions. Because `mates/` is read-only, the counterpart of `mates/MANIFEST.md` lives at `docs/mds/story-workflow/mates-MANIFEST.zh-CN.md`.
 - `degree/profile.tex` controls the manuscript language.
 - Store session knowledge in `.story/memory/` only when no repository file already owns it. Machine-local facts go under `.story/memory/local/`.
 - Memory is never evidence and cannot override `degree/`, `mates/`, `notes/`, or `milestones/`.

@@ -1,5 +1,7 @@
 # Dissertation outline
 
+**Language:** English | [简体中文](outline.zh-CN.md)
+
 | Chapter | File | Purpose | Contributions | Claims | Status |
 | --- | --- | --- | --- | --- | --- |
 | 1 | `1_introduction` | Establish the thesis-level problem and argument |  |  | scaffolded |

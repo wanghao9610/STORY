@@ -1,0 +1,43 @@
+% !TeX program = xelatex
+% !LW recipe = XeLaTeX
+%% STORY 中文学位论文入口。
+%% 配置：在 .env 中设置 STORY_MAIN=manus/main-zh.tex。
+%% 构建：bash execs/run.sh
+%% 检查：将本文件确认为正式入口后，再同步替换 manus/main.tex。
+\documentclass[oneside,zh]{stys/story}
+\usepackage{stys/story}
+
+%% 学位与标题页元数据仍以 degree/profile.tex 为唯一事实源。
+%% 切换正式论文语言前，须先确认学校要求并同步 dissertation_language。
+\input{../degree/profile}
+
+%% 全文统一使用的符号命令写在这里，并同步登记到 notes/notation.md。
+% \newcommand{\method}{方法名称\xspace}
+
+\begin{document}
+
+\hypersetup{pageanchor=false}
+\maketitle
+\hypersetup{pageanchor=true}
+\frontmatter
+\input{fronts/abstract-zh}
+% \input{fronts/acknowledgements-zh}
+% \input{fronts/declaration-zh}
+\tableofcontents
+%% 论文包含图或表后再取消相应注释。
+% \listoffigures
+% \listoftables
+
+\mainmatter
+%% 按 notes/outline.md 的顺序加载已确认的章节。
+% \input{chaps/1_introduction}
+
+\appendix
+\input{backs/a_supporting_material_zh}
+
+\backmatter
+%% manus/bibs/reference.bib 至少包含一条记录后再取消注释。
+% \bibliographystyle{story}
+% \bibliography{bibs/reference}
+
+\end{document}

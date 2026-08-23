@@ -1,5 +1,7 @@
 # Degree and deposit requirements
 
+**Language:** English | [简体中文](requirements.zh-CN.md)
+
 Record each item from an official, author-confirmed source. Keep the source URL or supplied file path beside the requirement.
 
 - [ ] Title-page wording confirmed — source:

@@ -1,5 +1,7 @@
 # Degree milestones
 
+**Language:** English | [简体中文](README.zh-CN.md)
+
 Create one directory per durable review or submission event, for example:
 
 ```text

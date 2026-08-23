@@ -1,5 +1,7 @@
 # Project Memory — index
 
+**Language:** English | [简体中文](MEMORY.zh-CN.md)
+
 One line per durable project memory, newest first:
 
 ```text

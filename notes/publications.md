@@ -1,5 +1,7 @@
 # Publication and reuse map
 
+**Language:** English | [简体中文](publications.zh-CN.md)
+
 | ID | Citation / artifact | Authors | Candidate chapters | Reused material | Permission / policy | Author contribution | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 
