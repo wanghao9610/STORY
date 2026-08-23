@@ -1,0 +1,6 @@
+interface:
+  display_name: "STORY"
+  short_description: "Route a request to one STORY dissertation workflow"
+  default_prompt: "Use $story to choose and run the right STORY dissertation workflow."
+policy:
+  allow_implicit_invocation: false

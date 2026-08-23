@@ -139,6 +139,43 @@ for router in "${ROUTER}" "${ROUTER_ZH}"; do
 done
 (( policy_errors == 0 )) && ok "conventions and shared /story router list all $(printf '%s\n' "${BASE}" | wc -l | tr -d ' ') skills en/zh; $(printf '%s\n' "${SLASH_ONLY}" | wc -l | tr -d ' ') explicit-only skills are guarded in every harness"
 
+# Codex gets the generic router through one plugin owned entirely by .codex.
+# .agents exposes only the marketplace file the host discovers; linking the
+# directory would leak every Codex-private plugin into a shared namespace.
+section 'Codex STORY plugin layout'
+plugin_errors=0
+MARKETPLACE=".codex/plugins/marketplace.json"
+PLUGIN_ROOT=".codex/plugins/story"
+DISCOVERY=".agents/plugins/marketplace.json"
+if [[ ! -L "${DISCOVERY}" ]]; then
+    fail "${DISCOVERY} is not a file symlink"
+    plugin_errors=1
+elif [[ "$(readlink "${DISCOVERY}")" != "../../.codex/plugins/marketplace.json" ]]; then
+    fail "${DISCOVERY} does not point to ../../.codex/plugins/marketplace.json"
+    plugin_errors=1
+elif ! cmp -s "${DISCOVERY}" "${MARKETPLACE}"; then
+    fail "${DISCOVERY} does not resolve to ${MARKETPLACE}"
+    plugin_errors=1
+fi
+if ! python3 -c 'import json,sys; m=json.load(open(sys.argv[1])); p=json.load(open(sys.argv[2])); e=m["plugins"]; assert m["name"] == "story" and m["interface"]["displayName"] == "STORY" and len(e) == 1 and e[0]["name"] == "story" and e[0]["source"] == {"source": "local", "path": "./.codex/plugins/story"}; assert e[0]["policy"] == {"installation": "AVAILABLE", "authentication": "ON_INSTALL"} and e[0]["category"] == "Productivity"; assert p["name"] == "story" and p["skills"] == "./skills/" and p["interface"]["composerIcon"] == "./assets/icon.png" and p["interface"]["logo"] == "./assets/icon.png"' "${MARKETPLACE}" "${PLUGIN_ROOT}/.codex-plugin/plugin.json"; then
+    fail "Codex STORY plugin or marketplace metadata is invalid"
+    plugin_errors=1
+fi
+for skill_file in "${PLUGIN_ROOT}/skills/story/SKILL.md" "${PLUGIN_ROOT}/skills/story/SKILL_zh.md"; do
+    if [[ ! -f "${skill_file}" ]] || \
+       ! frontmatter_has_line "${skill_file}" "name: story" || \
+       ! grep -qF '.agents/commands/story.md' "${skill_file}"; then
+        fail "${skill_file} is not a wrapper around the shared router"
+        plugin_errors=1
+    fi
+done
+if [[ ! -s "${PLUGIN_ROOT}/assets/icon.png" ]] || \
+   ! grep -qF 'allow_implicit_invocation: false' "${PLUGIN_ROOT}/skills/story/agents/openai.yaml"; then
+    fail "${PLUGIN_ROOT} lacks its icon or explicit-only invocation policy"
+    plugin_errors=1
+fi
+(( plugin_errors == 0 )) && ok 'Codex owns one branded story plugin; .agents exposes only its marketplace file'
+
 section 'Harness entry points, hooks, and configuration'
 harness_errors=0
 for path in \

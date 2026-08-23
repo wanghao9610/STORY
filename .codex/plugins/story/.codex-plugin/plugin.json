@@ -1,0 +1,38 @@
+{
+  "name": "story",
+  "version": "0.1.0",
+  "description": "Route STORY dissertation requests to the project's evidence-bound workflow skills.",
+  "author": {
+    "name": "STORY"
+  },
+  "homepage": "https://github.com/wanghao9610/STORY",
+  "repository": "https://github.com/wanghao9610/STORY",
+  "license": "MIT",
+  "keywords": [
+    "dissertation",
+    "research",
+    "writing",
+    "evidence",
+    "workflow"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "STORY",
+    "shortDescription": "Route a request to one STORY dissertation workflow.",
+    "longDescription": "Adds the $story router for selecting and running one evidence-bound STORY dissertation workflow skill in the current project.",
+    "developerName": "STORY",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/wanghao9610/STORY",
+    "defaultPrompt": [
+      "Use $story to show the current dissertation status.",
+      "Use $story to choose the right workflow for my request."
+    ],
+    "brandColor": "#0A1630",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png"
+  }
+}

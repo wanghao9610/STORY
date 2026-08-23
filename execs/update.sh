@@ -2,10 +2,11 @@
 set -euo pipefail
 
 # execs/update.sh — sync STORY-managed content from the upstream template (the
-# shared skill source, six harness entry trees, all hook trees, docs/mds/story-workflow/,
-# the shared agent instructions, and every script under execs/ — both entrypoints,
-# this one included, and the three utilities in execs/scpts/), or install the
-# STORY skeleton into an existing dissertation repo with --adopt.
+# shared skill source, six harness entry trees, the Codex $story router plugin,
+# all hook trees, docs/mds/story-workflow/, the shared agent instructions, and
+# every script under execs/ — both entrypoints, this one included, and the three
+# utilities in execs/scpts/), or install the STORY skeleton into an existing
+# dissertation repo with --adopt.
 
 STORY_REF="main"
 SKILL_NAME=""
@@ -144,7 +145,8 @@ HOOK_CONFIGS=(
 )
 
 # Harness trees named by --harnesses and STORY_HARNESSES. The neutral .agents
-# root belongs to the shared skeleton, not to Codex, and is updated on every run.
+# root belongs to the shared skeleton, except for the one Codex marketplace
+# discovery file, and is updated on every run.
 ALL_HARNESSES=(claude codex cursor dsh kimi pi qwen)
 
 log() {
@@ -156,11 +158,35 @@ fail() {
     exit 1
 }
 
+# Keep Codex's repo marketplace at the path its host discovers while leaving
+# the canonical file and the plugin itself under .codex. Filesystems that
+# cannot create symlinks get a real copy so the plugin remains usable.
+link_codex_marketplace() {
+    local dst="${ROOT_DIR}/.agents/plugins/marketplace.json"
+    local src="${ROOT_DIR}/.codex/plugins/marketplace.json"
+
+    [[ -f "${src}" ]] || fail "Missing Codex marketplace: .codex/plugins/marketplace.json."
+    mkdir -p "$(dirname -- "${dst}")"
+    if [[ -L "${dst}" ]] && [[ "$(readlink "${dst}")" == "../../.codex/plugins/marketplace.json" ]]; then
+        return 0
+    fi
+    if [[ -e "${dst}" || -L "${dst}" ]]; then
+        rm -f -- "${dst}"
+    fi
+    if ! ln -s "../../.codex/plugins/marketplace.json" "${dst}" 2>/dev/null; then
+        cp -p "${src}" "${dst}"
+        log "NOTE: symlinks are unavailable; installed .agents/plugins/marketplace.json as a real file."
+    fi
+}
+
 # Which harness owns a path. Empty means shared and therefore always selected.
+# Only the marketplace discovery file under .agents is Codex-owned; keeping
+# that exception narrow avoids exposing future Codex-private plugins through a
+# shared directory link.
 path_harness() { # $1 = path relative to the project root
     case "$1" in
+        .agents/plugins/marketplace.json|.codex/*) printf 'codex' ;;
         .agents/*)               printf '' ;;
-        .codex/*)                printf 'codex' ;;
         .claude/*)               printf 'claude' ;;
         .cursor/*|.cursorignore) printf 'cursor' ;;
         .dsh/*)                  printf 'dsh' ;;
@@ -273,10 +299,11 @@ Usage: bash execs/update.sh [ref] [--harnesses LIST] [--skill NAME] [--force]
 Overwrite the STORY-managed content — the shared agent instructions (AGENTS.md
 and the Cursor rule that copies its body), the neutral skill source plus six
 harness entry trees (.agents, .claude, .cursor, .dsh, .kimi-code, .pi, .qwen),
-Codex's per-skill manifests, harness commands/prompts, the session hooks that
-inject project memory and model provenance, docs/mds/story-workflow/, and every script under execs/ — the two
-entrypoints, run.sh and this one, and the three utilities in execs/scpts/:
-import.sh, lint.sh, fmt.sh — with files from upstream.
+Codex's per-skill manifests and $story router plugin, harness commands/prompts,
+the session hooks that inject project memory and model provenance,
+docs/mds/story-workflow/, and every script under execs/ — the two entrypoints,
+run.sh and this one, and the three utilities in execs/scpts/: import.sh,
+lint.sh, fmt.sh — with files from upstream.
 The default ref is main; a branch or tag may be supplied instead. Local edits to
 those paths are replaced, AGENTS.md included; the manuscript, evidence, notes,
 and the memory store under .story/memory/ are never touched. Use --skill to
@@ -290,6 +317,8 @@ only. Without the flag, STORY_HARNESSES is resolved from the environment, then
 .env, then defaults to all. A tree left out is neither installed nor updated.
 Shared paths such as .agents/skills, docs/mds/story-workflow, execs/, and
 AGENTS.md remain in scope for every selection.
+The $story plugin lives under .codex/plugins and its one discovery link under
+.agents/plugins is updated only when codex is selected.
 
 No script under execs/ holds project configuration — everything an instance sets
 lives in .env, which is git-ignored and never synced — so all five are safe to
@@ -466,6 +495,9 @@ if [[ "${ADOPT}" == true ]]; then
     ADOPT_TREES=(
         "${SKILL_ROOTS[@]}"
         "${CODEX_MANIFEST_ROOT}"
+        # Codex owns the repo-local $story router plugin. Its .agents discovery
+        # entry is installed separately as one narrow file link.
+        ".codex/plugins"
         "${HARNESS_ASSET_TREES[@]}"
         "${HOOK_TREES[@]}"
         "${AGENT_RULES_TREE}"
@@ -479,6 +511,7 @@ if [[ "${ADOPT}" == true ]]; then
     )
     ADOPT_FILES=(
         "${AGENT_DOCS[@]}"
+        ".agents/plugins/marketplace.json"
         "${HARNESS_FILES[@]}"
         ".kimi-code/hooks.example.toml"
         ".dsh/cordis.patch.yml"
@@ -575,6 +608,8 @@ else
         "${AGENT_RULES_TREE}"
         "${SKILL_ROOTS[@]}"
         "${CODEX_MANIFEST_ROOT}"
+        ".codex/plugins"
+        ".agents/plugins/marketplace.json"
         "${HARNESS_ASSET_TREES[@]}"
         "${HOOK_TREES[@]}"
         "${DOCS_TREE}"
@@ -585,7 +620,7 @@ else
 
     # Fetch shared paths plus only the selected harness directories. Codex's
     # manifest source is fetched unconditionally so links from .agents resolve;
-    # it is copied only when codex is selected.
+    # its plugin tree is fetched through .codex when codex is selected.
     SPARSE_PATHS=("${DOCS_TREE}" execs .agents "${CODEX_MANIFEST_ROOT}")
     for harness in ${SELECTED_HARNESSES[@]+"${SELECTED_HARNESSES[@]}"}; do
         read -ra harness_roots <<<"$(harness_dirs "${harness}")"
@@ -750,7 +785,14 @@ if [[ "${ADOPT}" == false ]]; then
     # running, so it is filtered out here and renamed into position below.
     TAR_PATHS=()
     for path in "${SYNCED[@]}"; do
-        [[ "${path}" == "${SELF_PATH}" ]] || TAR_PATHS+=("${path}")
+        case "${path}" in
+            "${SELF_PATH}") ;;
+            ".agents/plugins/marketplace.json")
+                # tar -h intentionally dereferences shared skill links, but
+                # this discovery entry must remain one narrow symlink.
+                ;;
+            *) TAR_PATHS+=("${path}") ;;
+        esac
     done
 
     # Materialize upstream symlinks. Downstream projects may update only one
@@ -761,6 +803,10 @@ if [[ "${ADOPT}" == false ]]; then
     fi
     tar -C "${SOURCE_DIR}" "${TAR_CREATE_ARGS[@]}" -f "${ARCHIVE_FILE}" "${TAR_PATHS[@]}"
     tar -C "${ROOT_DIR}" -xf "${ARCHIVE_FILE}"
+
+    if [[ -z "${SKILL_NAME}" ]] && is_selected codex; then
+        link_codex_marketplace
+    fi
 
     # Self-update by rename. `mv` within the same directory is rename(2): the
     # directory entry swings to the new file while the running bash keeps the
@@ -818,6 +864,12 @@ install_file() {
     if [[ -e "${dst}" || -L "${dst}" ]]; then
         printf '  kept    %s (already present)\n' "${rel}"
         skipped=$(( skipped + 1 ))
+        return 0
+    fi
+    if [[ "${rel}" == ".agents/plugins/marketplace.json" ]]; then
+        link_codex_marketplace
+        printf '  added   %s -> %s\n' "${rel}" "../../.codex/plugins/marketplace.json"
+        installed=$(( installed + 1 ))
         return 0
     fi
     mkdir -p "$(dirname -- "${dst}")"
@@ -887,6 +939,9 @@ fi
 report_unregistered_hooks
 
 log "Next: copy .env.example to .env, then run story-proj-adopt in your agent to wire the dissertation up."
+if is_selected codex; then
+    log "      Codex only: run 'codex plugin marketplace add .' then 'codex plugin add story@story', and start a new session."
+fi
 if is_selected dsh; then
     log "      DSH only: 'bash .dsh/hooks/install.sh' registers the DSH hook bridge once per machine."
 fi

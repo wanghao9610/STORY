@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe9a8"/>
+      <stop offset="0.55" stop-color="#ffd86b"/>
+      <stop offset="1" stop-color="#f5a623"/>
+    </linearGradient>
+    <linearGradient id="rail" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7fd4ff"/>
+      <stop offset="0.5" stop-color="#4cc3ff"/>
+      <stop offset="1" stop-color="#8b93ff"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="9" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="halo" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="17"/>
+    </filter>
+    <g id="emblem">
+      <path d="M512 240 Q528 285 574 302 Q528 319 512 364 Q496 319 450 302 Q496 285 512 240 Z"/>
+      <polygon points="512,428 716,500 512,572 308,500"/>
+      <path d="M434 544 Q512 600 590 544 L590 608 Q512 666 434 608 Z"/>
+      <line x1="716" y1="500" x2="716" y2="612" stroke-width="9" stroke-linecap="round"/>
+      <circle cx="716" cy="636" r="16"/>
+    </g>
+  </defs>
+
+  <!-- orbital rails -->
+  <circle cx="512" cy="512" r="400" fill="none" stroke="url(#rail)" stroke-width="9" opacity="0.9" filter="url(#glow)"/>
+  <circle cx="512" cy="512" r="336" fill="none" stroke="#2f7fd0" stroke-width="5" opacity="0.55"/>
+  <!-- satellite dots on the outer rail -->
+  <g fill="#bfe6ff" filter="url(#glow)">
+    <circle cx="795" cy="229" r="9"/>
+    <circle cx="795" cy="795" r="9"/>
+    <circle cx="229" cy="795" r="9"/>
+    <circle cx="229" cy="229" r="9"/>
+  </g>
+
+  <!-- spokes: nodes to center -->
+  <g stroke="rgba(127,212,255,0.4)" stroke-width="5" stroke-linecap="round">
+    <line x1="512" y1="204" x2="512" y2="352"/>
+    <line x1="820" y1="512" x2="728" y2="508"/>
+    <line x1="512" y1="820" x2="512" y2="672"/>
+    <line x1="204" y1="512" x2="296" y2="508"/>
+  </g>
+
+  <!-- center: graduation cap + star (halo behind, crisp on top) -->
+  <use href="#emblem" fill="#ffcf5e" stroke="#ffcf5e" opacity="0.4" filter="url(#halo)"/>
+  <use href="#emblem" fill="url(#gold)" stroke="url(#gold)"/>
+  <path d="M434 544 Q512 600 590 544 L590 608 Q512 666 434 608 Z" fill="#d98f1a" opacity="0.85"/>
+  <circle cx="512" cy="500" r="9" fill="#fff3d0"/>
+
+  <!-- node: north — star (synthesis) -->
+  <g>
+    <circle cx="512" cy="112" r="86" fill="#0a1630" stroke="url(#rail)" stroke-width="7" filter="url(#glow)"/>
+    <path d="M512 74 Q521 103 550 112 Q521 121 512 150 Q503 121 474 112 Q504 103 512 74 Z" fill="#eaf6ff"/>
+  </g>
+  <!-- node: east — document (evidence) -->
+  <g>
+    <circle cx="912" cy="512" r="86" fill="#0a1630" stroke="url(#rail)" stroke-width="7" filter="url(#glow)"/>
+    <g fill="none" stroke="#eaf6ff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="880" y="478" width="64" height="80" rx="9"/>
+      <line x1="892" y1="502" x2="932" y2="502"/>
+      <line x1="892" y1="521" x2="932" y2="521"/>
+      <line x1="892" y1="540" x2="918" y2="540"/>
+    </g>
+  </g>
+  <!-- node: south — check (audit) -->
+  <g>
+    <circle cx="512" cy="912" r="86" fill="#0a1630" stroke="url(#rail)" stroke-width="7" filter="url(#glow)"/>
+    <polyline points="476,912 502,940 552,886" fill="none" stroke="#eaf6ff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <!-- node: west — open book (chapters) -->
+  <g>
+    <circle cx="112" cy="512" r="86" fill="#0a1630" stroke="url(#rail)" stroke-width="7" filter="url(#glow)"/>
+    <g fill="none" stroke="#eaf6ff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M76 490 Q94 480 112 490 Q130 480 148 490 L148 540 Q130 530 112 540 Q94 530 76 540 Z"/>
+      <line x1="112" y1="490" x2="112" y2="540"/>
+    </g>
+  </g>
+</svg>

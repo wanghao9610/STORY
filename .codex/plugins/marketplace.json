@@ -1,0 +1,20 @@
+{
+  "name": "story",
+  "interface": {
+    "displayName": "STORY"
+  },
+  "plugins": [
+    {
+      "name": "story",
+      "source": {
+        "source": "local",
+        "path": "./.codex/plugins/story"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

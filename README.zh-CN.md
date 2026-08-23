@@ -62,7 +62,9 @@ STORY/
 ├── docs/mds/story-workflow/       # 工作流规范与 skill 指南
 ├── .agents/skills/                # 中立的共用 skill 源
 ├── .agents/commands/              # 共用的 /story 分流名册
+├── .agents/plugins/               # Codex marketplace 发现链接
 ├── .codex/skills/                 # Codex 专属的逐 skill manifest
+├── .codex/plugins/                # Codex 的 $story 分流插件与 marketplace
 └── .claude/.cursor/.dsh/.kimi-code/.pi/.qwen  # 各宿主拥有的入口树
 ```
 
@@ -92,7 +94,16 @@ bash execs/scpts/lint.sh
 
 Claude、Cursor、Pi 和 Qwen 可用 `/story` 把描述出来的请求准确路由到一个工作流 skill；空请求选择 `story-flow-status`。匹配明确时，路由器可以启动未标记的 skill；对于 † skill，它只返回准确的显式命令并等待确认。维护者在 `.agents/skills/` 修改中立内容，在 `.agents/commands/` 修改共享路由器，然后运行 `bash .github/scripts/port.sh --write`；CI 会同时检查生成的 guard、共用链接、路由名册与薄包装。`execs/update.sh` 安装到其他项目时会展开 skill 链接，因此单独使用任一 harness 仍然是自包含的。
 
-`execs/update.sh` 默认更新全部 harness。在 `.env` 中设置 `STORY_HARNESSES=claude,pi`，或者为单次运行传入 `--harnesses claude,pi`，即可只处理这些私有目录。`all` 选择全部 harness，`none` 只选择共用骨架。未选中的目录既不会安装，也不会更新；`.agents/skills/`、`.agents/commands/`、工作流文档、脚本和 `AGENTS.md` 属于共用范围，始终更新。同一选择也适用于 `--adopt`，并把 `--skill` 限定为共用 skill 及选中的私有副本。
+Codex 还把共享路由器打包成仓库内的 `story` 插件。在仓库根目录注册并安装一次，然后新开会话：
+
+```bash
+codex plugin marketplace add .
+codex plugin add story@story
+```
+
+不带参数的 `$story` 显示当前论文状态，也可以传入描述，例如 `$story 审查第 3 章的论断`。插件读取的仍是其他 harness `/story` 薄包装共用的 `.agents/commands/story.md` 名册，继续要求六个 † 工作流获得显式确认，不会维护第二份路由表。
+
+`execs/update.sh` 默认更新全部 harness。在 `.env` 中设置 `STORY_HARNESSES=claude,pi`，或者为单次运行传入 `--harnesses claude,pi`，即可只处理这些私有目录。`all` 选择全部 harness，`none` 只选择共用骨架。未选中的目录既不会安装，也不会更新；`.agents/skills/`、`.agents/commands/`、工作流文档、脚本和 `AGENTS.md` 属于共用范围，始终更新。选择 Codex 时，同一次运行还会安装或更新 `.codex/plugins/` 及其唯一的 `.agents/plugins/marketplace.json` 发现链接。同一选择也适用于 `--adopt`，并把 `--skill` 限定为共用 skill 及选中的私有副本。
 
 ```bash
 bash execs/update.sh --harnesses claude

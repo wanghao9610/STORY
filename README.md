@@ -62,7 +62,9 @@ STORY/
 ├── docs/mds/story-workflow/       # Workflow conventions and skill guide
 ├── .agents/skills/                # Neutral shared skill source
 ├── .agents/commands/              # Shared /story routing roster
+├── .agents/plugins/               # Codex marketplace discovery link
 ├── .codex/skills/                 # Codex-owned per-skill manifests
+├── .codex/plugins/                # Codex $story router plugin and marketplace
 └── .claude/.cursor/.dsh/.kimi-code/.pi/.qwen  # Harness-owned entry trees
 ```
 
@@ -92,7 +94,16 @@ The harness trees share one source of truth. Tool-neutral skill files live once 
 
 Use `/story` on Claude, Cursor, Pi, or Qwen to route a described request to exactly one workflow skill; an empty request selects `story-flow-status`. The router may start an unmarked skill when the match is clear, but for a † skill it returns the exact explicit command and waits for confirmation. Maintainers edit neutral content under `.agents/skills/` and the shared router under `.agents/commands/`, then run `bash .github/scripts/port.sh --write`; CI verifies the generated guards, shared links, router roster, and thin wrappers. `execs/update.sh` dereferences skill links when installing into another project, so a selected harness remains self-contained.
 
-`execs/update.sh` updates every harness by default. Set `STORY_HARNESSES=claude,pi` in `.env`, or pass `--harnesses claude,pi` for one run, to touch only those private trees. `all` selects every harness and `none` selects only the shared skeleton. Unselected trees are neither installed nor updated; `.agents/skills/`, `.agents/commands/`, workflow documentation, scripts, and `AGENTS.md` remain shared and always update. The same selection applies to `--adopt` and narrows `--skill` to the shared skill plus the selected private copies.
+Codex also packages the shared router as the repo-local `story` plugin. Register and install it once from the repository root, then start a new session:
+
+```bash
+codex plugin marketplace add .
+codex plugin add story@story
+```
+
+Use `$story` with no argument for the current dissertation status, or pass a request such as `$story audit the claims in chapter 3`. The plugin reads the same `.agents/commands/story.md` roster as the other harnesses' `/story` wrappers, preserves explicit confirmation for the six † workflows, and adds no second routing table.
+
+`execs/update.sh` updates every harness by default. Set `STORY_HARNESSES=claude,pi` in `.env`, or pass `--harnesses claude,pi` for one run, to touch only those private trees. `all` selects every harness and `none` selects only the shared skeleton. Unselected trees are neither installed nor updated; `.agents/skills/`, `.agents/commands/`, workflow documentation, scripts, and `AGENTS.md` remain shared and always update. When Codex is selected, the same run installs or updates `.codex/plugins/` and its single `.agents/plugins/marketplace.json` discovery link. The same selection applies to `--adopt` and narrows `--skill` to the shared skill plus the selected private copies.
 
 ```bash
 bash execs/update.sh --harnesses claude
