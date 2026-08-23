@@ -71,4 +71,5 @@ This repository uses STORY — **Systematic Toolchain for Organizing Research ov
 - Keep every English Markdown file paired with a Simplified Chinese counterpart: use `*.zh-CN.md` for ordinary documents and `SKILL_zh.md` for skill instructions. Because `mates/` is read-only, the counterpart of `mates/MANIFEST.md` lives at `docs/mds/story-workflow/mates-MANIFEST.zh-CN.md`.
 - `degree/profile.tex` controls the manuscript language.
 - Store session knowledge in `.story/memory/` only when no repository file already owns it. Machine-local facts go under `.story/memory/local/`.
+- Offer, never assume: make at most two memory offers per session and write only after the author agrees. `INVOLVE=low` records without asking and says so.
 - Memory is never evidence and cannot override `degree/`, `mates/`, `notes/`, or `milestones/`.

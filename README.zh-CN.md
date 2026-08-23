@@ -65,6 +65,8 @@ STORY/
 ├── .agents/plugins/               # Codex marketplace 发现链接
 ├── .codex/skills/                 # Codex 专属的逐 skill manifest
 ├── .codex/plugins/                # Codex 的 $story 分流插件与 marketplace
+├── .dsh/commands/                 # DSH 的 /story 命令 bundle
+├── .kimi-code/plugins/            # Kimi 的 /story 插件与 marketplace
 └── .claude/.cursor/.dsh/.kimi-code/.pi/.qwen  # 各宿主拥有的入口树
 ```
 
@@ -78,23 +80,36 @@ bash execs/run.sh
 bash execs/scpts/lint.sh
 ```
 
+本地 `.env` 已被 Git 忽略。`INVOLVE=low|medium|high` 控制工作流在裁量题前询问的频率，但绝不会绕过学校事实、作者贡献、删除、覆盖或最终冻结的确认。`STORY_LANG=en|zh` 控制回复与新写入 Markdown 的语言；留空时跟随对话，改变它也不会翻译已有文件。手稿语言仍以 `degree/profile.tex` 中的持久取值为准。`STORY_HARNESSES` 决定 `execs/update.sh` 安装并持续维护哪些宿主目录。
+
+### 或者：接入一个已经存在的学位论文仓库
+
+如果学位论文草稿已经开工，就把 STORY 骨架装进现有仓库，而不是把草稿搬进一份全新检出。在那个仓库的根目录运行：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/wanghao9610/STORY/main/execs/update.sh -o /tmp/story-update.sh
+bash /tmp/story-update.sh --adopt
+```
+
+已有内容一律不覆盖：接入只复制缺失文件，并报告每个保留的路径。加上 `--harnesses claude`——或从 `claude`、`codex`、`cursor`、`dsh`、`kimi`、`pi`、`qwen` 中任选多个并用逗号分隔——即可只安装你使用的宿主。随后运行 `$story-proj-adopt`，盘点草稿，确认学位档案与学校要求，并把已有章节、证据、里程碑和未完成工作映射进 STORY 布局。
+
 ## Agent harness
 
-所有 harness 树共用同一份事实源。与工具无关的 skill 文件只保存在 `.agents/skills/`；六棵私有入口树中逐字相同的文件通过相对软链接指向它。完整的 `/story` 路由器只在 `.agents/commands/` 编写一次；Claude、Cursor、Pi 和 Qwen 仅暴露把请求传给它的薄包装。Codex 专属的 `openai.yaml` manifest 位于 `.codex/skills/`，再链接回 Codex 会发现的路径。只有 harness 专属的 frontmatter、命令语法、prompt、hook 和设置保留在各自目录中。
+所有 harness 树共用同一份事实源。与工具无关的 skill 文件只保存在 `.agents/skills/`；六棵私有入口树中逐字相同的文件通过相对软链接指向它。完整的 `/story` 路由器只在 `.agents/commands/` 编写一次：Claude、Cursor、Pi 和 Qwen 暴露文件薄包装，Kimi 打包一个只能显式调用的 skill 包装，DSH 则注册一个零依赖命令适配器。Codex 专属的 `openai.yaml` manifest 位于 `.codex/skills/`，再链接回 Codex 会发现的路径。只有 harness 专属的 frontmatter、命令语法、prompt、hook 和设置保留在各自目录中。
 
 | Harness | Skill 入口 | 项目设置 |
 | --- | --- | --- |
 | Codex | `.agents/skills/` 下的 `$story-*` | 用 `/hooks` 批准 `.codex/hooks.json` |
 | Claude Code | `.claude/skills/` 下的 `/story-*` | 自动加载 `.claude/settings.json` |
 | Cursor | `.cursor/skills/` 下的 `/story-*` | 自动加载 `.cursor/hooks.json` 与 rules |
-| DeepSeek Harness | `.dsh/skills/` 下的 `/skill:story-*` | 每台机器运行一次 `bash .dsh/hooks/install.sh` |
-| Kimi Code | `.kimi-code/skills/` 下的 `/skill:story-*` | 每台机器运行一次 `bash .kimi-code/hooks/install.sh` |
+| DeepSeek Harness | `.dsh/skills/` 下的 `/skill:story-*`；`.dsh/commands/` 提供 `/story` | 为各 profile 安装命令 bundle；每台机器运行一次 `bash .dsh/hooks/install.sh` |
+| Kimi Code | `.kimi-code/skills/` 下的 `/skill:story-*`；`.kimi-code/plugins/` 提供 `/story` | 安装本地插件；每台机器运行一次 `bash .kimi-code/hooks/install.sh` |
 | Pi | 由 `.pi/skills/` 支持的 `/story-*` prompt | 信任项目后才会加载 `.pi/extensions/` |
 | Qwen Code | `.qwen/skills/` 下的 `/story-*` | 自动加载 `.qwen/settings.json` |
 
-Claude、Cursor、Pi 和 Qwen 可用 `/story` 把描述出来的请求准确路由到一个工作流 skill；空请求选择 `story-flow-status`。匹配明确时，路由器可以启动未标记的 skill；对于 † skill，它只返回准确的显式命令并等待确认。维护者在 `.agents/skills/` 修改中立内容，在 `.agents/commands/` 修改共享路由器，然后运行 `bash .github/scripts/port.sh --write`；CI 会同时检查生成的 guard、共用链接、路由名册与薄包装。`execs/update.sh` 安装到其他项目时会展开 skill 链接，因此单独使用任一 harness 仍然是自包含的。
+Claude Code、Cursor、Pi 与 Qwen Code 直接从项目文件提供 `/story [你想做什么]`。命令把请求交给 `.agents/commands/story.md`；空请求选择 `story-flow-status`，匹配到六个只能显式调用的 skill 之一时，则返回准确的 `/story-<name> <argument>` 命令并等待。
 
-Codex 还把共享路由器打包成仓库内的 `story` 插件。在仓库根目录注册并安装一次，然后新开会话：
+Codex 把共享分流器打包成仓库内的 `story` 插件。在仓库根目录注册并安装一次，然后新开会话：
 
 ```bash
 codex plugin marketplace add .
@@ -103,13 +118,25 @@ codex plugin add story@story
 
 不带参数的 `$story` 显示当前论文状态，也可以传入描述，例如 `$story 审查第 3 章的论断`。插件读取的仍是其他 harness `/story` 薄包装共用的 `.agents/commands/story.md` 名册，继续要求六个 † 工作流获得显式确认，不会维护第二份路由表。
 
-`execs/update.sh` 默认更新全部 harness。在 `.env` 中设置 `STORY_HARNESSES=claude,pi`，或者为单次运行传入 `--harnesses claude,pi`，即可只处理这些私有目录。`all` 选择全部 harness，`none` 只选择共用骨架。未选中的目录既不会安装，也不会更新；`.agents/skills/`、`.agents/commands/`、工作流文档、脚本和 `AGENTS.md` 属于共用范围，始终更新。选择 Codex 时，同一次运行还会安装或更新 `.codex/plugins/` 及其唯一的 `.agents/plugins/marketplace.json` 发现链接。同一选择也适用于 `--adopt`，并把 `--skill` 限定为共用 skill 及选中的私有副本。
+Kimi Code 把同一个分流器作为用户级插件打包在 `.kimi-code/plugins/story/`。请从仓库根目录启动 Kimi Code，在输入框依次运行下面两条命令；也可以用 `/new` 代替 `/reload`：
+
+```text
+/plugins install ./.kimi-code/plugins/story
+/reload
+```
+
+不带参数的 `/story` 显示当前论文状态，也可以传入描述；`/skill:story` 是同一个外部 skill 的完整写法。Kimi 会把本地插件复制进用户级托管目录，所以 STORY 更新了该插件后，需要重新执行安装命令。
+
+DSH 把同一个分流器放在 `.dsh/commands/story/`；安装时要求 `PATH` 上有 `pnpm`。在仓库根目录为每个将运行 STORY 的 profile 安装一次，检查组合后的配置，再重启该 profile：
 
 ```bash
-bash execs/update.sh --harnesses claude
-bash execs/update.sh --harnesses codex,cursor --skill story-flow-status
-bash execs/update.sh --harnesses none --diff
+dsh plugin --profile YOUR_PROFILE add ./.dsh/commands/story
+dsh --profile YOUR_PROFILE --dump-config
 ```
+
+不带参数的 `/story` 显示当前论文状态，也可以传入描述，例如 `/story 审查第 3 章的论断`。命令会从共享的 `.agents/commands/story.md` 名册发起一个后续轮次，因此 DSH 与其他宿主始终从同一来源分流。
+
+维护者在 `.agents/skills/` 修改中立内容，在 `.agents/commands/` 修改共享路由器，然后运行 `bash .github/scripts/port.sh --write`；CI 会同时检查生成的 guard、共用链接、路由名册与各宿主入口。`execs/update.sh` 安装到其他项目时会展开 skill 链接，因此单独使用任一 harness 仍然是自包含的。更新范围、版本固定、预览与接入模式见[更新 STORY 的 skill 与工作流文档](#更新-story-的-skill-与工作流文档)。
 
 仅根据学校或培养项目的正式材料填写 `degree/profile.tex` 与 `degree/requirements.md`，并在档案中设置唯一的规范模式：
 
@@ -164,6 +191,45 @@ bash execs/scpts/import.sh --diff --source ../my-star-project --slug project-a
 14. `$story-flow-status`：汇报整体状态并给出唯一下一步建议。
 
 权威规则见 [writing-workflow-conventions.md](docs/mds/story-workflow/writing-workflow-conventions.md)。
+
+## 项目记忆
+
+一次会话学到、又没有任何仓库文件认领的事实——本机特有的 TeX 限制、作者的长期偏好、模拟外审已经否决过的一种论述方式——记在 `.story/memory/`，而不是当时运行的那个宿主里。一事一文件，每条在 `.story/memory/MEMORY.md` 中占一行；会话钩子会在每个受支持宿主的会话开头把这份索引交给 agent。
+
+四种类型让条目含义清楚：`env` 保存机器或工具链事实，`pref` 保存长期工作流偏好，`insight` 保存可复用的项目判断，`deadend` 保存已经尝试并否决的路径。只有没有其他持久来源认领的事实才能进入记忆：证据属于 `mates/`，论断属于 `notes/claims.md`，学校要求属于 `degree/`，出版物复用属于 `notes/publications.md`，反馈属于 `milestones/`，承诺属于 `tasks/`。记忆只帮助导航，永远不是证据；与仓库文件冲突时，以文件为准。
+
+只在本机成立的事实放进 `.story/memory/local/`，Git 像忽略 `.env` 一样忽略它；`env` 条目超过 180 天未核验时会标为过期。任何内容都先征得你的同意再记录，`INVOLVE=low` 则改为先记下再说明。文件格式、索引语法和退场规则见[项目记忆](docs/mds/story-workflow/memory_spec.zh-CN.md)。
+
+## 更新 STORY 的 skill 与工作流文档
+
+基于 STORY 创建学位论文后，可以同步后续发布的 skill 与工作流文档，而不改动手稿、证据、学位档案、笔记、里程碑、记忆库或 Git remote：
+
+```bash
+bash execs/update.sh
+```
+
+该命令默认从 STORY 的 `main` 分支更新：共享的 `.agents/skills/` 与 `.agents/commands/`；所选宿主的 skill、hook、command、prompt、agent 与 extension 目录；Codex manifest；Codex、Kimi 与 DSH 的分流包；中英两版共享 agent 指令与工作流文档；以及 `execs/` 下的全部脚本。宿主配置只在缺失时安装，除非加 `--force`，否则已有文件保持不变。
+
+拉取来源由 `STORY_REPOSITORY` 指定，按环境变量、`.env`、内置默认值 `https://github.com/wanghao9610/STORY.git` 的顺序解析。`STORY_HARNESSES` 按同样顺序解析，默认 `all`；可以从 `claude`、`codex`、`cursor`、`dsh`、`kimi`、`pi`、`qwen` 中任选多个并用逗号分隔，也可以用 `none` 只更新共享路径。未选中的宿主目录既不安装，也不更新。
+
+命令的两种通用形式为 `bash execs/update.sh [--diff] [ref] [--harnesses LIST] [--skill NAME] [--force]` 与 `bash execs/update.sh [ref] [--harnesses LIST] --adopt`：
+
+```bash
+bash execs/update.sh --diff
+bash execs/update.sh TAG_OR_BRANCH
+bash execs/update.sh --harnesses claude
+bash execs/update.sh --skill story-flow-status
+```
+
+- `--diff` 只预览、不写入；有可更新内容时以 `2` 退出，完全一致时以 `0` 退出，出错时以 `1` 退出。
+- `ref` 把更新固定到某个 tag 或分支。
+- 如果固定的 ref 早于 `.dsh/commands/` 或 `.kimi-code/plugins/`，普通更新与 `--adopt` 都会报告并跳过这个尚不存在的可选包；缺少其他必需路径仍会中止。
+- `--harnesses LIST` 仅对本次运行覆盖 `STORY_HARNESSES`；未选中的目录不在写入范围，也不纳入未提交改动检查。
+- `--skill NAME` 只更新共享根与所选宿主目录中的该 skill，不动 agent 指令、工作流文档和入口脚本。
+- `--force` 覆盖更新范围内的本地改动和原本会保留的宿主配置，但不会扩大更新范围。
+- `--adopt` 把骨架装进已有学位论文仓库，只复制缺失文件；不能与 `--force` 同用。
+
+`bash execs/update.sh --help` 保存完整用法摘要。上游同路径的受管文件会被覆盖，新文件会加入，上游删除的文件不会在本地自动删除，项目自有文件保持不变。更新前先提交当前工作，更新后用 `git status` 与 `git diff` 检查结果。
 
 ## 证据与作者贡献
 

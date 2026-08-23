@@ -168,6 +168,11 @@ for skill_file in "${PLUGIN_ROOT}/skills/story/SKILL.md" "${PLUGIN_ROOT}/skills/
         fail "${skill_file} is not a wrapper around the shared router"
         plugin_errors=1
     fi
+    if ! grep -qF 'STORY_LANG=zh' "${skill_file}" || \
+       ! grep -qF '.agents/commands/story.zh-CN.md' "${skill_file}"; then
+        fail "${skill_file} does not apply STORY's Chinese router wording"
+        plugin_errors=1
+    fi
 done
 if [[ ! -s "${PLUGIN_ROOT}/assets/icon.png" ]] || \
    ! grep -qF 'allow_implicit_invocation: false' "${PLUGIN_ROOT}/skills/story/agents/openai.yaml"; then
@@ -175,6 +180,99 @@ if [[ ! -s "${PLUGIN_ROOT}/assets/icon.png" ]] || \
     plugin_errors=1
 fi
 (( plugin_errors == 0 )) && ok 'Codex owns one branded story plugin; .agents exposes only its marketplace file'
+
+section 'Kimi and DSH STORY router layouts'
+router_entry_errors=0
+KIMI_MARKETPLACE=".kimi-code/plugins/marketplace.json"
+KIMI_PLUGIN_ROOT=".kimi-code/plugins/story"
+if ! python3 -c 'import json,sys; m=json.load(open(sys.argv[1])); p=json.load(open(sys.argv[2])); e=m["plugins"]; assert m["version"] == "2" and len(e) == 1 and e[0] == {"id": "story", "displayName": "STORY", "source": "./.kimi-code/plugins/story"}; assert p["name"] == "story" and p["skills"] == "./skills/" and p["interface"]["displayName"] == "STORY"' "${KIMI_MARKETPLACE}" "${KIMI_PLUGIN_ROOT}/.kimi-plugin/plugin.json"; then
+    fail 'Kimi STORY plugin or marketplace metadata is invalid'
+    router_entry_errors=1
+fi
+for skill_file in "${KIMI_PLUGIN_ROOT}/skills/story/SKILL.md" "${KIMI_PLUGIN_ROOT}/skills/story/SKILL_zh.md"; do
+    if [[ ! -f "${skill_file}" ]] || \
+       ! frontmatter_has_line "${skill_file}" 'name: story' || \
+       ! frontmatter_has_line "${skill_file}" 'disableModelInvocation: true' || \
+       ! grep -qF '.agents/commands/story.md' "${skill_file}"; then
+        fail "${skill_file} is not an explicit-only wrapper around the shared router"
+        router_entry_errors=1
+    fi
+    if ! grep -qF 'STORY_LANG=zh' "${skill_file}" || \
+       ! grep -qF '.agents/commands/story.zh-CN.md' "${skill_file}"; then
+        fail "${skill_file} does not apply STORY's Chinese router wording"
+        router_entry_errors=1
+    fi
+done
+
+DSH_COMMAND_ROOT=".dsh/commands/story"
+if ! python3 -c 'import json,sys; p=json.load(open(sys.argv[1])); assert p["name"] == "story" and p["private"] is True and p["type"] == "module" and p["main"] == "lib/index.js" and p["dsh"]["bundle"]["patch"] == "./cordis.patch.yml"' "${DSH_COMMAND_ROOT}/package.json"; then
+    fail 'DSH STORY command package metadata is invalid'
+    router_entry_errors=1
+fi
+if [[ ! -f "${DSH_COMMAND_ROOT}/lib/index.js" ]] || \
+   ! grep -qF 'ctx.commands.register' "${DSH_COMMAND_ROOT}/lib/index.js" || \
+   ! grep -qF '.agents/commands/story.md' "${DSH_COMMAND_ROOT}/lib/index.js" || \
+   ! grep -qF 'story-flow-status' "${DSH_COMMAND_ROOT}/lib/index.js"; then
+    fail 'DSH /story command does not delegate to the shared router'
+    router_entry_errors=1
+fi
+if [[ ! -f "${DSH_COMMAND_ROOT}/cordis.patch.yml" ]] || \
+   ! grep -qE '^[[:space:]]*- id: story[[:space:]]*$' "${DSH_COMMAND_ROOT}/cordis.patch.yml" || \
+   ! grep -qE "^[[:space:]]*name: ['\"]?story['\"]?[[:space:]]*$" "${DSH_COMMAND_ROOT}/cordis.patch.yml"; then
+    fail 'DSH /story bundle patch does not register the story plugin'
+    router_entry_errors=1
+fi
+(( router_entry_errors == 0 )) && ok 'Kimi and DSH expose explicit /story front doors backed by the shared router'
+
+section 'Router deployment and documentation'
+deployment_errors=0
+for router_tree in ".codex/plugins" ".dsh/commands" ".kimi-code/plugins"; do
+    if [[ "$(grep -Fxc "        \"${router_tree}\"" execs/update.sh)" -ne 2 ]]; then
+        fail "execs/update.sh must carry ${router_tree} in both adopt and full-update paths"
+        deployment_errors=1
+    fi
+done
+for optional_tree in ".dsh/commands" ".kimi-code/plugins"; do
+    if ! grep -qF "\"${optional_tree}\")" execs/update.sh; then
+        fail "execs/update.sh does not allow an older ref to omit ${optional_tree}"
+        deployment_errors=1
+    fi
+done
+if ! grep -qF 'if is_optional_path "${tree}"; then' execs/update.sh; then
+    fail "execs/update.sh --adopt does not skip router packages absent from an older ref"
+    deployment_errors=1
+fi
+for readme in README.md README.zh-CN.md; do
+    for command in \
+        'codex plugin marketplace add .' \
+        'codex plugin add story@story' \
+        '/plugins install ./.kimi-code/plugins/story' \
+        '/reload' \
+        'dsh plugin --profile YOUR_PROFILE add ./.dsh/commands/story' \
+        'dsh --profile YOUR_PROFILE --dump-config'; do
+        if ! grep -qF "${command}" "${readme}"; then
+            fail "${readme} omits router setup step: ${command}"
+            deployment_errors=1
+        fi
+    done
+    for shared_topic in \
+        'STORY_LANG' \
+        'STORY_HARNESSES' \
+        'INVOLVE=low' \
+        '.story/memory/MEMORY.md' \
+        'bash execs/update.sh --diff' \
+        'bash execs/update.sh TAG_OR_BRANCH' \
+        'bash execs/update.sh --harnesses claude' \
+        'bash execs/update.sh --skill story-flow-status' \
+        '--adopt' \
+        '--force'; do
+        if ! grep -qF -- "${shared_topic}" "${readme}"; then
+            fail "${readme} omits shared setup or update topic: ${shared_topic}"
+            deployment_errors=1
+        fi
+    done
+done
+(( deployment_errors == 0 )) && ok 'all router packages update by harness, tolerate older refs, and share one setup template'
 
 section 'Harness entry points, hooks, and configuration'
 harness_errors=0
@@ -189,6 +287,9 @@ for path in \
     .qwen/commands/story.zh-CN.md \
     .pi/prompts/story.md \
     .pi/prompts/story.zh-CN.md \
+    .kimi-code/plugins/story/skills/story/SKILL.md \
+    .kimi-code/plugins/story/skills/story/SKILL_zh.md \
+    .dsh/commands/story/lib/index.js \
     .pi/APPEND_SYSTEM.md \
     .pi/APPEND_SYSTEM.zh-CN.md; do
     [[ -f "${path}" ]] || { fail "missing harness entry point: ${path}"; harness_errors=1; }
@@ -232,7 +333,7 @@ done
 [[ -f .pi/extensions/story-hooks/index.ts ]] || { fail 'missing Pi session-context extension'; harness_errors=1; }
 [[ -x .dsh/hooks/install.sh && -x .kimi-code/hooks/install.sh ]] || { fail 'DSH or Kimi global hook installer is not executable'; harness_errors=1; }
 [[ -f .dsh/cordis.patch.yml ]] || { fail 'missing DSH composition patch'; harness_errors=1; }
-(( harness_errors == 0 )) && ok 'all seven harnesses have valid entry points, registrations, and runtime hooks; every harness command delegates to the shared /story router'
+(( harness_errors == 0 )) && ok 'all seven harnesses have valid entry points, registrations, and runtime hooks; every harness exposes the shared /story router'
 
 section 'English and Simplified Chinese Markdown pairs'
 markdown_errors=0

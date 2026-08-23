@@ -1,0 +1,10 @@
+{
+  "version": "2",
+  "plugins": [
+    {
+      "id": "story",
+      "displayName": "STORY",
+      "source": "./.kimi-code/plugins/story"
+    }
+  ]
+}

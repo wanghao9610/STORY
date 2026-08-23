@@ -1,0 +1,13 @@
+{
+  "name": "story",
+  "version": "0.1.0",
+  "description": "Route STORY requests to the project's master's or doctoral thesis workflow skills.",
+  "author": "STORY",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "STORY",
+    "shortDescription": "Route a request to one STORY thesis workflow.",
+    "longDescription": "Adds the /story router for choosing and running one STORY master's or doctoral thesis workflow skill in the current project.",
+    "developerName": "STORY"
+  }
+}

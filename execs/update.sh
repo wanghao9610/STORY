@@ -2,9 +2,9 @@
 set -euo pipefail
 
 # execs/update.sh — sync STORY-managed content from the upstream template (the
-# shared skill source, six harness entry trees, the Codex $story and Kimi
-# /story router plugins, all hook trees, docs/mds/story-workflow/, the shared
-# agent instructions, and
+# shared skill source, six harness entry trees, the Codex $story plugin, the
+# Kimi and DSH /story router entries, all hook trees,
+# docs/mds/story-workflow/, the shared agent instructions, and
 # every script under execs/ — both entrypoints, this one included, and the three
 # utilities in execs/scpts/), or install the STORY skeleton into an existing
 # thesis repo with --adopt.
@@ -100,12 +100,14 @@ SYNC_FILES=(
 # sits in, so pinning an older ref is a legitimate reason for it to be missing,
 # and that is a skipped line rather than a stopped update: the session hooks,
 # which arrived after the skills; fmt.sh, which arrived after the other two
-# utilities; and the Kimi /story router plugin, which arrived after the harness
-# entry trees. Anything else missing is a broken ref and still fatal.
+# utilities; and the Kimi and DSH /story router entries, which arrived after
+# their harness entry trees. Anything else missing is a broken ref and still
+# fatal.
 is_optional_path() {
     case "$1" in
         .*/hooks*)            return 0 ;;
         "execs/scpts/fmt.sh") return 0 ;;
+        ".dsh/commands")      return 0 ;;
         ".kimi-code/plugins") return 0 ;;
     esac
     return 1
@@ -303,7 +305,7 @@ Overwrite the STORY-managed content — the shared agent instructions (AGENTS.md
 and the Cursor rule that copies its body), the neutral skill source plus six
 harness entry trees (.agents, .claude, .cursor, .dsh, .kimi-code, .pi, .qwen),
 Codex's per-skill manifests and $story router plugin, Kimi Code's /story router
-plugin, harness commands/prompts,
+plugin, DSH's /story command bundle, harness commands/prompts,
 the session hooks that inject project memory and model provenance,
 docs/mds/story-workflow/, and every script under execs/ — the two entrypoints,
 run.sh and this one, and the three utilities in execs/scpts/: import.sh,
@@ -321,8 +323,9 @@ only. Without the flag, STORY_HARNESSES is resolved from the environment, then
 .env, then defaults to all. A tree left out is neither installed nor updated.
 Shared paths such as .agents/skills, docs/mds/story-workflow, execs/, and
 AGENTS.md remain in scope for every selection.
-The $story plugin lives under .codex/plugins and its one discovery link under
-.agents/plugins is updated only when codex is selected.
+The generic router packages live under .codex/plugins, .dsh/commands and
+.kimi-code/plugins; each is updated only when its harness is selected. Codex's
+one discovery link under .agents/plugins follows the same selection.
 
 No script under execs/ holds project configuration — everything an instance sets
 lives in .env, which is git-ignored and never synced — so all five are safe to
@@ -504,6 +507,8 @@ if [[ "${ADOPT}" == true ]]; then
         ".codex/plugins"
         # Kimi Code owns the repo-local /story router plugin.
         ".kimi-code/plugins"
+        # DSH owns the profile bundle that registers its /story command.
+        ".dsh/commands"
         "${HARNESS_ASSET_TREES[@]}"
         "${HOOK_TREES[@]}"
         "${AGENT_RULES_TREE}"
@@ -615,6 +620,7 @@ else
         "${SKILL_ROOTS[@]}"
         "${CODEX_MANIFEST_ROOT}"
         ".codex/plugins"
+        ".dsh/commands"
         ".kimi-code/plugins"
         ".agents/plugins/marketplace.json"
         "${HARNESS_ASSET_TREES[@]}"
@@ -886,7 +892,13 @@ install_file() {
 }
 
 for tree in "${ADOPT_TREES[@]}"; do
-    [[ -d "${SOURCE_DIR}/${tree}" ]] || fail "Upstream ref is missing ${tree}."
+    if [[ ! -d "${SOURCE_DIR}/${tree}" ]]; then
+        if is_optional_path "${tree}"; then
+            log "Skipping ${tree}: not present in ref '${STORY_REF}'."
+            continue
+        fi
+        fail "Upstream ref is missing ${tree}."
+    fi
     while IFS= read -r rel; do
         install_file "${rel}"
     done < <(cd "${SOURCE_DIR}" && find -L "${tree}" -type f | sort)

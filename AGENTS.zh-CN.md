@@ -73,4 +73,5 @@
 - 每个英文 Markdown 文件都必须保留简体中文对照版：普通文档使用 `*.zh-CN.md`，skill 指令使用 `SKILL_zh.md`。由于 `mates/` 只读，`mates/MANIFEST.md` 的对照版放在 `docs/mds/story-workflow/mates-MANIFEST.zh-CN.md`。
 - `degree/profile.tex` 控制论文正文语言。
 - 仅当仓库没有其他文件负责某项会话知识时，才将其存入 `.story/memory/`。机器专属事实放在 `.story/memory/local/` 下。
+- 只提议，不擅自写入：每次会话最多提议两次，并且只在作者同意后记录。`INVOLVE=low` 会不经询问记录，但必须说明。
 - Memory 不是证据，也不能覆盖 `degree/`、`mates/`、`notes/` 或 `milestones/`。
