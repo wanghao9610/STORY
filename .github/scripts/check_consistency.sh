@@ -225,8 +225,11 @@ done
 
 grep -q 'Systematic Toolchain for Organizing Research over Years' README.md || fail 'README.md lacks the official expansion'
 grep -q 'A STAR takes the STAGE to tell a STORY' README.md || fail 'README.md lacks the official tagline'
-for path in degree/profile.tex degree/requirements.md notes/story.md notes/contributions.md notes/publications.md notes/outline.md notes/claims.md mates/MANIFEST.md manus/main.tex manus/stys/story.cls manus/stys/story.sty milestones/README.md; do
+for path in degree/profile.tex degree/requirements.md notes/.gitkeep notes/refs/.gitkeep mates/MANIFEST.md manus/main.tex manus/stys/story.cls manus/stys/story.sty milestones/.gitkeep tasks/.gitkeep; do
     [[ -f "${path}" ]] || fail "missing core path: ${path}"
+done
+for path in notes notes/refs; do
+    [[ -d "${path}" ]] || fail "missing core directory: ${path}"
 done
 [[ "$(readlink CLAUDE.md 2>/dev/null)" == AGENTS.md ]] || fail 'CLAUDE.md must link to AGENTS.md'
 [[ "$(readlink docs/index.html 2>/dev/null)" == htmls/story.html ]] || fail 'docs/index.html link is wrong'

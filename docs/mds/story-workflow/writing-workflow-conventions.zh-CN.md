@@ -21,6 +21,24 @@
 
 聊天记录和 `.story/memory/` 永远不能覆盖这些文件。
 
+### 写作元数据的延迟创建
+
+新克隆的 STORY 只包含 `notes/.gitkeep` 和 `notes/refs/.gitkeep`。
+`notes/` 下的 Markdown 产物不再作为空模板预置，而是在首次使用时由负责它的 skill 创建：
+
+| 产物 | 首次创建者 |
+| --- | --- |
+| `notes/adopt.md` | `story-proj-adopt` |
+| `notes/story.md`、`notes/contributions.md`、`notes/publications.md`、`notes/claims.md` | `story-syns-coach`；接入已有草稿时，`story-proj-adopt` 可以初始化 `notes/claims.md` |
+| `notes/outline.md`、`notes/notation.md` | `story-outl-planner` |
+| `notes/style.md` | `story-copy-editor style` |
+| `notes/refs/refs_index.md`、`notes/refs/<key>.md` | `story-refs-curator` |
+
+产物缺失表示对应工作流阶段尚未初始化，本身不代表仓库损坏。
+负责的 skill 应在第一次持久写入前创建该文件，保留任何已有内容，并在同一次修改中创建英文与简体中文 Markdown 对照文件。
+消费方 skill 发现必需产物缺失时，应停止并路由给首次创建者，不能自行发明替代 schema。
+改变 `STORY_LANG` 绝不能翻译或替换已有产物。
+
 ## 2. 证据契约
 
 1. 文件只有在 `mates/MANIFEST.md` 中有条目且指纹匹配后，才能成为证据。

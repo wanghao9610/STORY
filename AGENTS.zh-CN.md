@@ -45,6 +45,7 @@
 - `manus/figs/`、`manus/tabs/`、`manus/bibs/`、`manus/stys/`：图、表、参考文献和模板层。
 - `degree/`：学位档案、委员会记录和学校要求检查表。
 - `notes/`：总叙事、提纲、论断、贡献/出版物映射、符号、风格、接入记录和阅读笔记。
+- 新克隆只保留 `notes/.gitkeep` 和 `notes/refs/.gitkeep`；负责各产物的工作流 skill 在首次使用时创建相应的 `notes/*.md`。文件缺失表示阶段尚未初始化，消费方应路由给负责创建它的 skill。
 - `wkdrs/`：构建产物和可再生成报告；不得将其视为持久项目状态。
 - `tasks/`：持久化的未解决工作和反馈承诺。
 

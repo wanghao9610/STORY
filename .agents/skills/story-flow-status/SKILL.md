@@ -18,4 +18,4 @@ Run the bundled `scripts/scan.sh` from the repository root, then summarize:
 - active milestone, feedback promises, defense/deposit gates;
 - latest build, page count, and lint signal.
 
-Distinguish absent, unknown, stale, blocked, and complete states. Recommend exactly one next action with the owning `story-*` skill and a concrete target. Do not turn the status run into the recommended action.
+Distinguish absent, unknown, stale, blocked, and complete states. Treat an absent `notes/*.md` artifact in a fresh or partially initialized repository as an uninitialized workflow stage, not as corruption, and recommend its first creator from conventions §1 when it is the earliest gate. Recommend exactly one next action with the owning `story-*` skill and a concrete target. Do not turn the status run into the recommended action.

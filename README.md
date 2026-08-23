@@ -22,7 +22,7 @@ STORY works with any combination of STAR repositories, STAGE paper repositories,
 
 - Generic, compilable English and Simplified Chinese dissertation templates with front matter, chapters, appendices, figures, tables, and bibliography separated cleanly.
 - A fingerprinted, read-only evidence store under `mates/`, supporting multiple research and paper repositories.
-- A thesis-level narrative, contribution map, publication/reuse map, outline, notation table, and claim ledger under `notes/`.
+- A thesis-level narrative, contribution map, publication/reuse map, outline, notation table, and claim ledger created on demand under `notes/`.
 - User-confirmed institutional requirements and committee records under `degree/`.
 - Durable milestone records for proposal, annual review, pre-defense, defense, corrections, and deposit.
 - Deterministic build, formatting, import, and lint entrypoints under `execs/`.
@@ -46,7 +46,7 @@ STORY/
 │   └── stys/                      # story.cls, story.sty, story.bst
 ├── mates/                         # Fingerprinted evidence snapshots; read-only
 ├── degree/                        # Institutional profile, requirements, committee
-├── notes/                         # Narrative and writing metadata
+├── notes/                         # Narrative and writing metadata; created on demand
 │   ├── story.md                   # Central argument and doctoral research arc
 │   ├── contributions.md           # Contribution → evidence/publication/chapter
 │   ├── publications.md            # Authorship, reuse, permissions, overlap
@@ -101,6 +101,9 @@ bash execs/update.sh --harnesses none --diff
 ```
 
 Fill `degree/profile.tex` and `degree/requirements.md` only from official university or program material confirmed by the author. Then run `$story-proj-adopt` for an existing draft, or start with `$story-syns-coach` and `$story-outl-planner`.
+
+A fresh clone intentionally contains only `notes/.gitkeep` and `notes/refs/.gitkeep`.
+The files shown under `notes/` in the logical layout above are materialized by their owning workflow skills on first use; `story-flow-status` reports an absent file as an uninitialized stage.
 
 ### Simplified Chinese template
 

@@ -22,7 +22,7 @@ STORY 可以同时接入多个 STAR 研究仓库、多个 STAGE 论文仓库和�
 
 - 开箱可编译的英文与简体中文通用学位论文模板，前置部分、章节、附录、图、表和参考文献各归其位。
 - `mates/` 下带指纹的只读证据层，支持多研究项目与多论文来源。
-- `notes/` 下的总叙事、贡献映射、发表与复用映射、提纲、符号表及论断记录表。
+- 按需创建在 `notes/` 下的总叙事、贡献映射、发表与复用映射、提纲、符号表及论断记录表。
 - `degree/` 下由用户确认的学校要求和委员会记录。
 - 面向开题、年度考核、预答辩、答辩、修改与归档的持久化里程碑记录。
 - `execs/` 下统一的构建、格式化、证据导入与机械检查入口。
@@ -46,7 +46,7 @@ STORY/
 │   └── stys/                      # story.cls、story.sty、story.bst
 ├── mates/                         # 带指纹的证据快照，只读
 ├── degree/                        # 学位档案、学校要求、委员会
-├── notes/                         # 总叙事与写作元数据
+├── notes/                         # 总叙事与写作元数据；按需创建
 │   ├── story.md                   # 中心论点与博士研究主线
 │   ├── contributions.md           # 贡献 → 证据/论文/章节
 │   ├── publications.md            # 作者贡献、内容复用、许可与重叠
@@ -101,6 +101,9 @@ bash execs/update.sh --harnesses none --diff
 ```
 
 仅根据学校或培养项目的正式材料填写 `degree/profile.tex` 与 `degree/requirements.md`。已有草稿时运行 `$story-proj-adopt`；从零开始时先运行 `$story-syns-coach`，再运行 `$story-outl-planner`。
+
+新克隆有意只保留 `notes/.gitkeep` 和 `notes/refs/.gitkeep`。
+上方逻辑结构中列出的 `notes/` 文件会在首次使用时由负责它们的工作流 skill 创建；`story-flow-status` 会把缺失文件报告为尚未初始化的阶段。
 
 ### 简体中文论文模板
 

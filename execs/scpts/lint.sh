@@ -92,7 +92,10 @@ if [[ ! -s degree/profile.tex ]]; then
 fi
 
 limit=''
-active="$(sed -nE 's/^active_milestone:[[:space:]]*"?([^"[:space:]]*)"?.*/\1/p' notes/story.md 2>/dev/null | head -1)"
+active=''
+if [[ -f notes/story.md ]]; then
+    active="$(sed -nE 's/^active_milestone:[[:space:]]*"?([^"[:space:]]*)"?.*/\1/p' notes/story.md | head -1)"
+fi
 if [[ -n "${active}" && -f "milestones/${active}/milestone.yml" ]]; then
     limit="$(sed -nE 's/^max_pages:[[:space:]]*([0-9]+).*/\1/p' "milestones/${active}/milestone.yml" | head -1)"
 fi

@@ -32,9 +32,12 @@ show_file degree/requirements.md
 show_file degree/committee.md
 
 heading 'Narrative and ledgers'
-for file in notes/story.md notes/contributions.md notes/publications.md notes/outline.md notes/claims.md notes/notation.md; do
+for file in notes/story.md notes/contributions.md notes/publications.md notes/outline.md notes/claims.md notes/notation.md notes/style.md notes/adopt.md; do
     show_file "${file}"
 done
+
+heading 'Reference index'
+show_file notes/refs/refs_index.md
 
 heading 'Evidence manifest'
 if [[ -f mates/MANIFEST.md ]]; then

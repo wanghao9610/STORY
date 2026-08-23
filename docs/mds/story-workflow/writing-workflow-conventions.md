@@ -21,6 +21,24 @@ This document is the shared contract for every `story-*` skill. STORY means **Sy
 
 Chat history and `.story/memory/` never override these files.
 
+### Lazy creation of writing metadata
+
+A fresh STORY clone contains only `notes/.gitkeep` and `notes/refs/.gitkeep`.
+The Markdown artifacts under `notes/` are created on first use by their owning skills, rather than shipped as empty templates:
+
+| Artifact | First creator |
+| --- | --- |
+| `notes/adopt.md` | `story-proj-adopt` |
+| `notes/story.md`, `notes/contributions.md`, `notes/publications.md`, `notes/claims.md` | `story-syns-coach`; `story-proj-adopt` may initialize `notes/claims.md` for an existing draft |
+| `notes/outline.md`, `notes/notation.md` | `story-outl-planner` |
+| `notes/style.md` | `story-copy-editor style` |
+| `notes/refs/refs_index.md`, `notes/refs/<key>.md` | `story-refs-curator` |
+
+An absent artifact means that workflow stage is not initialized; it is not by itself corruption.
+The owning skill creates the file immediately before its first durable write, preserves any existing content, and creates the English/Simplified-Chinese Markdown pair in the same change.
+A consuming skill that finds a required artifact absent stops and routes to its first creator instead of inventing a substitute schema.
+Changing `STORY_LANG` never translates or replaces an existing artifact.
+
 ## 2. Evidence contract
 
 1. A file becomes evidence only after it has a `mates/MANIFEST.md` entry and a matching fingerprint.

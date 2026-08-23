@@ -43,6 +43,7 @@ This repository uses STORY — **Systematic Toolchain for Organizing Research ov
 - `manus/figs/`, `manus/tabs/`, `manus/bibs/`, `manus/stys/`: figures, tables, bibliography, and template layers.
 - `degree/`: profile, committee record, and institutional checklist.
 - `notes/`: narrative, outline, claims, contribution/publication maps, notation, style, adoption record, and reading notes.
+- A fresh clone keeps only `notes/.gitkeep` and `notes/refs/.gitkeep`; the owning workflow skill creates each `notes/*.md` artifact on first use. Treat absence as an uninitialized stage and route consumers to the owning creator.
 - `wkdrs/`: builds and regenerable reports; never treat it as durable project state.
 - `tasks/`: durable unresolved work and feedback promises.
 
