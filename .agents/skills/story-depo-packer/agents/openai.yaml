@@ -1,7 +1,1 @@
-interface:
-  display_name: "Deposit Packer"
-  short_description: "Preflight and freeze a dissertation deposit"
-  brand_color: "#173B57"
-  default_prompt: "Use $story-depo-packer to preflight the named deposit milestone."
-policy:
-  allow_implicit_invocation: false
+../../../../.codex/skills/story-depo-packer/agents/openai.yaml

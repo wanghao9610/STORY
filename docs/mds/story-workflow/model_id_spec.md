@@ -11,9 +11,12 @@ The per-runtime detail behind the `model_id` rule in [`writing-workflow-conventi
 | Claude Code | `.claude/hooks/story_model_id.sh` | `SessionStart` | a command reading the session transcript; the id itself when none was named | as you write it |
 | Codex | `.codex/hooks/story_model_id.sh` | `SessionStart` | a command reading the session rollout; the id itself when none was named | as you write it |
 | Cursor | `.cursor/hooks/story_model_id.sh` | `SessionStart` | the id | at session start |
+| DeepSeek Harness | `.dsh/hooks/story_model_id.sh` | `SessionStart` | a command reading DSH's session log | as you write it |
 | Kimi | `.kimi-code/hooks/story_model_id.sh` | `UserPromptSubmit` | `default_model` from `~/.kimi-code/config.toml` | from config, never the session |
+| Pi | `.pi/extensions/story-hooks/story_model_id.sh` | `before_agent_start` and `model_select` | the live provider/model id | immediately before the writing run |
+| Qwen Code | `.qwen/hooks/story_model_id.sh` | `SessionStart` | a command reading the Qwen transcript; the id itself when none was named | as you write it |
 
-The last column is the difference that matters. A value read as you write it cannot be stale; the two below it can, because a model switched mid-session changes nothing they read — that is the lag `writing-workflow-conventions.md` §8 warns about, and those two rows are what is left of it. Claude Code also names the model in its system prompt. A hook that exists is not necessarily registered — each runtime registers differently (`.claude/settings.json`, `.codex/hooks.json`, `.cursor/hooks.json`, and `.kimi-code/hooks.example.toml` by hand), so a project can hold the script and still inject nothing.
+The last column is the difference that matters. A value read as the artifact is written cannot be stale; Cursor and Kimi can be, because a mid-session model switch changes nothing they read. A hook that exists is not necessarily active: DSH and Kimi need their one-time installers, Codex hooks require approval, Pi extensions require project trust, while Claude, Cursor, and Qwen load project registration files automatically.
 
 ## Claude Code and Codex, why the id is read at the moment it is written
 
@@ -25,6 +28,17 @@ bash .codex/hooks/story_model_id.sh --resolve <transcript_path> [session_model]
 ```
 
 with the arguments that line already fills in, and record what it prints verbatim. Claude Code's reader takes `message.model` off this session's own main-loop assistant turns, skipping a delegated subagent's — the question is which model is writing the artifact. Codex's takes `payload.model` off the rollout's `turn_context` records and skips nothing, because a Codex subagent is given a rollout of its own. Either way it is the runtime's record rather than a guess. `session_model` is what `SessionStart` reported: it stands in when the record names nothing yet, and it wins over an identical id to keep a suffix the record drops (`claude-opus-5[1m]` over `claude-opus-5`), but never over a different one — that difference is a mid-session switch, and the per-turn record is the one that saw it.
+
+## DeepSeek Harness and Qwen Code
+
+DSH records provider/model routes in its session log; Qwen records the model on assistant transcript rows. Their injected provenance lines already contain the exact command and path to run. The fallback forms are:
+
+```bash
+bash .dsh/hooks/story_model_id.sh --resolve [transcript_path]
+bash .qwen/hooks/story_model_id.sh --resolve <transcript_path> [session_model]
+```
+
+Pi needs no recovery command: its extension receives the live model object immediately before the agent run and reinjects provenance after `model_select`.
 
 ## Kimi, when no line was injected at all
 

@@ -11,9 +11,12 @@
 | Claude Code | `.claude/hooks/story_model_id.sh` | `SessionStart` | 一条读取本次会话 transcript 的命令；没有可指的记录时才是 id 本身 | 写入当刻 |
 | Codex | `.codex/hooks/story_model_id.sh` | `SessionStart` | 一条读取本次会话 rollout 的命令；没有可指的记录时才是 id 本身 | 写入当刻 |
 | Cursor | `.cursor/hooks/story_model_id.sh` | `SessionStart` | id | 会话开始时 |
+| DeepSeek Harness | `.dsh/hooks/story_model_id.sh` | `SessionStart` | 一条读取 DSH 会话日志的命令 | 写入当刻 |
 | Kimi | `.kimi-code/hooks/story_model_id.sh` | `UserPromptSubmit` | `~/.kimi-code/config.toml` 里的 `default_model` | 取自配置，从来不是会话 |
+| Pi | `.pi/extensions/story-hooks/story_model_id.sh` | `before_agent_start` 与 `model_select` | 实时的 provider/model id | 写入轮次开始前 |
+| Qwen Code | `.qwen/hooks/story_model_id.sh` | `SessionStart` | 一条读取 Qwen transcript 的命令；无记录时才是 id 本身 | 写入当刻 |
 
-要紧的差别在最后一列。写入当刻读到的值不可能过期；下面两行则可能，因为会话中途换模型不会改变它们读的任何东西——这正是 `writing-workflow-conventions.zh-CN.md` §8 提醒的那种滞后，如今只剩这两行还有。Claude Code 还会在系统提示里写明模型。钩子文件在，不等于已注册——各运行时的注册方式不同（`.claude/settings.json`、`.codex/hooks.json`、`.cursor/hooks.json`，以及需手动配置的 `.kimi-code/hooks.example.toml`），所以一个项目可能有脚本却什么都没注入。
+要紧的差别在最后一列。产物写入当刻读取的值不会过期；Cursor 与 Kimi 可能过期，因为会话中途换模型不会改变它们读到的值。钩子文件存在不等于已经生效：DSH 与 Kimi 需要运行一次安装器，Codex hook 需要批准，Pi extension 需要信任项目；Claude、Cursor 与 Qwen 则自动读取项目注册文件。
 
 ## Claude Code 与 Codex：为什么 id 要在写入当刻才读
 
@@ -25,6 +28,17 @@ bash .codex/hooks/story_model_id.sh --resolve <transcript_path> [session_model]
 ```
 
 参数用那行已经填好的，把打印出来的值原样记录。Claude Code 这版读的是本次会话主循环 assistant 轮次上的 `message.model`，委派出去的子 agent 轮次会跳过——要问的是哪个模型在写这份产物；Codex 这版读的是 rollout 里 `turn_context` 记录上的 `payload.model`，无需跳过任何东西，因为 Codex 的子 agent 自带独立 rollout。两者都是运行时的记录而非猜测。`session_model` 是 `SessionStart` 报出的那个：逐回合记录还没有内容时由它顶上；与解析结果是同一个 id 时以它为准，好保住记录丢掉的后缀（取 `claude-opus-5[1m]` 而非 `claude-opus-5`）；但 id 不同时绝不用它——那个不同就是会话中途换过模型，而看见这件事的是逐回合记录。
+
+## DeepSeek Harness 与 Qwen Code
+
+DSH 在会话日志中记录 provider/model 路由；Qwen 在 assistant transcript 行上记录模型。它们注入的溯源行已经带有应执行的完整命令和路径；退路形式是：
+
+```bash
+bash .dsh/hooks/story_model_id.sh --resolve [transcript_path]
+bash .qwen/hooks/story_model_id.sh --resolve <transcript_path> [session_model]
+```
+
+Pi 不需要恢复命令：extension 会在 agent 运行前取得实时模型对象，并在 `model_select` 后重新注入溯源信息。
 
 ## Kimi：一行都没注入时
 

@@ -1,7 +1,1 @@
-interface:
-  display_name: "Table Builder"
-  short_description: "Build one evidence-backed dissertation table"
-  brand_color: "#173B57"
-  default_prompt: "Use $story-tabs-builder to build the cross-study comparison table from registered evidence."
-policy:
-  allow_implicit_invocation: true
+../../../../.codex/skills/story-tabs-builder/agents/openai.yaml

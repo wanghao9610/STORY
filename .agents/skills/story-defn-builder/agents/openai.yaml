@@ -1,7 +1,1 @@
-interface:
-  display_name: "Defense Builder"
-  short_description: "Plan and check the doctoral defense deck"
-  brand_color: "#173B57"
-  default_prompt: "Use $story-defn-builder to prepare the final defense narrative and slide plan."
-policy:
-  allow_implicit_invocation: false
+../../../../.codex/skills/story-defn-builder/agents/openai.yaml

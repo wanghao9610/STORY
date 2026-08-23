@@ -5,10 +5,12 @@ description: 依据已确认章节简报、总叙事、贡献/发表映射、论
 
 # 起草一章可追溯正文
 
-首先完整阅读 `docs/mds/story-workflow/writing-workflow-conventions.md`。用章节编号、slug 或唯一标题解析目标；缺失或歧义时询问。
+首先完整阅读 `docs/mds/story-workflow/writing-workflow-conventions.md`。通过 `notes/outline.md` 中的章节编号、slug 或唯一标题解析目标；目标缺失或存在歧义时询问作者。
 
-写作前读取章节简报、`notes/story.md`、关联贡献/发表/论断行、阅读笔记及本轮需要的全部证据。保持章节局部论证服务中心论点，把论文材料改写为统一的学位论文声音，并保留合作者归属。
+写作前读取章节简报、`notes/story.md`、关联的贡献与发表记录、关联的论断记录、相关阅读笔记及本轮需要的全部证据文件。
 
-每项定量或比较性句子带邻近 `% src:`；缺失支持写为 `\todo{...}`。同一修改中同步 `notes/claims.md`、`notes/notation.md` 和 outline 状态。
+源文件保持一句一行。让章节的局部论证始终连接到学位论文的中心论点。把已发表论文材料改写成统一的学位论文声音；保留合作者归属，并且在复用记录尚未解决时，不得复制大段已发表措辞。
 
-最后运行构建；论断或引用变化时再运行 lint。本 skill 不修改证据、学校事实或其他章节范围。
+每个定量或比较性句子都要有邻近的 `% src:` 锚点；缺失支持写成 `\todo{...}`。在同一次修改中更新 `notes/claims.md`、`notes/notation.md` 和 `notes/outline.md` 中的章节状态。
+
+最后运行 `bash execs/run.sh`；论断或引用发生变化时再运行 `bash execs/scpts/lint.sh`。不得修改证据、学校事实或其他章节的范围。

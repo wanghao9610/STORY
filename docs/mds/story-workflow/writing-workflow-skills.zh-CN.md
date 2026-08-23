@@ -1,5 +1,7 @@
 # STORY 工作流 Skills
 
+**语言：** [English](writing-workflow-skills.md) | 简体中文
+
 这些 skill 构成博士论文流水线，但不是僵硬的线性步骤。每次选择拥有目标文件的最小 skill。
 
 ```mermaid

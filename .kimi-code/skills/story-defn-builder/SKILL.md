@@ -1,5 +1,6 @@
 ---
 name: story-defn-builder
+disable-model-invocation: true
 description: Plan, build, and check a doctoral defense narrative and slide deck from verified dissertation claims, confirmed timing/rules, and editable assets; use for pre-defense or final defense preparation.
 ---
 

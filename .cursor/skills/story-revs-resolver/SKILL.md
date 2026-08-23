@@ -1,5 +1,6 @@
 ---
 name: story-revs-resolver
+disable-model-invocation: true
 description: Convert supervisor, committee, examiner, defense, correction, or deposit feedback into an immutable-source point ledger, reasoned dispositions, and tracked promises; use after feedback arrives.
 ---
 

@@ -1,7 +1,1 @@
-interface:
-  display_name: "Feedback Resolver"
-  short_description: "Track and resolve doctoral review feedback"
-  brand_color: "#173B57"
-  default_prompt: "Use $story-revs-resolver to turn the defense feedback into a point ledger and promises."
-policy:
-  allow_implicit_invocation: false
+../../../../.codex/skills/story-revs-resolver/agents/openai.yaml

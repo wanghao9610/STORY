@@ -1,5 +1,7 @@
 # STORY workflow skills
 
+**Language:** English | [简体中文](writing-workflow-skills.zh-CN.md)
+
 The skills form a dissertation pipeline rather than a rigid sequence. Use the smallest skill that owns the requested artifact.
 
 ```mermaid

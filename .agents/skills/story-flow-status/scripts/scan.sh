@@ -21,7 +21,7 @@ printf 'date: %s\n' "$(date +%Y-%m-%d)"
 
 heading 'Runtime'
 if [[ -f .env ]]; then
-    grep -sE '^(RESEARCH_HOME|LATEX_ENGINE|STORY_REPOSITORY|STORY_LANG|INVOLVE)=' .env || printf '(defaults)\n'
+    grep -sE '^(RESEARCH_HOME|STORY_MAIN|LATEX_ENGINE|STORY_REPOSITORY|STORY_LANG|INVOLVE)=' .env || printf '(defaults)\n'
 else
     printf '.env absent; defaults apply.\n'
 fi

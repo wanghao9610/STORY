@@ -1,0 +1,29 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".dsh/hooks/story_model_id.sh"
+          },
+          {
+            "type": "command",
+            "command": ".dsh/hooks/story_memory.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".dsh/hooks/story_commit_guard.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

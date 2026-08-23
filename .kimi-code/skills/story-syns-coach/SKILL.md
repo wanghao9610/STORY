@@ -1,5 +1,6 @@
 ---
 name: story-syns-coach
+disable-model-invocation: true
 description: Shape or revise the dissertation-level problem, central argument, research questions, research arc, synthesis, and doctoral contributions from the author's intent and registered evidence; use before outlining or when the thesis feels like disconnected papers.
 ---
 

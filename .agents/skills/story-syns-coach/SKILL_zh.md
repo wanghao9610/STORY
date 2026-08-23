@@ -9,6 +9,14 @@ description: 根据作者意图和已登记证据建立或修改博士论文总�
 
 读取 `degree/profile.tex`、`notes/story.md`、`notes/contributions.md`、`notes/publications.md`、`notes/claims.md` 与相关证据。仅就仓库无法给出的判断询问作者：预期中心论点、贡献边界、作者归属、排除范围和研究随时间的变化。
 
-产出一条可论证的一句话 thesis、博士问题与研究问题、有因果和时间逻辑的研究主线、单篇论文不具备的跨章节综合、范围与局限、贡献映射行以及 proposed 论断行。
+产出：
 
-中心论点与贡献/归属映射必须经作者确认后才能把 `notes/story.md` 标为 finalized。本 skill 不决定学校规范或章节文件。
+1. 一条可论证且有证据支持的一句话总论点；
+2. 博士研究问题与具体研究问题；
+3. 一条有序研究主线，说明每项贡献为什么承接前一项贡献；
+4. 单篇论文中不存在的跨章节综合；
+5. 局限与范围；
+6. `notes/contributions.md` 中的贡献记录，并链接到证据、发表论文、章节和作者归属；
+7. `notes/claims.md` 中状态为 `proposed` 的论断记录。
+
+中心论点与贡献/归属映射必须经作者确认后，才能把 `notes/story.md` 标为 `finalized`。本 skill 不选择学校规范或章节文件。

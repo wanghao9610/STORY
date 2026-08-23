@@ -13,6 +13,6 @@ description: 导入、登记、刷新并检查 mates/ 下的学位论文证据�
 - `import source=<path> [slug=<name>]`：通过 `bash execs/scpts/import.sh` 导入 STAR、STAGE、STORY 或结构化证据仓库。
 - `register path=<file>`：确认来源、作者/所有者、日期和覆盖内容后，把人工材料复制到 `mates/manual/`。
 
-每个条目记录来源类型、来源路径或记录、可用时的 commit、SHA-256、系统导入日期和可支持内容。`covers` 描述不能替代实际阅读。
+为每个已登记文件记录来源类型、来源路径或记录、可用时的来源 commit、SHA-256、来自系统时钟的导入日期，以及该文件能够支持的内容。对文件覆盖范围的描述并不是某项论断的证据；起草 skill 仍须阅读该文件。
 
-不得修改 `mates/` 内的内容；应指出上游修正方式或登记新的修正版。本 skill 不修改正文。
+不得修复 `mates/` 下的内容；应指出上游修正位置，或登记新的已修正材料。本 skill 不更新任何正文。

@@ -1,5 +1,6 @@
 ---
 name: story-proj-adopt
+disable-model-invocation: true
 description: Safely adopt an existing dissertation, thesis draft, or Overleaf export into STORY by inventorying it, confirming a file map, preserving the source, recording unsourced claims, and verifying the resulting build.
 ---
 

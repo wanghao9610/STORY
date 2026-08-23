@@ -5,7 +5,7 @@ description: 规划、创建或修改一个学位论文图，保存可编辑源�
 
 # 设计一个可追溯图
 
-首先完整阅读 `docs/mds/story-workflow/writing-workflow-conventions.md`。从提纲解析一个图；新图先确认用途、章节和论断 ID。
+首先完整阅读 `docs/mds/story-workflow/writing-workflow-conventions.md`。从 `notes/outline.md` 解析一个图；添加新图前，先确认其用途、所属章节和论断 ID。
 
 选择能最直接表达目标关系的形式。可编辑源文件放在 `manus/figs/srcs/`，渲染产物放在 `manus/figs/`，并在源文件内或旁边保存可搜索的证据映射。
 

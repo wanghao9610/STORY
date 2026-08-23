@@ -1,7 +1,1 @@
-interface:
-  display_name: "Dissertation Copy Editor"
-  short_description: "Polish cross-chapter prose without changing facts"
-  brand_color: "#173B57"
-  default_prompt: "Use $story-copy-editor to harmonize terminology and flow across the dissertation."
-policy:
-  allow_implicit_invocation: true
+../../../../.codex/skills/story-copy-editor/agents/openai.yaml

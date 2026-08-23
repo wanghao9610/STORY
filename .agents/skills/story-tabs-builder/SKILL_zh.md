@@ -5,8 +5,10 @@ description: 从带指纹证据生成或修改一个学位论文表格，为每�
 
 # 构建一个证据驱动表格
 
-首先完整阅读 `docs/mds/story-workflow/writing-workflow-conventions.md`。从 `notes/outline.md` 解析一个表，或先确认新表的用途和所属章节。
+首先完整阅读 `docs/mds/story-workflow/writing-workflow-conventions.md`。从 `notes/outline.md` 解析一个表；如需新增表格，先确认其用途和所属章节，再添加状态为 `proposed` 的记录。
 
-本轮从已登记 `mates/` 文件重新读取每个数值，生成可编辑的 `manus/tabs/<slug>.tex`，使用清晰表头、明确单位、合理精度，并为每个承载论断的数据行写 `% src:`。缺失值保持 `\todo{...}`，不得从聊天或记忆抄写。
+本轮从已登记的 `mates/` 文件中读取每个来源数值。生成可编辑的 `manus/tabs/<slug>.tex`，使用可访问的表头、明确单位、有意义的精度，并为每个承载论断的数据行写 `% src:` 注释。缺失值保持 `\todo{...}`；不得从聊天或记忆抄写。
 
-检查数据集、划分、指标和方向是否可比；必要限制写进表注或正文。同步表格行和论断，接入所属章节后构建并 lint。图形化需求交给 `story-figs-designer`。
+检查比较项是否使用相容的数据集、划分、指标和方向。把必要限制写进表注或邻近正文，不得用格式隐藏。更新表格记录和关联论断，只在负责该表的章节中引入它，然后构建并 lint。
+
+不得虚构视觉编码或修改证据。把更适合图形表达的设计路由给 `story-figs-designer`。

@@ -1,7 +1,1 @@
-interface:
-  display_name: "Evidence Curator"
-  short_description: "Import and integrity-check dissertation evidence"
-  brand_color: "#173B57"
-  default_prompt: "Use $story-evid-curator to import and audit evidence from my research repositories."
-policy:
-  allow_implicit_invocation: true
+../../../../.codex/skills/story-evid-curator/agents/openai.yaml

@@ -1,5 +1,7 @@
 # STORY dissertation-workflow conventions
 
+**Language:** English | [简体中文](writing-workflow-conventions.zh-CN.md)
+
 This document is the shared contract for every `story-*` skill. STORY means **Systematic Toolchain for Organizing Research over Years**. One repository represents one doctoral dissertation.
 
 ## 1. Sources of truth
@@ -84,6 +86,7 @@ The final `deposit` milestone is blocked by unresolved `\todo` markers, failed l
 
 - `INVOLVE=low|medium|high` controls how often a skill asks before judgment calls. It never bypasses confirmation of institutional facts, attribution, deletion, overwriting, or final freeze.
 - `STORY_LANG=en|zh` controls replies and newly written Markdown. Empty follows the conversation. Existing files retain their language.
+- `STORY_MAIN` selects the default manuscript entry point for build and lint. A command-line `--main` overrides it; neither setting changes the manuscript language recorded in `degree/profile.tex`.
 - Manuscript language comes from `degree/profile.tex`; do not switch it because the conversation uses another language.
 - Dated artifacts use the system date. When model provenance is recorded, use the session-provided model ID; never invent one.
 - A skill edits only the files it owns. It routes work to another skill when ownership changes.
@@ -98,12 +101,14 @@ The final `deposit` milestone is blocked by unresolved `\todo` markers, failed l
 
 ## 9. Skill roster
 
+Skills marked † are explicit-only: they change thesis-wide structure, milestone handling, or institutional packaging and run only after the author directly chooses them. Codex enforces this in `.codex/skills/*/agents/openai.yaml`; the other harness trees use `disable-model-invocation: true`.
+
 | Skill | Owns |
 | --- | --- |
-| `story-proj-adopt` | Safe adoption of existing drafts |
+| `story-proj-adopt` † | Safe adoption of existing drafts |
 | `story-evid-curator` | Evidence import, registration, integrity |
-| `story-syns-coach` | Thesis-level research arc and contribution framing |
-| `story-outl-planner` | Chapter architecture and briefs |
+| `story-syns-coach` † | Thesis-level research arc and contribution framing |
+| `story-outl-planner` † | Chapter architecture and briefs |
 | `story-chap-drafter` | One chapter per run |
 | `story-tabs-builder` | Evidence-backed tables |
 | `story-figs-designer` | Evidence-backed figures and editable sources |
@@ -112,7 +117,7 @@ The final `deposit` milestone is blocked by unresolved `\todo` markers, failed l
 | `story-clms-auditor` | Quantitative and claim traceability audit |
 | `story-cite-auditor` | Citation-key and literature-assertion audit |
 | `story-exam-reviewer` | Mock examiner or committee review |
-| `story-revs-resolver` | Feedback point ledger and dispositions |
-| `story-defn-builder` | Defense narrative and deck |
-| `story-depo-packer` | Deposit preflight, package, and freeze record |
+| `story-revs-resolver` † | Feedback point ledger and dispositions |
+| `story-defn-builder` † | Defense narrative and deck |
+| `story-depo-packer` † | Deposit preflight, package, and freeze record |
 | `story-flow-status` | Read-only status and next action |

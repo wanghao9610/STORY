@@ -1,0 +1,7 @@
+interface:
+  display_name: "Workflow Status"
+  short_description: "Report dissertation state and one next action"
+  brand_color: "#173B57"
+  default_prompt: "Use $story-flow-status to inspect this dissertation and recommend the next action."
+policy:
+  allow_implicit_invocation: true

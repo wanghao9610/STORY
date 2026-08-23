@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # execs/update.sh — sync STORY-managed content from the upstream template (the
-# four per-harness skill trees, the four hook trees, docs/mds/story-workflow/,
+# shared skill source, six harness entry trees, all hook trees, docs/mds/story-workflow/,
 # the shared agent instructions, and every script under execs/ — both entrypoints,
 # this one included, and the three utilities in execs/scpts/), or install the
 # STORY skeleton into an existing dissertation repo with --adopt.
@@ -13,18 +13,31 @@ REF_SET=false
 ADOPT=false
 DIFF=false
 FORCE=false
+HARNESSES_ARG=""
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 ROOT_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd -P)"
 
 # The STORY-managed trees: overwritten on update, copy-if-absent on adopt.
-# One root per harness — same fifteen skills, harness-specific invocation
-# prefix and tool names.
+# One neutral root plus six harness-owned entry trees. Upstream stores identical
+# files once under .agents and links the entry trees to them; updates materialize
+# those links so a downstream project remains self-contained.
 SKILL_ROOTS=(
     ".agents/skills"
     ".claude/skills"
     ".cursor/skills"
+    ".dsh/skills"
     ".kimi-code/skills"
+    ".pi/skills"
+    ".qwen/skills"
+)
+CODEX_MANIFEST_ROOT=".codex/skills"
+HARNESS_ASSET_TREES=(
+    ".agents/commands"
+    ".claude/commands"
+    ".cursor/commands"
+    ".pi/prompts"
+    ".qwen/commands"
 )
 DOCS_TREE="docs/mds/story-workflow"
 
@@ -42,7 +55,10 @@ HOOK_TREES=(
     ".claude/hooks"
     ".codex/hooks"
     ".cursor/hooks"
+    ".dsh/hooks"
     ".kimi-code/hooks"
+    ".pi/extensions/story-hooks"
+    ".qwen/hooks"
 )
 
 # Single STORY-managed files an update overwrites alongside the trees above.
@@ -72,6 +88,9 @@ SYNC_FILES=(
     # Kimi has no project-level hook config, so its registration snippet ships
     # as documentation beside the hook rather than as a config an update keeps.
     ".kimi-code/hooks.example.toml"
+    ".dsh/cordis.patch.yml"
+    ".pi/APPEND_SYSTEM.md"
+    ".pi/APPEND_SYSTEM.zh-CN.md"
     "${SELF_PATH}"
 )
 
@@ -88,12 +107,12 @@ is_optional_path() {
     return 1
 }
 
-# The shared agent instructions and the Cursor rule that copies their body:
-# upstream-managed like the skills, and overwritten by an update. They are the
-# same document twice, and CI enforces the mirror, so they are synced as a pair
-# — a project's own conventions belong in a section the update does not own or
-# in .env, not in an edited copy of these.
-AGENT_DOC="AGENTS.md"
+# The shared agent instructions, their Chinese counterpart, the Chinese Claude
+# pointer, and the Cursor rule that copies the English body: upstream-managed
+# like the skills and overwritten by an update. A project's own conventions
+# belong in a section the update does not own or in .env, not in an edited copy
+# of these.
+AGENT_DOCS=("AGENTS.md" "AGENTS.zh-CN.md" "CLAUDE.zh-CN.md")
 AGENT_RULES_TREE=".cursor/rules"
 
 # Harness configuration a project may have edited: installed when it is missing
@@ -112,12 +131,21 @@ HARNESS_FILES=(
     ".claude/settings.json"
     ".codex/hooks.json"
     ".cursor/hooks.json"
+    ".dsh/hooks.json"
+    ".pi/settings.json"
+    ".qwen/settings.json"
 )
 HOOK_CONFIGS=(
     ".claude/settings.json"
     ".codex/hooks.json"
     ".cursor/hooks.json"
+    ".dsh/hooks.json"
+    ".qwen/settings.json"
 )
+
+# Harness trees named by --harnesses and STORY_HARNESSES. The neutral .agents
+# root belongs to the shared skeleton, not to Codex, and is updated on every run.
+ALL_HARNESSES=(claude codex cursor dsh kimi pi qwen)
 
 log() {
     printf '[STORY update] %s\n' "$*"
@@ -128,13 +156,68 @@ fail() {
     exit 1
 }
 
+# Which harness owns a path. Empty means shared and therefore always selected.
+path_harness() { # $1 = path relative to the project root
+    case "$1" in
+        .agents/*)               printf '' ;;
+        .codex/*)                printf 'codex' ;;
+        .claude/*)               printf 'claude' ;;
+        .cursor/*|.cursorignore) printf 'cursor' ;;
+        .dsh/*)                  printf 'dsh' ;;
+        .kimi-code/*)            printf 'kimi' ;;
+        .pi/*)                   printf 'pi' ;;
+        .qwen/*)                 printf 'qwen' ;;
+    esac
+}
+
+# Directories a selected harness needs in the sparse checkout. The shared
+# .agents root is fetched separately because every run updates it.
+harness_dirs() { # $1 = harness name
+    case "$1" in
+        claude) printf '.claude' ;;
+        codex)  printf '.codex' ;;
+        cursor) printf '.cursor' ;;
+        dsh)    printf '.dsh' ;;
+        kimi)   printf '.kimi-code' ;;
+        pi)     printf '.pi' ;;
+        qwen)   printf '.qwen' ;;
+    esac
+}
+
+is_selected() { # $1 = harness name
+    local name
+    for name in ${SELECTED_HARNESSES[@]+"${SELECTED_HARNESSES[@]}"}; do
+        [[ "${name}" == "$1" ]] && return 0
+    done
+    return 1
+}
+
+# True for a shared path or a path owned by a selected harness.
+path_selected() { # $1 = path relative to the project root
+    local harness
+    harness="$(path_harness "$1")"
+    [[ -n "${harness}" ]] || return 0
+    is_selected "${harness}"
+}
+
+FILTERED=()
+filter_paths() { # $@ = paths relative to the project root
+    local path
+    FILTERED=()
+    for path in "$@"; do
+        if path_selected "${path}"; then
+            FILTERED+=("${path}")
+        fi
+    done
+}
+
 # Every harness-configuration file the fetched ref actually carries, one path
 # per line. A path the ref does not have is skipped rather than fatal — harness
 # configuration is optional to the update, unlike SYNC_PATHS.
 harness_rels() {
     local rel
     for rel in "${HARNESS_FILES[@]}"; do
-        if [[ -f "${SOURCE_DIR}/${rel}" ]]; then
+        if path_selected "${rel}" && [[ -f "${SOURCE_DIR}/${rel}" ]]; then
             printf '%s\n' "${rel}"
         fi
     done
@@ -148,6 +231,7 @@ harness_rels() {
 report_unregistered_hooks() {
     local cfg missing hook label hooks
     for cfg in "${HOOK_CONFIGS[@]}"; do
+        path_selected "${cfg}" || continue
         [[ -e "${ROOT_DIR}/${cfg}" ]] || continue
         missing=""
         # The commit guard declines a shell command before it runs, which every
@@ -158,7 +242,7 @@ report_unregistered_hooks() {
         hooks=("story_memory.sh|project-memory" "story_model_id.sh|model-id provenance"
                "story_commit_guard.sh|commit guard")
         case "${cfg}" in
-            .claude/settings.json|.codex/hooks.json)
+            .claude/settings.json|.codex/hooks.json|.qwen/settings.json)
                 hooks+=("story_involve_gate.sh|involve gate") ;;
         esac
         for hook in "${hooks[@]}"; do
@@ -182,22 +266,30 @@ report_unregistered_hooks() {
 
 usage() {
     cat <<'EOF'
-Usage: bash execs/update.sh [ref] [--skill NAME] [--force]
-       bash execs/update.sh --diff [ref] [--skill NAME] [--force]
-       bash execs/update.sh --adopt
+Usage: bash execs/update.sh [ref] [--harnesses LIST] [--skill NAME] [--force]
+       bash execs/update.sh --diff [ref] [--harnesses LIST] [--skill NAME] [--force]
+       bash execs/update.sh [ref] [--harnesses LIST] --adopt
 
 Overwrite the STORY-managed content — the shared agent instructions (AGENTS.md
-and the Cursor rule that copies its body), the four per-harness skill trees
-(.claude/skills/, .agents/skills/, .cursor/skills/, .kimi-code/skills/), the
-four session-hook trees that inject the project-memory index and the session's
-model id, docs/mds/story-workflow/, and every script under execs/ — the two
+and the Cursor rule that copies its body), the neutral skill source plus six
+harness entry trees (.agents, .claude, .cursor, .dsh, .kimi-code, .pi, .qwen),
+Codex's per-skill manifests, harness commands/prompts, the session hooks that
+inject project memory and model provenance, docs/mds/story-workflow/, and every script under execs/ — the two
 entrypoints, run.sh and this one, and the three utilities in execs/scpts/:
 import.sh, lint.sh, fmt.sh — with files from upstream.
 The default ref is main; a branch or tag may be supplied instead. Local edits to
 those paths are replaced, AGENTS.md included; the manuscript, evidence, notes,
 and the memory store under .story/memory/ are never touched. Use --skill to
-update only the named skill across all four skill trees (it leaves everything
-else, entrypoints and docs included, alone).
+update only the named skill across the neutral source, six entry trees, Codex
+manifest, and Pi prompt (it leaves everything else, entrypoints and docs
+included, alone).
+
+--harnesses limits the run to comma-separated harness trees: claude, codex,
+cursor, dsh, kimi, pi, or qwen — or all, the default, or none for shared paths
+only. Without the flag, STORY_HARNESSES is resolved from the environment, then
+.env, then defaults to all. A tree left out is neither installed nor updated.
+Shared paths such as .agents/skills, docs/mds/story-workflow, execs/, and
+AGENTS.md remain in scope for every selection.
 
 No script under execs/ holds project configuration — everything an instance sets
 lives in .env, which is git-ignored and never synced — so all five are safe to
@@ -209,9 +301,9 @@ update mechanism too old to fetch its successor: it is installed by rename,
 which leaves this running process on the old file and gives the next invocation
 the new one.
 
-Harness configuration an instance may have edited — .cursorignore and the three
-hook registrations (.claude/settings.json, .codex/hooks.json, .cursor/hooks.json)
-— is installed when it is absent and otherwise kept, however far it has drifted
+Harness configuration an instance may have edited — .cursorignore plus hook
+registrations and harness settings under .claude, .codex, .cursor, .dsh, .pi,
+and .qwen — is installed when it is absent and otherwise kept, however far it has drifted
 from upstream; only --force overwrites it. A kept registration that does not name
 a hook is reported, since a hook nobody registers never fires.
 
@@ -244,6 +336,8 @@ Examples:
   bash execs/update.sh --force
   bash execs/update.sh --skill story-chap-drafter
   bash execs/update.sh TAG_OR_BRANCH --skill story-chap-drafter
+  bash execs/update.sh --harnesses claude
+  bash execs/update.sh --harnesses claude,pi --diff
 
   cd /path/to/my-dissertation
   curl -fsSL https://raw.githubusercontent.com/wanghao9610/STORY/main/execs/update.sh -o /tmp/story-update.sh
@@ -268,6 +362,17 @@ while (( $# > 0 )); do
             SKILL_NAME="${1#*=}"
             [[ -n "${SKILL_NAME}" ]] || fail "--skill requires a skill name."
             ;;
+        --harnesses)
+            shift
+            (( $# > 0 )) || fail "--harnesses requires a list of harnesses."
+            [[ -z "${HARNESSES_ARG}" ]] || fail "--harnesses may only be specified once."
+            HARNESSES_ARG="$1"
+            ;;
+        --harnesses=*)
+            [[ -z "${HARNESSES_ARG}" ]] || fail "--harnesses may only be specified once."
+            HARNESSES_ARG="${1#*=}"
+            [[ -n "${HARNESSES_ARG}" ]] || fail "--harnesses requires a list of harnesses."
+            ;;
         --adopt)
             ADOPT=true
             ;;
@@ -289,6 +394,61 @@ while (( $# > 0 )); do
     shift
 done
 
+# --adopt targets the current repository; every other mode targets the project
+# containing this script. Read that project's .env for persistent selection.
+ENV_DIR="${ROOT_DIR}"
+[[ "${ADOPT}" == false ]] || ENV_DIR="$(pwd -P)"
+
+env_value() { # $1 = key; print its last assignment in the target .env
+    [[ -f "${ENV_DIR}/.env" ]] || return 0
+    sed -n "s/^$1=//p" "${ENV_DIR}/.env" | tail -1
+}
+
+HARNESSES_SPEC="${HARNESSES_ARG}"
+HARNESSES_SOURCE="--harnesses"
+if [[ -z "${HARNESSES_SPEC}" ]]; then
+    HARNESSES_SPEC="${STORY_HARNESSES:-}"
+    HARNESSES_SOURCE="the STORY_HARNESSES environment variable"
+fi
+if [[ -z "${HARNESSES_SPEC}" ]]; then
+    HARNESSES_SPEC="$(env_value STORY_HARNESSES)"
+    HARNESSES_SOURCE="STORY_HARNESSES in .env"
+fi
+if [[ -z "${HARNESSES_SPEC}" ]]; then
+    HARNESSES_SPEC="all"
+    HARNESSES_SOURCE="the default"
+fi
+
+SELECTED_HARNESSES=()
+if [[ "${HARNESSES_SPEC}" == all ]]; then
+    SELECTED_HARNESSES=("${ALL_HARNESSES[@]}")
+elif [[ "${HARNESSES_SPEC}" != none ]]; then
+    while IFS= read -r name; do
+        name="${name//[[:space:]]/}"
+        [[ -n "${name}" ]] || continue
+        known=false
+        for harness in "${ALL_HARNESSES[@]}"; do
+            [[ "${name}" == "${harness}" ]] && known=true
+        done
+        [[ "${known}" == true ]] || \
+            fail "Unknown harness '${name}' in ${HARNESSES_SOURCE}. Valid: ${ALL_HARNESSES[*]}, all, none."
+        is_selected "${name}" || SELECTED_HARNESSES+=("${name}")
+    done < <(tr ',' '\n' <<<"${HARNESSES_SPEC}")
+    (( ${#SELECTED_HARNESSES[@]} > 0 )) || \
+        fail "${HARNESSES_SOURCE} names no harness. Use 'none' to update shared paths only."
+fi
+
+if (( ${#SELECTED_HARNESSES[@]} < ${#ALL_HARNESSES[@]} )); then
+    untouched=()
+    for harness in "${ALL_HARNESSES[@]}"; do
+        is_selected "${harness}" || untouched+=("${harness}")
+    done
+    selected_label="none"
+    (( ${#SELECTED_HARNESSES[@]} == 0 )) || selected_label="${SELECTED_HARNESSES[*]}"
+    log "Harnesses (${HARNESSES_SOURCE}): ${selected_label}."
+    log "Left alone, neither written nor deleted: ${untouched[*]}."
+fi
+
 if [[ "${ADOPT}" == true ]]; then
     [[ -z "${SKILL_NAME}" ]] || fail "--adopt cannot be combined with --skill."
     [[ "${DIFF}" == false ]] || fail "--adopt cannot be combined with --diff."
@@ -305,6 +465,8 @@ if [[ "${ADOPT}" == true ]]; then
     # Directories merged file by file, and single files, all copy-if-absent.
     ADOPT_TREES=(
         "${SKILL_ROOTS[@]}"
+        "${CODEX_MANIFEST_ROOT}"
+        "${HARNESS_ASSET_TREES[@]}"
         "${HOOK_TREES[@]}"
         "${AGENT_RULES_TREE}"
         "${DOCS_TREE}"
@@ -316,13 +478,17 @@ if [[ "${ADOPT}" == true ]]; then
         "milestones"
     )
     ADOPT_FILES=(
-        "${AGENT_DOC}"
+        "${AGENT_DOCS[@]}"
         "${HARNESS_FILES[@]}"
         ".kimi-code/hooks.example.toml"
+        ".dsh/cordis.patch.yml"
+        ".pi/APPEND_SYSTEM.md"
+        ".pi/APPEND_SYSTEM.zh-CN.md"
         # The memory store's index. The store is the dissertation's own from here on;
         # only this seed file, which documents the line format, comes from
         # upstream.
         ".story/memory/MEMORY.md"
+        ".story/memory/MEMORY.zh-CN.md"
         ".env.example"
         ".gitignore"
         # The line-break rule fmt.sh applies and .vscode/settings.json points
@@ -362,6 +528,12 @@ if [[ "${ADOPT}" == true ]]; then
         "wkdrs"
         "execs/scpts"
     )
+    # Layout directories are shared and always created. Harness-owned trees and
+    # files are installed only when their harness is selected.
+    filter_paths "${ADOPT_TREES[@]}"
+    ADOPT_TREES=("${FILTERED[@]}")
+    filter_paths "${ADOPT_FILES[@]}"
+    ADOPT_FILES=("${FILTERED[@]}")
 elif [[ -n "${SKILL_NAME}" ]]; then
     [[ "${SKILL_NAME}" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || \
         fail "Invalid skill name '${SKILL_NAME}'."
@@ -370,7 +542,20 @@ elif [[ -n "${SKILL_NAME}" ]]; then
     for root in "${SKILL_ROOTS[@]}"; do
         SYNC_PATHS+=("${root}/${SKILL_NAME}")
     done
-    SPARSE_PATHS=("${SYNC_PATHS[@]}")
+    SYNC_PATHS+=("${CODEX_MANIFEST_ROOT}/${SKILL_NAME}" ".pi/prompts/${SKILL_NAME}.md")
+    filter_paths "${SYNC_PATHS[@]}"
+    SYNC_PATHS=("${FILTERED[@]}")
+
+    # The neutral skill and Codex manifest are always fetched because upstream
+    # harness trees link into them, even when only another harness is written.
+    SPARSE_PATHS=()
+    for path in "${SYNC_PATHS[@]}"; do
+        case "${path}" in
+            .pi/prompts/*.md) SPARSE_PATHS+=("$(dirname -- "${path}")") ;;
+            *)                SPARSE_PATHS+=("${path}") ;;
+        esac
+    done
+    SPARSE_PATHS+=(".agents/skills/${SKILL_NAME}" "${CODEX_MANIFEST_ROOT}/${SKILL_NAME}")
 
     if [[ "${DIFF}" == true ]]; then
         log "Diffing skill: ${SKILL_NAME}"
@@ -386,26 +571,25 @@ else
     # in instead; fetching a few siblings we do not copy is cheaper than getting
     # this subtly wrong.
     SYNC_PATHS=(
-        "${AGENT_DOC}"
+        "${AGENT_DOCS[@]}"
         "${AGENT_RULES_TREE}"
         "${SKILL_ROOTS[@]}"
+        "${CODEX_MANIFEST_ROOT}"
+        "${HARNESS_ASSET_TREES[@]}"
         "${HOOK_TREES[@]}"
         "${DOCS_TREE}"
         "${SYNC_FILES[@]}"
     )
-    SPARSE_PATHS=(
-        "${AGENT_RULES_TREE}"
-        "${SKILL_ROOTS[@]}"
-        "${HOOK_TREES[@]}"
-        "${DOCS_TREE}"
-    )
-    # Parent directories of every synced or kept single file. The harness
-    # configs are named explicitly rather than left to cone mode's ancestor
-    # rule: harness_rels() checks them in the fetched tree, and a config the
-    # checkout that never created it would read as "upstream does not have it".
-    for f in "${SYNC_FILES[@]}" "${HARNESS_FILES[@]}"; do
-        d="$(dirname -- "${f}")"
-        [[ "${d}" == "." ]] || SPARSE_PATHS+=("${d}")
+    filter_paths "${SYNC_PATHS[@]}"
+    SYNC_PATHS=("${FILTERED[@]}")
+
+    # Fetch shared paths plus only the selected harness directories. Codex's
+    # manifest source is fetched unconditionally so links from .agents resolve;
+    # it is copied only when codex is selected.
+    SPARSE_PATHS=("${DOCS_TREE}" execs .agents "${CODEX_MANIFEST_ROOT}")
+    for harness in ${SELECTED_HARNESSES[@]+"${SELECTED_HARNESSES[@]}"}; do
+        read -ra harness_roots <<<"$(harness_dirs "${harness}")"
+        SPARSE_PATHS+=("${harness_roots[@]}")
     done
 fi
 
@@ -418,8 +602,8 @@ if [[ "${ADOPT}" == false ]]; then
 fi
 
 # Upstream resolution: environment wins, then .env, then the public default.
-if [[ -z "${STORY_REPOSITORY:-}" && -f "${ROOT_DIR}/.env" ]]; then
-    STORY_REPOSITORY="$(sed -n 's/^STORY_REPOSITORY=//p' "${ROOT_DIR}/.env" | tail -1)"
+if [[ -z "${STORY_REPOSITORY:-}" ]]; then
+    STORY_REPOSITORY="$(env_value STORY_REPOSITORY)"
 fi
 STORY_REPOSITORY="${STORY_REPOSITORY:-https://github.com/wanghao9610/STORY.git}"
 
@@ -441,7 +625,10 @@ ARCHIVE_FILE="${TEMP_DIR}/story-content.tar"
 
 log "Fetching ${STORY_REF} from ${STORY_REPOSITORY}"
 
-CLONE_ARGS=(--quiet --depth 1 --branch "${STORY_REF}" --single-branch)
+# Force real symlinks in the temporary checkout. The upstream harness trees use
+# links into .agents/skills; a checkout that turns them into path-text files
+# would otherwise install those path strings as skill content.
+CLONE_ARGS=(-c core.symlinks=true --quiet --depth 1 --branch "${STORY_REF}" --single-branch)
 if [[ "${ADOPT}" == false ]]; then
     CLONE_ARGS+=(--filter=blob:none --sparse)
 fi
@@ -487,7 +674,7 @@ if [[ "${ADOPT}" == false ]]; then
                 printf '  differs  %s\n' "${rel}"
                 changed=$(( changed + 1 ))
             fi
-        done < <(cd "${SOURCE_DIR}" && find "${SYNCED[@]}" -type f | sort)
+        done < <(cd "${SOURCE_DIR}" && find -L "${SYNCED[@]}" -type f | sort)
 
         # Project-local files under the same paths; an update keeps them.
         while IFS= read -r rel; do
@@ -495,7 +682,7 @@ if [[ "${ADOPT}" == false ]]; then
                 printf '  extra    %s (not in upstream ref; update keeps it)\n' "${rel}"
                 kept=$(( kept + 1 ))
             fi
-        done < <(cd "${ROOT_DIR}" && find "${SYNCED[@]}" -type f 2>/dev/null | sort)
+        done < <(cd "${ROOT_DIR}" && find -L "${SYNCED[@]}" -type f 2>/dev/null | sort)
 
         # Harness configuration: installed when missing, kept when it differs —
         # unless --force, which puts it back in the overwrite set. A skill-only
@@ -520,6 +707,7 @@ if [[ "${ADOPT}" == false ]]; then
             hint="bash execs/update.sh"
             [[ "${REF_SET}" == false ]] || hint="${hint} ${STORY_REF}"
             [[ -z "${SKILL_NAME}" ]] || hint="${hint} --skill ${SKILL_NAME}"
+            [[ -z "${HARNESSES_ARG}" ]] || hint="${hint} --harnesses ${HARNESSES_ARG}"
             [[ "${FORCE}" == false ]] || hint="${hint} --force"
             log "${changed} differ, ${added} new upstream, ${kept} extra local."
             log "'differs' is direction-blind: it includes files you edited yourself."
@@ -541,7 +729,8 @@ if [[ "${ADOPT}" == false ]]; then
         # what gets reported as about to be lost.
         DIRTY_PATHS=("${SYNCED[@]}")
         if [[ "${FORCE}" == true && -z "${SKILL_NAME}" ]]; then
-            DIRTY_PATHS+=("${HARNESS_FILES[@]}")
+            filter_paths "${HARNESS_FILES[@]}"
+            DIRTY_PATHS+=("${FILTERED[@]}")
         fi
         DIRTY="$(git -C "${ROOT_DIR}" status --porcelain -- "${DIRTY_PATHS[@]}" 2>/dev/null || true)"
         if [[ -n "${DIRTY}" ]]; then
@@ -564,7 +753,13 @@ if [[ "${ADOPT}" == false ]]; then
         [[ "${path}" == "${SELF_PATH}" ]] || TAR_PATHS+=("${path}")
     done
 
-    tar -C "${SOURCE_DIR}" -cf "${ARCHIVE_FILE}" "${TAR_PATHS[@]}"
+    # Materialize upstream symlinks. Downstream projects may update only one
+    # harness, so installing links into an unselected tree would be fragile.
+    TAR_CREATE_ARGS=(-ch)
+    if tar --help 2>/dev/null | grep -q -- --hard-dereference; then
+        TAR_CREATE_ARGS+=(--hard-dereference)
+    fi
+    tar -C "${SOURCE_DIR}" "${TAR_CREATE_ARGS[@]}" -f "${ARCHIVE_FILE}" "${TAR_PATHS[@]}"
     tar -C "${ROOT_DIR}" -xf "${ARCHIVE_FILE}"
 
     # Self-update by rename. `mv` within the same directory is rename(2): the
@@ -635,7 +830,7 @@ for tree in "${ADOPT_TREES[@]}"; do
     [[ -d "${SOURCE_DIR}/${tree}" ]] || fail "Upstream ref is missing ${tree}."
     while IFS= read -r rel; do
         install_file "${rel}"
-    done < <(cd "${SOURCE_DIR}" && find "${tree}" -type f | sort)
+    done < <(cd "${SOURCE_DIR}" && find -L "${tree}" -type f | sort)
 done
 
 for file in "${ADOPT_FILES[@]}"; do
@@ -692,4 +887,9 @@ fi
 report_unregistered_hooks
 
 log "Next: copy .env.example to .env, then run story-proj-adopt in your agent to wire the dissertation up."
-log "      Kimi Code only: 'bash .kimi-code/hooks/install.sh' registers all three Kimi hooks once per machine."
+if is_selected dsh; then
+    log "      DSH only: 'bash .dsh/hooks/install.sh' registers the DSH hook bridge once per machine."
+fi
+if is_selected kimi; then
+    log "      Kimi Code only: 'bash .kimi-code/hooks/install.sh' registers all three Kimi hooks once per machine."
+fi
