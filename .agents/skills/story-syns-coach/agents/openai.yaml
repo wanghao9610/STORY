@@ -1,0 +1,7 @@
+interface:
+  display_name: "Synthesis Coach"
+  short_description: "Shape the thesis-level argument and contributions"
+  brand_color: "#173B57"
+  default_prompt: "Use $story-syns-coach to turn my research projects into one defensible dissertation story."
+policy:
+  allow_implicit_invocation: false

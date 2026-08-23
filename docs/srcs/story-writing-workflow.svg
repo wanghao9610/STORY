@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-labelledby="title desc">
+  <title id="title">STORY doctoral dissertation workflow</title>
+  <desc id="desc">Research evidence flows through synthesis and chapter writing to examination, defense, and deposit.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#b58a3a"/></marker>
+    <style>.box{fill:#fff;stroke:#173b57;stroke-width:2}.h{font:700 23px system-ui;fill:#173b57}.s{font:16px system-ui;fill:#42535f}.a{stroke:#b58a3a;stroke-width:4;marker-end:url(#arrow)}</style>
+  </defs>
+  <rect width="1200" height="300" rx="18" fill="#f7f4ed"/>
+  <line class="a" x1="235" y1="150" x2="285" y2="150"/>
+  <line class="a" x1="535" y1="150" x2="585" y2="150"/>
+  <line class="a" x1="835" y1="150" x2="885" y2="150"/>
+  <g transform="translate(35 80)"><rect class="box" width="200" height="140" rx="12"/><text class="h" x="100" y="48" text-anchor="middle">Evidence</text><text class="s" x="100" y="80" text-anchor="middle">STAR · STAGE · manual</text><text class="s" x="100" y="106" text-anchor="middle">fingerprinted in mates/</text></g>
+  <g transform="translate(285 80)"><rect class="box" width="250" height="140" rx="12"/><text class="h" x="125" y="48" text-anchor="middle">Synthesis</text><text class="s" x="125" y="80" text-anchor="middle">story · contributions</text><text class="s" x="125" y="106" text-anchor="middle">publications · claims</text></g>
+  <g transform="translate(585 80)"><rect class="box" width="250" height="140" rx="12"/><text class="h" x="125" y="48" text-anchor="middle">Dissertation</text><text class="s" x="125" y="80" text-anchor="middle">chapters · figures · tables</text><text class="s" x="125" y="106" text-anchor="middle">build · audit · revision</text></g>
+  <g transform="translate(885 80)"><rect class="box" width="280" height="140" rx="12"/><text class="h" x="140" y="48" text-anchor="middle">Degree</text><text class="s" x="140" y="80" text-anchor="middle">examination · defense</text><text class="s" x="140" y="106" text-anchor="middle">corrections · deposit</text></g>
+</svg>

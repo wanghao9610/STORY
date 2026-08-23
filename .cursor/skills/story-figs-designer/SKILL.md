@@ -1,0 +1,14 @@
+---
+name: story-figs-designer
+description: Plan, create, or revise one dissertation figure with an editable source, evidence mappings for claim-bearing marks and captions, and a rendered PDF under manus/figs/; use for conceptual, method, result, and synthesis figures.
+---
+
+# Design one traceable figure
+
+Read `docs/mds/story-workflow/writing-workflow-conventions.md` first. Resolve one figure from `notes/outline.md`, or confirm a new figure's purpose, chapter, and claim IDs before adding it.
+
+Choose the simplest visual form that makes the intended relationship easier to understand. Keep its editable source in `manus/figs/srcs/` and the rendered publication artifact in `manus/figs/`. Store a grep-readable source map beside or inside the editable source.
+
+Every data mark, numeric label, and comparative caption claim must map to registered evidence read in this run. Generated or decorative pixels are never evidence. Respect accessibility: legible type, non-color-only distinctions, suitable contrast, and an informative caption.
+
+Update the outline and linked claims, include the rendered figure in its owning chapter, then build and lint. Do not flatten away the only editable source.

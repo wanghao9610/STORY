@@ -1,0 +1,25 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{stys/story}[2026/08/23 v0.1 STORY authoring layer]
+
+\RequirePackage{xspace}
+\RequirePackage{tabularx}
+\RequirePackage{array}
+\RequirePackage{multirow}
+\RequirePackage{enumitem}
+\RequirePackage{caption}
+\RequirePackage{subcaption}
+
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+\newcommand{\parahead}[1]{\medskip\noindent\textbf{#1.}\xspace}
+\newcommand{\headbf}[1]{\textbf{#1}\xspace}
+\newcommand{\cmark}{\textcolor{green!50!black}{\ensuremath{\checkmark}}}
+\newcommand{\xmark}{\textcolor{red!70!black}{\ensuremath{\times}}}
+\newcommand{\chapref}[1]{\cref{#1}}
+\newcommand{\figref}[1]{\cref{#1}}
+\newcommand{\tabref}[1]{\cref{#1}}
+\newcommand{\eqnref}[1]{\cref{#1}}
+\newcommand{\appref}[1]{\cref{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\endinput

@@ -1,0 +1,35 @@
+# local runtime config
+.env
+
+# Machine-specific project memories, ignored the way .env is: the shared store
+# .story/memory/ travels with a clone, local/ does not.
+.story/memory/local/
+
+# builds and ephemeral reports live out-of-tree
+wkdrs/*
+!wkdrs/.gitkeep
+
+# Editor and IDE build directories inside the manuscript. run.sh builds
+# out-of-tree into wkdrs/, but LaTeX extensions (VS Code LaTeX Workshop and
+# friends) write beside the sources; manus/ has to stay free of build products
+# whatever produced them.
+manus/out/
+.vscode/ltex*
+.texpadtmp/
+
+# LaTeX junk (belt and suspenders; run.sh builds out-of-tree). The backups and
+# log are latexindent's: fmt.sh keeps both in a temp directory, a bare
+# `latexindent -w` run by hand does not.
+*.bak[0-9]*
+indent.log
+*.aux
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.log
+*.out
+*.synctex.gz
+*.toc
+
+.DS_Store

@@ -1,0 +1,135 @@
+{   
+    // Exclude files from being watched by the file system watcher
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/*/**": true,
+        ".*/**": true,
+    },
+    // Exclude files from being indexed by the search engine
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/__pycache__/**": true,
+        "**/.pyc": true,
+        "**/.*/**": true,
+        "**/*.pyc": true,
+    },
+    // Exclude files from being searched by the search engine
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/*.code-search": true,
+    },
+    // Aligns with execs/run.sh: manus/main.tex → wkdrs/builds/ (out-of-tree).
+    // extensions.latex
+    "[latex]": {
+        "editor.defaultFormatter": "James-Yu.latex-workshop",
+        "editor.formatOnSave": true
+    },
+    // Root search: a **/ glob so detection also works when the window is not
+    // opened at the repo root. A workspace-relative "manus/main.tex" matches
+    // nothing in that case and the extension refuses to build.
+    "latex-workshop.latex.search.rootFiles.include": [
+        "**/main.tex"
+    ],
+    "latex-workshop.hover.preview.mathjax.extensions": [
+        "boldsymbol"
+    ],
+    "latex-workshop.intellisense.package.enabled": true,
+    // Relative to the root file's directory (manus/), which is also the cwd
+    // LaTeX Workshop spawns latexmk in — so this lands in wkdrs/builds however
+    // the window was opened. %WORKSPACE_FOLDER% would not: it expands to
+    // workspaceFolders[0], which is the wrong folder in a multi-root workspace
+    // and an empty string with no folder open (outDir would become /wkdrs).
+    "latex-workshop.latex.outDir": "../wkdrs/builds",
+    "latex-workshop.mathpreviewpanel.cursor.enabled": true,
+    // A failed build must be visible: manus/stys/arxiv.cls requires pdftex, so a
+    // wrong engine dies with no PDF, and a suppressed popup leaves only a log
+    // fragment to go on. Warnings stay quiet — undefined refs to floats that are
+    // still planned are the normal mid-draft state here.
+    "latex-workshop.message.error.show": true,
+    "latex-workshop.message.warning.show": false,
+    "latex-workshop.showContextMenu": true,
+    "latex-workshop.view.pdf.internal.synctex.keybinding": "double-click",
+    "latex-workshop.latex.autoBuild.run": "onSave",
+    "latex-workshop.view.pdf.viewer": "tab",
+    "latex-workshop.view.pdf.tab.editorGroup": "right",
+    // Never: onBuilt deletes the aux after every compile, then the next latexmk
+    // fabricates an empty stub and runs bibtex on it first — "I found no
+    // \citation / \bibdata / \bibstyle commands" — and never reaches pdflatex.
+    // Aux files live in gitignored wkdrs/builds/; latexmk needs them to rebuild.
+    "latex-workshop.latex.autoClean.run": "onBuilt",
+    "latex-workshop.formatting.latex": "latexindent",
+    "latex-workshop.formatting.latexindent.path": "latexindent",
+    // indent.log goes to the extension's tmp dir, not %OUTDIR%: wkdrs/builds is
+    // gitignored and absent in a fresh clone, and latexindent exits non-zero
+    // when -g points into a directory that does not exist yet — which surfaces
+    // as a "Formatting failed" popup on the first save, before any build.
+    "latex-workshop.formatting.latexindent.args": [
+        "-g",
+        "%TMPDIR%/indent.log",
+        "%TMPFILE%",
+        "-y=defaultIndent: '%INDENT%'"
+    ],
+    // PdfLaTeX first, because "first" is the recipe LaTeX Workshop builds with
+    // when latex-workshop.latex.recipe.default is unset — which matches .env's
+    // LATEX_ENGINE=pdflatex and execs/run.sh, the repo's only sanctioned build.
+    // No XeLaTeX recipe: manus/stys/arxiv.cls disables sans f-ligatures through
+    // microtype's \DisableLigatures, which needs pdftex, so xelatex stops there
+    // with an error and produces nothing. LuaLaTeX does build and is kept.
+    "latex-workshop.latex.recipes": [
+        {
+            "name": "PdfLaTeX",
+            "tools": [
+                "pdflatexmk"
+            ]
+        },
+        {
+            "name": "LuaLaTeX",
+            "tools": [
+                "lualatexmk"
+            ]
+        }
+    ],
+    "latex-workshop.latex.tools": [
+        {
+            "name": "pdflatexmk",
+            "command": "latexmk",
+            "args": [
+                "-synctex=1",
+                "-pdf",
+                "-interaction=nonstopmode",
+                "-file-line-error",
+                "-cd",
+                "-outdir=%OUTDIR%",
+                "%DOC%"
+            ],
+            "env": {
+                "TEXINPUTS": "%DIR%/stys:",
+                "BSTINPUTS": "%DIR%/stys:"
+            }
+        },
+        {
+            "name": "lualatexmk",
+            "command": "latexmk",
+            "args": [
+                "-synctex=1",
+                "-lualatex",
+                "-interaction=nonstopmode",
+                "-file-line-error",
+                "-cd",
+                "-outdir=%OUTDIR%",
+                "%DOC%"
+            ],
+            "env": {
+                "TEXINPUTS": "%DIR%/stys:",
+                "BSTINPUTS": "%DIR%/stys:"
+            }
+        }
+    ]
+}

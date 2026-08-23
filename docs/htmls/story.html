@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>STORY — Doctoral Dissertation Workflow</title>
+  <style>
+    :root { --ink:#173b57; --gold:#b58a3a; --paper:#f7f4ed; --card:#fff; }
+    * { box-sizing:border-box; }
+    body { margin:0; font:17px/1.65 system-ui,sans-serif; color:#24313a; background:var(--paper); }
+    main { max-width:1000px; margin:auto; padding:72px 24px; }
+    header { text-align:center; padding:56px 20px 72px; }
+    h1 { margin:0; color:var(--ink); font-size:clamp(4rem,12vw,8rem); letter-spacing:.08em; }
+    h2 { color:var(--ink); margin-top:54px; }
+    .expansion { font-weight:700; font-size:1.2rem; }
+    .tagline { color:#6e5730; font-style:italic; }
+    .chain { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin:36px 0; }
+    .card { background:var(--card); border-top:4px solid var(--gold); padding:24px; border-radius:8px; box-shadow:0 8px 24px #173b5712; }
+    .card strong { display:block; color:var(--ink); font-size:1.45rem; }
+    code { color:var(--ink); background:#e9eef1; padding:.12em .35em; border-radius:4px; }
+    pre { background:var(--ink); color:#f6f2e8; padding:20px; overflow:auto; border-radius:8px; }
+    a { color:var(--ink); }
+    footer { margin-top:70px; border-top:1px solid #cfc7b7; padding-top:24px; color:#69747b; }
+    @media (max-width:700px) { .chain { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body><main>
+  <header>
+    <h1>STORY</h1>
+    <p class="expansion">Systematic Toolchain for Organizing Research over Years</p>
+    <p class="tagline">A STAR takes the STAGE to tell a STORY.</p>
+    <p><a href="story_zh.html">简体中文</a> · <a href="../../README.md">Repository documentation</a></p>
+  </header>
+
+  <section class="chain">
+    <div class="card"><strong>STAR</strong>Conducts research and produces evidence.</div>
+    <div class="card"><strong>STAGE</strong>Turns one contribution into a paper.</div>
+    <div class="card"><strong>STORY</strong>Synthesizes years of work into a dissertation.</div>
+  </section>
+
+  <h2>One repository, one dissertation</h2>
+  <p>STORY keeps the manuscript, fingerprinted evidence, doctoral contributions, publication reuse, institutional requirements, committee feedback, defense materials, corrections, and deposit record in explicit, reviewable locations.</p>
+
+  <h2>From evidence to degree</h2>
+  <img src="../srcs/story-writing-workflow.svg" alt="STORY workflow from research evidence through dissertation synthesis to defense and deposit" style="width:100%;height:auto">
+
+  <h2>Start</h2>
+  <pre><code>git clone https://github.com/wanghao9610/STORY.git my-dissertation
+cd my-dissertation
+cp .env.example .env
+bash execs/run.sh
+bash execs/scpts/lint.sh</code></pre>
+
+  <p>The generic template compiles immediately. Institutional templates and degree rules enter only as author-confirmed facts under <code>degree/</code>.</p>
+  <footer>STORY — Systematic Toolchain for Organizing Research over Years</footer>
+</main></body>
+</html>

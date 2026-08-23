@@ -1,0 +1,118 @@
+# STORY dissertation-workflow conventions
+
+This document is the shared contract for every `story-*` skill. STORY means **Systematic Toolchain for Organizing Research over Years**. One repository represents one doctoral dissertation.
+
+## 1. Sources of truth
+
+| Question | Owning file or directory |
+| --- | --- |
+| What degree and institutional rules apply? | `degree/profile.tex`, `degree/requirements.md` |
+| Who is on the committee? | `degree/committee.md` |
+| What is the dissertation's central argument? | `notes/story.md` |
+| What are the doctoral contributions? | `notes/contributions.md` |
+| What published material is reused and how? | `notes/publications.md` |
+| What is each chapter supposed to do? | `notes/outline.md` |
+| Where is a claim stated and evidenced? | `notes/claims.md` |
+| What does a cited work support? | `notes/refs/` |
+| What did a review, defense, or deposit attempt require? | `milestones/<slug>/` |
+| What remains unresolved? | `tasks/` |
+
+Chat history and `.story/memory/` never override these files.
+
+## 2. Evidence contract
+
+1. A file becomes evidence only after it has a `mates/MANIFEST.md` entry and a matching fingerprint.
+2. `mates/` is immutable in place. Refresh an imported artifact from its source or register a corrected artifact as a new record.
+3. Every quantitative or comparative statement in `manus/` has a nearby `% src: mates/<path>#<anchor>` comment or a claim-ledger evidence link.
+4. When evidence is missing, write `\todo{...}`. Never interpolate, remember, or invent a plausible value.
+5. Assertions about literature require a reading note or imported source that was checked in the current run.
+6. A STAGE paper can supply wording and a published result, but it does not erase the underlying STAR evidence, coauthor attribution, or reuse policy.
+
+## 3. Claim and contribution states
+
+Claim IDs use `C001`, `C002`, and so on. Valid statuses are:
+
+- `proposed`: accepted into the thesis plan but not yet stated;
+- `drafted`: stated in `manus/` but not audited;
+- `verified`: wording and evidence agree;
+- `weakened`: scope was narrowed after evidence or review;
+- `unsourced`: stated content lacks sufficient evidence;
+- `retired`: intentionally removed and no longer stated.
+
+Contribution IDs use `D001`, `D002`, and so on. A contribution row must name its research question, evidence, publications, chapters, attribution, and status. A chapter is not automatically a contribution; a publication is not automatically a doctoral contribution.
+
+## 4. Publication reuse and attribution
+
+Before adapting substantial text, figures, tables, or structure from a paper, add or confirm its row in `notes/publications.md`. Record:
+
+- complete authorship;
+- the author's contribution;
+- candidate dissertation chapters;
+- reused or adapted material;
+- copyright, license, or program policy status;
+- overlap that must be rewritten or disclosed.
+
+Never describe collaborative work as solely the candidate's. Never infer permission from public availability.
+
+## 5. Chapter contract
+
+Chapter files are `manus/chaps/<n>_<slug>.tex`. The numeric prefix, `notes/outline.md`, and `manus/main.tex` input order must agree.
+
+Each chapter brief states its purpose, research questions, contribution IDs, claim IDs, required evidence, planned figures/tables, dependencies, and exit condition. Research chapters must be rewritten into the dissertation arc; concatenating paper introductions and conclusions is not synthesis.
+
+Front matter lives in `manus/fronts/`; appendices and other back matter live in `manus/backs/`. Project-specific LaTeX commands belong in `manus/main.tex`, not the reusable class or package.
+
+## 6. Milestone contract
+
+Each durable event lives in `milestones/<slug>/`, with a user-confirmed `milestone.yml`. Recommended fields are:
+
+```yaml
+kind: defense
+status: planned
+due: ""
+requirements_source: ""
+max_pages: ""
+confirmed_by: ""
+confirmed_on: ""
+```
+
+Received feedback is copied unchanged into `feedback/`. A response point ledger in `response/` maps every item to a disposition: `accepted`, `completed`, `planned`, `disagreed`, or `needs-author`. Promised changes also become checkboxes under `tasks/`.
+
+The final `deposit` milestone is blocked by unresolved `\todo` markers, failed lint, unchecked institutional requirements, open feedback promises, missing reuse permissions, or an unrecorded committee approval.
+
+## 7. Interaction, language, and provenance
+
+- `INVOLVE=low|medium|high` controls how often a skill asks before judgment calls. It never bypasses confirmation of institutional facts, attribution, deletion, overwriting, or final freeze.
+- `STORY_LANG=en|zh` controls replies and newly written Markdown. Empty follows the conversation. Existing files retain their language.
+- Manuscript language comes from `degree/profile.tex`; do not switch it because the conversation uses another language.
+- Dated artifacts use the system date. When model provenance is recorded, use the session-provided model ID; never invent one.
+- A skill edits only the files it owns. It routes work to another skill when ownership changes.
+
+## 8. Verification
+
+- Any change under `manus/` ends with `bash execs/run.sh`.
+- Run `bash execs/scpts/lint.sh` when citations, references, todos, metadata, page limits, or deposit readiness may have changed.
+- Re-read each cited evidence value during the run; a remembered value or fingerprint is insufficient.
+- Reports under `wkdrs/` are regenerable. Durable decisions update `degree/`, `notes/`, `milestones/`, or `tasks/`.
+- A completion report names the built PDF, page count, lint verdict, ledger changes, and remaining gates.
+
+## 9. Skill roster
+
+| Skill | Owns |
+| --- | --- |
+| `story-proj-adopt` | Safe adoption of existing drafts |
+| `story-evid-curator` | Evidence import, registration, integrity |
+| `story-syns-coach` | Thesis-level research arc and contribution framing |
+| `story-outl-planner` | Chapter architecture and briefs |
+| `story-chap-drafter` | One chapter per run |
+| `story-tabs-builder` | Evidence-backed tables |
+| `story-figs-designer` | Evidence-backed figures and editable sources |
+| `story-refs-curator` | Bibliography and reading notes |
+| `story-copy-editor` | Voice, terminology, flow, and consistency |
+| `story-clms-auditor` | Quantitative and claim traceability audit |
+| `story-cite-auditor` | Citation-key and literature-assertion audit |
+| `story-exam-reviewer` | Mock examiner or committee review |
+| `story-revs-resolver` | Feedback point ledger and dispositions |
+| `story-defn-builder` | Defense narrative and deck |
+| `story-depo-packer` | Deposit preflight, package, and freeze record |
+| `story-flow-status` | Read-only status and next action |

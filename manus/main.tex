@@ -1,0 +1,43 @@
+%% STORY dissertation entry point.
+%% Build: bash execs/run.sh
+%% Check: bash execs/scpts/lint.sh
+\documentclass[oneside]{stys/story}
+\usepackage{stys/story}
+
+%% One source of truth for title-page and degree metadata.
+\input{../degree/profile}
+
+%% Dissertation-wide notation belongs here and in notes/notation.md.
+% \newcommand{\method}{MethodName\xspace}
+
+\begin{document}
+
+\hypersetup{pageanchor=false}
+\maketitle
+\hypersetup{pageanchor=true}
+\frontmatter
+\input{fronts/abstract}
+% \input{fronts/acknowledgements}
+% \input{fronts/declaration}
+\tableofcontents
+%% Uncomment when the dissertation contains figures or tables.
+% \listoffigures
+% \listoftables
+
+\mainmatter
+\input{chaps/1_introduction}
+\input{chaps/2_background}
+\input{chaps/3_research_theme_one}
+\input{chaps/4_research_theme_two}
+\input{chaps/5_synthesis}
+\input{chaps/6_conclusion}
+
+\appendix
+\input{backs/a_supporting_material}
+
+\backmatter
+%% Uncomment after manus/bibs/reference.bib contains at least one entry.
+% \bibliographystyle{story}
+% \bibliography{bibs/reference}
+
+\end{document}

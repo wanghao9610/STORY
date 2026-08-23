@@ -1,0 +1,45 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".codex/hooks/story_commit_guard.sh",
+            "statusMessage": "Checking the git command against conventions §1"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".codex/hooks/story_involve_gate.sh",
+            "statusMessage": "Checking INVOLVE before the approval prompt"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".codex/hooks/story_model_id.sh",
+            "statusMessage": "Recording session model id for STORY provenance"
+          },
+          {
+            "type": "command",
+            "command": ".codex/hooks/story_memory.sh",
+            "statusMessage": "Loading STORY project memory"
+          }
+        ]
+      }
+    ]
+  }
+}

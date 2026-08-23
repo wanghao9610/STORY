@@ -1,0 +1,48 @@
+# STORY hooks for Kimi Code — registration snippet.
+#
+# Three hooks: model_id provenance, the project-memory index injected from
+# .story/memory/ at the start of a session, and the commit guard that declines
+# the git commands the writing STORY git safety policy blocks.
+#
+# EASIEST: run `bash .kimi-code/hooks/install.sh` once — it writes all three
+# blocks below into your global config for you (safe to run again, backs up first). The
+# manual route below is the same thing by hand.
+#
+# Kimi does not auto-load project-level config, so these cannot live in the repo
+# the way .claude/settings.json, .codex/hooks.json, and .cursor/hooks.json do.
+# To enable them manually, copy the [[hooks]] blocks below into your GLOBAL Kimi
+# config at $KIMI_CODE_HOME/config.toml (default ~/.kimi-code/config.toml). The
+# relative command paths work because Kimi runs hook commands with the working
+# directory set to the session's project root, so they resolve to each STORY
+# dissertation repository's own copy — one global entry each then serves every STORY
+# project with no per-project editing, and in a non-STORY session the path is
+# simply absent and the hook no-ops (fail-open). If your Kimi build does not
+# resolve relative hook paths, replace `command` with the ABSOLUTE path to this
+# repo's script (which must then be edited per project).
+#
+# Why UserPromptSubmit rather than SessionStart: in Kimi, SessionStart is
+# fire-and-forget and cannot inject context, and its payload carries no model
+# id. UserPromptSubmit is the only context-appending event. Both of those hooks
+# inject once per session (keyed on session_id), so they do not repeat every
+# turn. The commit guard is the odd one out: it decides rather than injects, so
+# it runs on PreToolUse matching Bash — the event whose return value can still
+# stop a shell command — and it answers only for the git commands §1 forbids.
+#
+# Note: [[hooks]] accepts only event / matcher / command / timeout — any extra
+# field makes the whole config fail to load.
+
+[[hooks]]
+event = "UserPromptSubmit"
+command = ".kimi-code/hooks/story_model_id.sh"
+timeout = 10
+
+[[hooks]]
+event = "UserPromptSubmit"
+command = ".kimi-code/hooks/story_memory.sh"
+timeout = 10
+
+[[hooks]]
+event = "PreToolUse"
+matcher = "Bash"
+command = ".kimi-code/hooks/story_commit_guard.sh"
+timeout = 10
