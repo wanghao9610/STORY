@@ -11,12 +11,14 @@ description: 根据作者意图和已登记证据建立或修改硕士/博士学
 
 读取 `degree/profile.tex`、相关已登记证据，以及存在的 `notes/story.md`、`notes/contributions.md`、`notes/publications.md` 和 `notes/claims.md`。仅就仓库无法给出的判断询问作者：预期中心论点、贡献边界、作者归属、排除范围和研究随时间的变化。
 
-首次使用时，在实际写入之前初始化缺失的产物；绝不能用骨架覆盖已有文件。采用以下 schema：
+首次使用时，在实际写入之前初始化缺失的产物；绝不能用骨架覆盖已有文件。使用规范 §3 定义的 ID、字段格式和状态，并采用以下 schema：
 
 - `notes/story.md`：frontmatter 键为 `status: discovery`、`active_milestone: ""` 和 `updated: <系统日期>`；标题为 `One-sentence thesis`、`Research problem`、`Central argument`、`Research questions`、`Research arc`、`Cross-chapter synthesis`、`Scope and limitations`；已有文件中的旧标题 `Doctoral problem` 可以继续识别，但未经作者确认不主动改名；
 - `notes/contributions.md`：`ID | Contribution | Research question | Evidence | Publications | Chapters | Attribution | Status`；
 - `notes/publications.md`：`ID | Citation / artifact | Authors | Candidate chapters | Reused material | Permission / policy | Author contribution | Status`；
-- `notes/claims.md`：`ID | Claim | Contribution | Stated in | Evidence | Status | Notes`，状态采用规范 §3 的定义。
+- `notes/claims.md`：`ID | Claim | Contribution | Stated in | Evidence | Status | Notes`。
+
+论文叙事初始化为 `discovery`，新贡献初始化为 `proposed`，新出版物/复用记录在作者确认纳入范围前初始化为 `candidate`，新论断初始化为 `proposed`。只有满足规范 §3 中相应定义后才能提升状态。
 
 按照规范 §1 和 §7，在同一次修改中创建配对的 `*.zh-CN.md` 产物。
 

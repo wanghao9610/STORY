@@ -59,9 +59,17 @@
 5. 对文献内容的陈述必须有本轮核查过的阅读笔记或已导入来源。
 6. STAGE 论文可以提供措辞和已发表结果，但不能取代底层 STAR 证据、合作者归属或复用政策。
 
-## 3. 论断与贡献状态
+## 3. 结构化记录的 ID 与状态
 
-论断 ID 使用 `C001`、`C002`，依此类推。有效状态为：
+机器可读字段和 `Status` 列必须使用下方规定的小写词元，不得换用同义词。可选值未知时留空。只有某项确实不存在或不适用且已经确认时，才可在自由文本或列表单元格中使用 `none`；`none` 绝不能作为状态。日期使用 `YYYY-MM-DD`，路径使用仓库相对路径，URL 使用稳定的 `https://` 地址，多值单元格使用逗号分隔的稳定 ID 或路径。
+
+`notes/story.md` frontmatter 接受以下值：
+
+- `status: discovery | finalized`；`discovery` 表示论文论证或贡献映射仍在形成，`finalized` 要求作者确认中心论点及贡献/归属映射。发生实质修改后必须恢复为 `discovery`，直至重新确认。
+- `active_milestone: "" | <已有里程碑 slug>`；slug 必须匹配 `^[a-z0-9][a-z0-9._-]*$`，并对应已有的 `milestones/<slug>/milestone.yml`。
+- `updated: YYYY-MM-DD`；使用本次持久修改的系统日期。
+
+论断 ID 使用 `C001`、`C002`，依此类推。论断合法状态为：
 
 - `proposed`：已纳入论文计划，但尚未写入正文；
 - `drafted`：已写入 `manus/`，但尚未审计；
@@ -70,7 +78,34 @@
 - `unsourced`：已陈述内容缺少充分证据；
 - `retired`：有意移除，正文中不再陈述。
 
-学位贡献 ID 使用 `D001`、`D002`，依此类推；`D` 表示 *degree*，不是 *doctoral*。每条贡献都必须写明研究问题、证据、已有出版物（如有）、章节、作者归属和状态。一个章节不自动构成一项贡献；一篇出版物也不自动构成一项学位贡献。
+学位贡献 ID 使用 `D001`、`D002`，依此类推；`D` 表示 *degree*，不是 *doctoral*。贡献合法状态为：
+
+- `proposed`：尚未经作者确认的候选贡献；
+- `confirmed`：范围和作者归属已由作者确认，但证据或章节映射可能尚不完整；
+- `evidenced`：支撑该贡献的论断、证据、作者归属和章节映射均已核验；
+- `weakened`：根据证据或审查意见缩小了范围；
+- `retired`：有意移出当前论文论证。
+
+贡献内容和作者归属使用自由文本；研究问题和论断使用逗号分隔的 ID；证据、出版物和章节使用逗号分隔的仓库相对路径或 ID。一个章节不自动构成一项贡献；一篇出版物也不自动构成一项学位贡献。
+
+出版物/复用 ID 使用 `P001`、`P002`，依此类推。出版物记录的合法状态为：
+
+- `candidate`：已识别为可能使用的材料，但尚未经作者确认纳入范围；
+- `in-scope`：作者已确认可能或计划复用，但政策事项可能尚未解决；
+- `cleared`：计划复用、作者归属、重叠处理及许可或政策检查均已解决；
+- `excluded`：有意排除在论文之外，并在记录中保留理由。
+
+`Permission / policy` 单元格必须以 `unknown | not-required | pending | cleared | restricted` 中的一个值开头；有相应信息时继续写 `; source: <URL或路径>; notes: <自由文本>`。完整作者名单和作者贡献使用自由文本；候选章节及复用材料按情况使用逗号分隔的路径或简短自由文本。
+
+`notes/outline.md` 中每个章节、图和表的状态只能使用：
+
+- `planned`：简报已存在，但尚未开始制作论文产物；
+- `in-progress`：产物或草稿已存在，但尚未满足完成条件；
+- `ready`：完成条件已满足、必要映射为最新状态且论文可以构建；
+- `blocked`：某个已明确记录的未解决依赖阻止继续推进；
+- `retired`：有意移出当前提纲，但不删除其历史记录。
+
+`notes/refs/refs_index.md` 的 `Verification status` 列使用 `unverified | metadata-verified | content-verified | stale`。`metadata-verified` 只确认书目身份；`content-verified` 表示已检查来源正文且阅读笔记能支持所记录事实；`stale` 表示在继续用于论断前必须重新核验。
 
 ## 4. 出版物复用与作者归属
 
@@ -99,6 +134,7 @@
 
 ```yaml
 kind: defense
+official_name: ""
 status: planned
 due: ""
 requirements_source: ""
@@ -106,6 +142,17 @@ max_pages: ""
 confirmed_by: ""
 confirmed_on: ""
 ```
+
+里程碑 slug 必须匹配 `^[a-z0-9][a-z0-9._-]*$`。各字段按以下规则填写：
+
+- `kind`：`proposal | review | annual-review | pre-defense | external-examination | defense | correction | deposit | other`；必填。只有没有任何规范类别适用时才使用 `other`。
+- `official_name`：留空，或填写学校确认的正式名称；`kind: other` 时必填。
+- `status`：`planned | active | blocked | completed | cancelled`；必填。`blocked` 必须指出具体未解决关口，`completed` 必须有对应的 `RECORD_<date>.md`，`cancelled` 必须有经确认的理由。
+- `due`：留空，或填写经确认的 `YYYY-MM-DD` 日期。
+- `requirements_source`：留空、稳定的 `https://` URL，或指向已提供正式记录的仓库相对路径。
+- `max_pages`：留空，或填写不带单位的正整数。页数统计规则和排除项写入里程碑 response 或 `degree/requirements.md`。
+- `confirmed_by`：留空、`author`、经确认的人员姓名，或经确认的学校职务。
+- `confirmed_on`：留空，或填写 `YYYY-MM-DD` 格式的确认日期。
 
 收到的反馈原样复制到 `feedback/`。`response/` 下的逐点记录把每条意见映射为一种处理状态：`accepted`、`completed`、`planned`、`disagreed` 或 `needs-author`。承诺的修改还要成为 `tasks/` 下的复选框。
 

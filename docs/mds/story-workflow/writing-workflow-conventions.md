@@ -59,9 +59,17 @@ Changing `STORY_LANG` never translates or replaces an existing artifact.
 5. Assertions about literature require a reading note or imported source that was checked in the current run.
 6. A STAGE paper can supply wording and a published result, but it does not erase the underlying STAR evidence, coauthor attribution, or reuse policy.
 
-## 3. Claim and contribution states
+## 3. Structured record IDs and states
 
-Claim IDs use `C001`, `C002`, and so on. Valid statuses are:
+Use the canonical lowercase tokens below in machine-read fields and `Status` columns; do not substitute synonyms. Leave an optional value empty when it is unknown. Use `none` in a free-text or list cell only when the absence or non-applicability has been confirmed; never use `none` as a status. Dates use `YYYY-MM-DD`, paths are repository-relative, URLs use stable `https://` locations, and multi-value cells use comma-separated stable IDs or paths.
+
+`notes/story.md` frontmatter accepts:
+
+- `status: discovery | finalized`; `discovery` means the thesis argument or contribution map is still being formed, while `finalized` requires author confirmation of the central argument and the contribution/attribution map. A substantive change returns it to `discovery` until reconfirmed.
+- `active_milestone: "" | <existing milestone slug>`; a slug matches `^[a-z0-9][a-z0-9._-]*$` and names an existing `milestones/<slug>/milestone.yml`.
+- `updated: YYYY-MM-DD`; use the system date of the durable change.
+
+Claim IDs use `C001`, `C002`, and so on. Valid claim statuses are:
 
 - `proposed`: accepted into the thesis plan but not yet stated;
 - `drafted`: stated in `manus/` but not audited;
@@ -70,7 +78,34 @@ Claim IDs use `C001`, `C002`, and so on. Valid statuses are:
 - `unsourced`: stated content lacks sufficient evidence;
 - `retired`: intentionally removed and no longer stated.
 
-Degree-contribution IDs use `D001`, `D002`, and so on; `D` means *degree*, not *doctoral*. A contribution row must name its research question, evidence, publications when any, chapters, attribution, and status. A chapter is not automatically a contribution; a publication is not automatically a degree contribution.
+Degree-contribution IDs use `D001`, `D002`, and so on; `D` means *degree*, not *doctoral*. Valid contribution statuses are:
+
+- `proposed`: a candidate contribution not yet confirmed by the author;
+- `confirmed`: scope and attribution are author-confirmed, but evidence or chapter mappings may remain incomplete;
+- `evidenced`: the contribution's supporting claims, evidence, attribution, and chapter mappings have been verified;
+- `weakened`: its scope was narrowed after evidence or review;
+- `retired`: intentionally removed from the active thesis argument.
+
+A contribution row uses free text for the contribution and attribution, comma-separated IDs for research questions and claims, and comma-separated repository-relative paths or IDs for evidence, publications, and chapters. A chapter is not automatically a contribution; a publication is not automatically a degree contribution.
+
+Publication/reuse IDs use `P001`, `P002`, and so on. Valid publication row statuses are:
+
+- `candidate`: identified for possible use but not author-confirmed as in scope;
+- `in-scope`: author-confirmed for possible or planned reuse, with policy work possibly still open;
+- `cleared`: planned reuse, attribution, overlap handling, and permission or policy checks are resolved;
+- `excluded`: intentionally outside the thesis, with the reason retained in the row.
+
+The `Permission / policy` cell starts with exactly one of `unknown | not-required | pending | cleared | restricted`, followed when available by `; source: <URL-or-path>; notes: <free text>`. Complete authorship and author-contribution cells are free text; candidate chapters and reused-material cells use comma-separated paths or concise free text as appropriate.
+
+Every chapter, figure, and table row in `notes/outline.md` uses one of these statuses:
+
+- `planned`: the brief exists but the manuscript artifact is not yet being developed;
+- `in-progress`: an artifact or draft exists, but its exit condition is not met;
+- `ready`: the exit condition is met, required mappings are current, and the manuscript builds;
+- `blocked`: a named unresolved dependency prevents progress;
+- `retired`: intentionally removed from the active outline without deleting its history.
+
+The `Verification status` column in `notes/refs/refs_index.md` uses `unverified | metadata-verified | content-verified | stale`. `metadata-verified` confirms bibliographic identity only; `content-verified` means the source itself was checked and its reading note supports the recorded facts; `stale` requires re-verification before further claim-bearing use.
 
 ## 4. Publication reuse and attribution
 
@@ -99,6 +134,7 @@ Each applicable durable event lives in `milestones/<slug>/`, with a user-confirm
 
 ```yaml
 kind: defense
+official_name: ""
 status: planned
 due: ""
 requirements_source: ""
@@ -106,6 +142,17 @@ max_pages: ""
 confirmed_by: ""
 confirmed_on: ""
 ```
+
+Milestone slugs match `^[a-z0-9][a-z0-9._-]*$`. Fill the fields as follows:
+
+- `kind`: `proposal | review | annual-review | pre-defense | external-examination | defense | correction | deposit | other`; this field is required. Use `other` only when no canonical kind fits.
+- `official_name`: empty or the institution's confirmed name as free text; it is required when `kind: other`.
+- `status`: `planned | active | blocked | completed | cancelled`; this field is required. `blocked` names a concrete unresolved gate, `completed` requires a matching `RECORD_<date>.md`, and `cancelled` requires a confirmed reason.
+- `due`: empty or a confirmed `YYYY-MM-DD` date.
+- `requirements_source`: empty, a stable `https://` URL, or a repository-relative path to an official supplied record.
+- `max_pages`: empty or a positive integer without units. Record counting rules and exclusions in the milestone response or `degree/requirements.md`.
+- `confirmed_by`: empty, `author`, a confirmed person's name, or a confirmed institutional role.
+- `confirmed_on`: empty or the confirmation date in `YYYY-MM-DD` format.
 
 Received feedback is copied unchanged into `feedback/`. A response point ledger in `response/` maps every item to a disposition: `accepted`, `completed`, `planned`, `disagreed`, or `needs-author`. Promised changes also become checkboxes under `tasks/`.
 

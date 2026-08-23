@@ -19,4 +19,4 @@ description: 将已确认的硕士或博士学位论文总叙事和贡献映射�
 - 综合程度与学位层级相称；只有已确认规则或研究主线需要时才设置独立综合章；
 - 作者归属和发表内容复用准确。
 
-硕士模式不得推断最少章节数、研究数、贡献数或发表数。作者确认后，缺失时创建 `notes/outline.md`，存在时进行协调更新。其表格为 `Chapter | File | Purpose | Contributions | Claims | Status`，并包含 Figures 表（`ID | File | Purpose | Evidence | Chapter | Status`）以及同列结构的 Tables 表。创建或重命名 `manus/chaps/<n>_<slug>.tex` 骨架，更新 `manus/main.tex` 中的 `\input` 顺序，并创建或初始化 `notes/notation.md`，列为 `Symbol or term | Meaning | First use | Scope`。在同一次修改中创建配对的 `*.zh-CN.md` 产物，然后构建。未经明确同意不得用骨架替换已有笔记或删除已有章节。
+硕士模式不得推断最少章节数、研究数、贡献数或发表数。作者确认后，缺失时创建 `notes/outline.md`，存在时进行协调更新。其表格为 `Chapter | File | Purpose | Contributions | Claims | Status`，并包含 Figures 表（`ID | File | Purpose | Evidence | Chapter | Status`）以及同列结构的 Tables 表。使用规范 §3 的字段格式和统一提纲状态，新记录均初始化为 `planned`。创建或重命名 `manus/chaps/<n>_<slug>.tex` 骨架，更新 `manus/main.tex` 中的 `\input` 顺序，并创建或初始化 `notes/notation.md`，列为 `Symbol or term | Meaning | First use | Scope`；符号表单元格使用自由文本，`First use` 留空或填写手稿的仓库相对路径，`Scope` 使用 `thesis-wide | <章节路径>`。在同一次修改中创建配对的 `*.zh-CN.md` 产物，然后构建。未经明确同意不得用骨架替换已有笔记或删除已有章节。

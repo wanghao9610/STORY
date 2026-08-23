@@ -1,22 +1,82 @@
-%% Canonical degree profile. Populate only from author-confirmed records.
-%% Machine-readable workflow fields remain comments; title-page fields compile.
-%% Each \storylocalized field stores its English form first and Chinese form second.
+%% Canonical degree profile. Populate only from author-confirmed records.（规范学位档案。只能依据作者确认过的记录填写。）
+%% Machine-readable workflow fields remain comments; title-page fields compile.（机器可读的工作流字段保留为注释；标题页字段会参与编译。）
+%%
+%% Filling guide（填写说明）
+%% - Use the institution's exact wording from official records confirmed by the author.（使用学校正式材料中的准确措辞，并由作者确认。）
+%% - Keep machine-readable lines in the form `% key: value`.（机器可读行必须保持 `% key: value` 格式。）
+%% - Leave an unknown value empty instead of guessing it.（不确定的值留空，不得猜测。）
+%% - Put detailed or additional institutional rules and their sources in degree/requirements.md.（详细或额外的学校规定及其来源写入 degree/requirements.md。）
+%% - Each \storylocalized{English}{中文} field stores the English form first and Chinese form second.（每个 \storylocalized{English}{中文} 字段先填写英文形式，再填写中文形式。）
+%% - Use confirmed names or translations and escape LaTeX special characters such as `&` as `\&`.（使用经确认的名称或译名；`&` 等 LaTeX 特殊字符须写成 `\&`。）
+%% - Visible placeholders may remain while drafting; lint reports them until they are replaced.（起草期间可以保留可见占位符；替换前 lint 会持续报告警告。）
+%% - Recheck every field against the official template before deposit.（归档前须按学校正式模板逐项复核。）
+
+%% ==============================================================================
+%% NOTE — THE FOLLOWING FIELDS ARE REQUIRED FOR ALL DEGREES.
+%% FILL IN EACH AS CONFIRMED.
+%% 注意 — 以下字段为所有学位类型所需。
+%% 每项均须经作者确认。
+%% ==============================================================================
+
+%% Allowed values: master | doctoral. Leave empty until the level is confirmed.（合法值：master | doctoral。学位层级确认前留空。）
 % degree_level:
+
+%% Allowed values: en | zh. Keep the selected value consistent with STORY_MAIN.（合法值：en | zh。所选值须与 STORY_MAIN 使用的正式入口一致。）
 % dissertation_language: en
+
+%% Allowed values: any confirmed official term as free text.（合法值：任意经确认的学校正式文种名称，使用自由文本。）
+%% Common terms: monograph | publication-based | hybrid. Leave empty if unconfirmed.（常见值：monograph | publication-based | hybrid。尚未确认时留空。）
 % thesis_type: monograph
+
+%% Allowed values: empty | stable https:// URL | repository-relative path to the supplied file.（合法值：留空 | 稳定的 https:// URL | 指向已提供文件的仓库相对路径。）
 % official_template:
+
+%% Allowed values: empty | stable https:// URL | repository-relative path.（合法值：留空 | 稳定的 https:// URL | 仓库相对路径。）
+%% Record the primary official source here and additional sources in degree/requirements.md.（此处记录首要正式来源；其他来源写入 degree/requirements.md。）
 % requirements_source:
+
+%% Allowed values: empty | author | confirmed person's name | confirmed institutional role.（合法值：留空 | author | 经确认的人员姓名 | 经确认的学校职务。）
 % confirmed_by:
+
+%% Allowed values: empty | a calendar date in YYYY-MM-DD format.（合法值：留空 | YYYY-MM-DD 格式的日历日期。）
 % confirmed_on:
+
+%% Allowed values: empty | a positive integer without units, for example 120.（合法值：留空 | 不带单位的正整数，例如 120。）
+%% Put inclusions, exclusions, or separate page limits in degree/requirements.md.（页数统计范围、排除项或分类限制写入 degree/requirements.md。）
 % max_pages:
 
+%% Value: \storylocalized{<confirmed English title>}{<confirmed Chinese title>}.（值格式：\storylocalized{<经确认的英文题名>}{<经确认的中文题名>}。）
+%% Both arguments are free text; use the approved title once available.（两个参数均为自由文本；正式题名获批后应改用获批版本。）
 \title{\storylocalized{Untitled Thesis}{未命名学位论文}}
+
+%% Value: \storylocalized{<official English name>}{<official Chinese name>}.（值格式：\storylocalized{<正式英文姓名>}{<正式中文姓名>}。）
+%% Both arguments are free text and must match the required title-page form.（两个参数均为自由文本，且必须符合标题页规定形式。）
 \author{\storylocalized{Author Name}{作者姓名}}
+
+%% Value: \storylocalized{<official English institution>}{<official Chinese institution>}.（值格式：\storylocalized{<学校正式英文名>}{<学校正式中文名>}。）
 \university{\storylocalized{University Name}{学校名称}}
+
+%% Value: \storylocalized{<official English unit>}{<official Chinese unit>}.（值格式：\storylocalized{<培养单位正式英文名>}{<培养单位正式中文名>}。）
+%% The unit may be a department, school, faculty, or program, as the template requires.（按模板要求填写院、系、学部或培养项目等单位。）
 \department{\storylocalized{Department or Program}{院系或培养单位}}
+
+%% Value: \storylocalized{<official English degree>}{<official Chinese degree>}.（值格式：\storylocalized{<学位正式英文名>}{<学位正式中文名>}。）
+%% Examples include Master of Science and Doctor of Philosophy; use the exact awarded degree name.（示例包括 Master of Science 和 Doctor of Philosophy；必须使用实际授予学位的正式名称。）
+%% The degree name must agree with degree_level above.（学位名称必须与上方 degree_level 一致。）
 \degree{\storylocalized{Degree Name}{学位名称}}
+
+%% Value: \storylocalized{<advisor's required English form>}{<required Chinese form>}.（值格式：\storylocalized{<导师姓名的规定英文形式>}{<规定中文形式>}。）
+%% Include titles or credentials only when the official template requires them.（只有正式模板要求时才加入职称或学衔。）
 \advisor{\storylocalized{Advisor Name}{导师姓名}}
-%% Optional title-page field; leave empty when the confirmed template omits it.
+
+%% Allowed values: \committee{} to omit it, or the localized form shown below.（合法值：用 \committee{} 省略，或使用下方双语格式。）
+%% \committee{\storylocalized{<English names and roles>}{<Chinese names and roles>}}.（\committee{\storylocalized{<英文姓名和角色>}{<中文姓名和角色>}}。）
+%% If used, follow the institution's required order, separators, names, and roles.（使用时须遵守学校规定的顺序、分隔符、姓名和角色写法。）
 \committee{}
+
+%% Value: \storylocalized{<required English date>}{<required Chinese date>}.（值格式：\storylocalized{<规定英文日期>}{<规定中文日期>}。）
+%% Free-text examples: May 2027 | 2027年5月. Use the required event and precision.（自由文本示例：May 2027 | 2027年5月。日期含义和精度须符合学校要求。）
 \graduationdate{\storylocalized{Graduation Date}{完成日期}}
+
+%% Allowed values: \the\year while drafting | a confirmed four-digit year, for example 2027.（合法值：起草时使用 \the\year | 经确认的四位年份，例如 2027。）
 \copyrightyear{\the\year}

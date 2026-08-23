@@ -11,12 +11,14 @@ Resolve `% degree_level: master|doctoral` from `degree/profile.tex` before frami
 
 Load `degree/profile.tex`, the relevant registered evidence, and `notes/story.md`, `notes/contributions.md`, `notes/publications.md`, and `notes/claims.md` where present. Interview the author only for judgments the repository cannot supply: the intended thesis, contribution boundaries, attribution, exclusions, and how the research changed over time.
 
-On first use, initialize any absent artifact immediately before writing it; never overwrite an existing file with a scaffold. Use these schemas:
+On first use, initialize any absent artifact immediately before writing it; never overwrite an existing file with a scaffold. Use the IDs, field formats, and statuses defined in conventions §3 with these schemas:
 
 - `notes/story.md`: frontmatter keys `status: discovery`, `active_milestone: ""`, and `updated: <system date>`; headings `One-sentence thesis`, `Research problem`, `Central argument`, `Research questions`, `Research arc`, `Cross-chapter synthesis`, and `Scope and limitations`; accept the legacy `Doctoral problem` heading in an existing file, but do not rename it without author confirmation;
 - `notes/contributions.md`: `ID | Contribution | Research question | Evidence | Publications | Chapters | Attribution | Status`;
 - `notes/publications.md`: `ID | Citation / artifact | Authors | Candidate chapters | Reused material | Permission / policy | Author contribution | Status`;
-- `notes/claims.md`: `ID | Claim | Contribution | Stated in | Evidence | Status | Notes`, with the statuses defined in conventions §3.
+- `notes/claims.md`: `ID | Claim | Contribution | Stated in | Evidence | Status | Notes`.
+
+Initialize the story as `discovery`, new contributions as `proposed`, new publication/reuse rows as `candidate` until the author confirms them in scope, and new claims as `proposed`. Promote only when the corresponding definition in conventions §3 is satisfied.
 
 Create the paired `*.zh-CN.md` artifact in the same change, following conventions §1 and §7.
 

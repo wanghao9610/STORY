@@ -5,7 +5,7 @@ description: 从带指纹证据生成或修改一个学位论文表格，为每�
 
 # 构建一个证据驱动表格
 
-首先完整阅读 `docs/mds/story-workflow/writing-workflow-conventions.md`。从 `notes/outline.md` 解析一个表；如需新增表格，先确认其用途和所属章节，再添加状态为 `proposed` 的记录。
+首先完整阅读 `docs/mds/story-workflow/writing-workflow-conventions.md`。从 `notes/outline.md` 解析一个表；如需新增表格，先确认其用途和所属章节，再按规范 §3 的提纲状态契约添加 `planned` 记录。
 
 本轮从已登记的 `mates/` 文件中读取每个来源数值。生成可编辑的 `manus/tabs/<slug>.tex`，使用可访问的表头、明确单位、有意义的精度，并为每个承载论断的数据行写 `% src:` 注释。缺失值保持 `\todo{...}`；不得从聊天或记忆抄写。
 
