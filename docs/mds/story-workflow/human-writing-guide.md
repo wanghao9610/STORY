@@ -1,147 +1,73 @@
-# Human writing in an evidence-bound thesis
+# Clear writing in an evidence-bound thesis
 
 **Language:** English | [简体中文](human-writing-guide.zh-CN.md)
 
-This guide adapts common observations about formulaic AI prose to the writing of a master's or doctoral thesis.
-Its purpose is better scholarly writing and a stable authorial voice, not guessing how text was produced or defeating an AI detector.
-The evidence, citation, attribution, and claim contracts in [writing-workflow-conventions.md](writing-workflow-conventions.md) always take priority.
+This guide applies shared checks for formulaic writing to master's and doctoral thesis prose.
+The goal is clear, natural scholarship in the author's voice, not authorship detection or detector evasion.
+The evidence, citation, attribution, and claim rules in the [writing workflow conventions](writing-workflow-conventions.md) remain authoritative.
 
-## 1. Non-negotiable boundaries
+## 1. Preserve content and provenance
 
-Humanizing a passage is a prose edit, not permission to change its scholarship.
+A style edit may reorganize prose, but it must not change what the thesis can defend.
 
-- Preserve every fact, number, date, quotation, citation key, source anchor, claim ID, technical term, uncertainty boundary, and contribution attribution.
-- Do not add a concrete detail merely to replace a vague sentence.
-  Use registered evidence, retain an accurate limitation, write `\todo{...}`, or report the gap to the owning workflow.
-- Do not add first-person opinions, humor, emotion, personal experience, or deliberate irregularity unless an author-provided sample and the discipline's conventions support them.
-- Do not simplify a necessary technical distinction or delete a qualifier that carries evidential meaning.
-- Treat quotations, titles, proper names, code, mathematical notation, LaTeX commands, institutional wording, and cited terminology as protected text unless the task explicitly owns them.
+- Read the relevant chapter brief, thesis story, outline, claim, contribution and publication records, mapped `mates/` evidence, reading notes, notation, style profile, and confirmed degree or institutional wording before editing what they control.
+  Report conflicts instead of resolving them in prose.
+- Preserve facts, numbers, dates, quotations, citations, source anchors, claim and contribution IDs and strength, technical distinctions, uncertainty, attribution, comparison sets, conditions, and required qualifiers.
+- Treat titles, names, code, notation, LaTeX, institutional wording, and source-specific terminology as protected text unless the task explicitly owns them.
+- Draw concrete details only from registered evidence or the author.
+  Missing support stays visible through `\todo{...}` or the owning workflow; never supply a plausible value, source, fact, or degree requirement.
+- If a revision would add, remove, move, weaken, or strengthen a claim, it is not style-only.
+  Route it through the owning workflow and update `notes/claims.md` in the same change.
+- Reused publication text must fit the thesis arc, terminology, attribution, and reuse record.
+  A paper is evidence, not the thesis's default wording or voice.
 
-## 2. Match the author before applying defaults
+## 2. Match the writer and the thesis
 
-When `notes/style.md` names author-confirmed samples, read the relevant ones before drafting or editing.
-Observe sentence length, paragraph movement, preferred transitions, punctuation, first-person practice, qualification, repeated terms, and deliberate quirks.
-A traceable author sample outranks the defaults below.
+Follow an author-confirmed sample when one exists.
+Match its observable vocabulary, sentence movement, punctuation, transitions, qualification, first-person practice, and deliberate repetition without borrowing sentences or adding facts, opinions, humor, or disorder.
+Without a sample, use restrained, direct scholarly prose.
 
-Without a sample, use a restrained academic default:
+- Write manuscript prose in the language recorded in `degree/profile.tex`.
+- Lead with the substantive point and prefer canonical terms and simple verbs.
+  Name the actor or contributor when agency or attribution affects interpretation.
+- Organize each paragraph around its mapped claim–evidence–inference sequence, its chapter brief, and the thesis-level argument in `notes/story.md`.
+- Connect evidence to the local inference and the inference to the research question or contribution without claiming more than the evidence supports.
+- Let sentence length and paragraph shape follow the reasoning.
+  End on a supported finding, limitation, synthesis, or useful transition, not generic optimism.
+- During a whole-thesis pass, check recurring openings, literature summaries, method recaps, contribution statements, limitations, and chapter endings without erasing purposeful cross-chapter consistency.
+- Add personality only when the author-confirmed voice and scholarly context call for it.
+  Never manufacture a persona or imply sole authorship of collaborative work.
 
-- state the substantive point before announcing its importance;
-- prefer stable technical terms to decorative synonyms;
-- name the actor when agency matters;
-- connect evidence to the local inference, then connect that inference to the research question;
-- vary sentence length when the reasoning calls for it, not at random;
-- end a paragraph on its last useful implication, limitation, or transition rather than a generic endorsement.
+## 3. Review pattern clusters
 
-## 3. Patterns that merit review
+Treat these as editing signals, not banned forms or evidence of AI authorship.
+Rewrite at paragraph scale when several signals accumulate, one template recurs, or a pattern introduces an unsupported claim.
 
-No single word or construction proves that a passage is formulaic.
-Review a passage when several patterns accumulate or when one high-confidence chatbot artifact appears.
+| Review for | Rewrite toward |
+| --- | --- |
+| Inflated significance, sales language, name-dropping, unsupported superlatives, or stock optimism | The exact result and only its supported consequence. |
+| Vague attribution, knowledge-limit disclaimers, or plausible guesses | A named, verified source and checkable proposition; otherwise an explicit gap or deletion. |
+| Shallow analytical tails, abstract action chains, hidden actors, or stacked qualifiers | A direct fact–inference link, a clear actor where needed, and only evidentially necessary qualification. |
+| Repeated “not X but Y,” forced triads or ranges, fake objections or alternatives, staged candor, slogans, or a claimed “deeper truth” | The real relation, constraint, or choice without drafting scaffolds. |
+| Stock signposting, repeated headings, filler, greetings, praise, apologies, previews, service offers, or generic endings | The content itself and only navigation the reader needs. |
+| Synonym cycling, stock diction, repeated openings, uniform cadence, dramatic fragments, excessive dashes, decorative emphasis, label-heavy lists, or emojis | Stable names and syntax, rhythm, or formatting that has a clear function. |
 
-### Inflated significance
+Do not ban a word, transition, passive construction, first person, long sentence, list, or dash in isolation.
+Keep a form when it carries a real relation, preserves technical meaning, or matches the author.
+Never rewrite quotations, titles, notation, data, or literal fields merely because they match a watched pattern.
+`lint.sh` labels configured instances such as `chatbot-residue`, `inflated-significance`, `vague-attribution`, `formulaic-contrast`, `stock-signposting`, `shallow-analysis`, `generic-outlook`, `manufactured-depth`, and `stock-diction`.
+Its warnings locate passages for review; a clean scan only means that no configured pattern fired.
+Do not assign a numerical “human score.”
 
-The prose makes an ordinary design choice or result a pivotal moment, enduring testament, broad transformation, or major contribution without a mapped claim and evidence.
-Replace the ceremonial framing with the specific result and its supported consequence.
+## 4. Rewrite and verify
 
-Chinese warning shapes include unsupported uses of “具有重要意义”, “标志着关键转折”, “彰显了重要性”, and “为……奠定坚实基础”.
-English warning shapes include unsupported uses of “pivotal”, “stands as a testament”, “underscores the importance”, and “evolving landscape”.
+1. Resolve the target, chapter brief, manuscript language, and any confirmed degree context that controls the passage.
+2. Read the controlling records and mark all protected literal and semantic content.
+3. Map the claim–evidence–inference sequence and its role in the thesis arc, then diagnose patterns by paragraph.
+4. Rewrite the unit around its substantive point; do not patch watched words one by one.
+5. Compare the revision with the original prose, ledger, evidence, reading notes, notation, contribution and publication records, and style profile.
+   Restore every dropped qualifier, trace, or attribution, and remove every added or strengthened claim.
+6. Preserve one sentence per source line, then run `bash execs/run.sh` and `bash execs/scpts/lint.sh` after any `manus/` edit.
 
-### Vague attribution
-
-Phrases such as “experts argue”, “industry reports show”, “已有研究表明”, or “学者普遍认为” hide the source of a literature claim.
-Name the verified source and the proposition it supports.
-If no source supports the assertion, do not invent one.
-
-### Shallow analytical tails
-
-A sentence reports a fact and then appends a broad consequence with “highlighting”, “underscoring”, “thereby demonstrating”, “从而彰显”, or “进而说明”.
-Keep the consequence only when the reasoning or evidence establishes it, and express the inferential step directly.
-
-### Formulaic contrast and symmetry
-
-Repeated “not only X but Y”, “not merely X; it is Y”, “不仅……而且……”, forced groups of three, or paragraphs with identical internal shapes can make prose sound assembled from a template.
-Retain a contrast or parallel structure when it carries a real distinction.
-Otherwise state the operative point without staging a rejected alternative.
-
-### Generic signposting
-
-Openers such as “it is important to note”, “this section delves into”, “值得注意的是”, “不难发现”, and repeated descriptions of what the next paragraph will do delay the content.
-Remove a signpost when the heading or the following sentence already supplies the orientation.
-Keep roadmaps that genuinely help a reader navigate a long or structurally complex argument.
-
-### Stock challenges, outlooks, and endings
-
-Generic “challenges and future outlook” sections, claims that work “continues to thrive”, or conclusions that merely promise a bright future add no thesis-level synthesis.
-End with the supported finding, limitation, open question, or concrete next research step.
-
-### Terminology cycling
-
-Replacing a repeated technical term with near-synonyms can change its scope or make one entity appear to be several.
-Use the canonical term from `notes/notation.md` and vary the surrounding syntax instead.
-
-### Hidden agency and abstract noun chains
-
-Passive voice is useful when the actor is unknown, irrelevant, or already established.
-Revise it when it obscures who designed, measured, decided, or inferred something.
-In Chinese prose, also review long chains built from “通过……实现……从而……进而……” when the actions and actors can be stated directly.
-
-### Uniform cadence and manufactured emphasis
-
-A run of equal-length sentences, repeated sentence openings, dramatic fragments, fake-candid hooks, or slogan-like claims can impose emphasis the evidence has not earned.
-Rewrite around the paragraph's main proposition.
-Do not create arbitrary variation, and preserve deliberate repetition that has a clear rhetorical function.
-
-### Filler and stacked qualification
-
-Remove phrases that only delay a claim, such as “in order to”, “due to the fact that”, “为了实现这一目标”, or “在这一背景下” when the background has already been established.
-Collapse stacked hedges, but preserve calibrated terms such as *may*, *under the evaluated conditions*, or “在本研究范围内” when they define the claim boundary.
-
-### Chatbot residue
-
-Greetings, praise, service offers, knowledge-cutoff disclaimers, “I hope this helps”, “Would you like me to continue?”, “希望这对您有帮助”, and similar conversational scaffolding do not belong in manuscript prose.
-Remove them rather than disguising them with a more formal synonym.
-
-## 4. False-positive safeguards
-
-Do not impose a ban on em dashes, passive voice, transition words, three-item lists, long sentences, formal vocabulary, or first person.
-Each can be appropriate in academic writing.
-Flag density and function, not mere presence.
-
-Keep:
-
-- a qualifier required by the evidence or experimental scope;
-- a named objection that the thesis actually answers;
-- a real alternative in a methods or design discussion;
-- deliberate parallelism used to compare mapped cases;
-- established technical uses of words that may be fashionable elsewhere;
-- punctuation and cadence that match an author-confirmed sample;
-- quoted wording and faithful descriptions of a cited source.
-
-## 5. Drafting and revision process
-
-Use this sequence for a chapter draft or copy-edit:
-
-1. Establish the paragraph's job from the chapter brief, research question, and mapped claims.
-2. Mark protected content: numbers, citations, quotations, source comments, claim strength, technical terms, and attribution.
-3. Diagnose patterns at paragraph scale.
-   A cluster matters more than an isolated watched word.
-4. Rewrite around the main proposition instead of patching each watched phrase.
-5. Read the paragraph for cadence, explicit agency, terminology stability, and a concrete final sentence.
-6. Compare the revision with the source and restore any lost or strengthened claim.
-7. Preserve one sentence per source line and run the required build and lint checks.
-
-For a whole-thesis pass, also compare chapter openings, literature summaries, methods recaps, contribution statements, limitations, and chapter endings for repeated templates.
-
-## 6. Review verdicts
-
-Do not assign a numerical “human score” as though authorship were measurable from prose alone.
-Use these review dimensions instead:
-
-- **claim fidelity:** all protected scholarly content is unchanged;
-- **specificity:** importance and implications are tied to mapped evidence or reasoning;
-- **directness:** the passage reaches its substantive point without ceremonial setup;
-- **cadence:** sentence and paragraph structure follows the argument rather than a repeated template;
-- **voice consistency:** terminology, stance, punctuation, and first-person practice agree with the style profile;
-- **reader trust:** the prose neither over-explains routine points nor hides necessary qualifications.
-
-A passage is ready only when claim fidelity passes.
-The other dimensions identify revision needs; they do not classify the author.
+Leave the passage unchanged and report the issue if smoother prose would require unimported evidence, a different claim or degree requirement, an unsupported statement about prior work, a new canonical term, changed attribution, or removal of a necessary qualifier.
+A revision is ready only when claim fidelity and traceability pass, attribution remains accurate, terminology stays stable, and the passage still serves the chapter and thesis arguments.
