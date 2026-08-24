@@ -14,6 +14,138 @@ log() { printf '[STORY lint] %s\n' "$*"; }
 hard() { printf '[STORY lint] FAIL: %s\n' "$*" >&2; HARD=$((HARD + 1)); }
 warn() { printf '[STORY lint] WARN: %s\n' "$*"; WARNS=$((WARNS + 1)); }
 
+check_prose_patterns() {
+    local file prose_output location patterns snippet
+    local prose_count=0
+    local -a prose_files=()
+
+    while IFS= read -r file; do
+        prose_files+=("${file}")
+    done < <(find manus/fronts manus/chaps manus/backs -type f -name '*.tex' -print 2>/dev/null | sort)
+
+    if (( ${#prose_files[@]} == 0 )); then
+        log 'Prose review: no front-matter, chapter, or back-matter TeX files found.'
+        return
+    fi
+
+    prose_output="$(awk '
+        function strip_comment(text, start) {
+            start = match(text, /(^|[^\\])%/)
+            if (!start) return text
+            if (substr(text, start, 1) == "%") return substr(text, 1, start - 1)
+            return substr(text, 1, start)
+        }
+        function add_pattern(name) {
+            if (patterns != "") patterns = patterns ","
+            patterns = patterns name
+            pattern_count++
+        }
+        function flush_paragraph(    lower, stock_text, stock_count, chatbot, excerpt) {
+            if (paragraph == "") return
+
+            lower = tolower(paragraph)
+            patterns = ""
+            pattern_count = 0
+            chatbot = 0
+
+            if (lower ~ /(i hope this helps|would you like me to|let me know if|up to my last training|let.s (dive|explore|break this down)|without further ado)/ ||
+                paragraph ~ /(希望这对(您|你)有帮助|如果(您|你).*(请告诉我|告诉我)|让我们(深入探讨|来看看|分析一下)|根据我最后的训练)/) {
+                add_pattern("chatbot-residue")
+                chatbot = 1
+            }
+            if (lower ~ /(stands? as (a )?(testament|reminder)|pivotal (role|moment)|underscores? (the )?(importance|significance)|evolving landscape|lays? (a |the )?foundation|sets? the stage)/ ||
+                paragraph ~ /(具有[^。；;.]*(重要|深远)[^。；;.]*意义|标志着[^。；;.]*(转折|转变|里程碑)|(彰显|凸显)[^。；;.]*(重要性|意义)|奠定[^。；;.]*基础|不断演变的[^。；;.]*格局)/) {
+                add_pattern("inflated-significance")
+            }
+            if (lower ~ /((experts?|observers?|critics?) (argue|believe|suggest|note)|industry reports? (show|suggest|indicate)|studies have shown)/ ||
+                paragraph ~ /((专家|学者|业内人士)(普遍)?(认为|指出|表示)|行业报告(显示|指出|表明)|已有研究(认为|指出|表明|显示)|一些批评者认为)/) {
+                add_pattern("vague-attribution")
+            }
+            if (lower ~ /(not (only|merely|just)[^.;]*but( also)?|not just[^.;]*it is)/ ||
+                paragraph ~ /(不仅[^。；;.]*而且|不仅[^。；;.]*还|不仅[^。；;.]*更|不只是[^。；;.]*而是|不是[^。；;.]*而是)/) {
+                add_pattern("formulaic-contrast")
+            }
+            if (lower ~ /(it is (important|worth) to note|it should be noted|this (section|chapter) (delves into|explores|examines)|in order to|the following section)/ ||
+                paragraph ~ /(值得注意的是|需要指出的是|不难发现|本(节|章|文)将(深入)?(探讨|分析|研究)|为了实现这一(目标|目的))/) {
+                add_pattern("stock-signposting")
+            }
+            if (lower ~ /, (highlighting|underscoring|showcasing|ensuring|reflecting|demonstrating) / ||
+                paragraph ~ /(从而(彰显|体现|确保|促进|说明)|进而(彰显|体现|推动|促进|说明)|这(充分)?(彰显|体现|凸显))/) {
+                add_pattern("shallow-analysis")
+            }
+            if (lower ~ /(despite (these|the) challenges|future outlook|future looks bright|continues? to (thrive|flourish))/ ||
+                paragraph ~ /(尽管[^。；;.]*(挑战|困难)|未来展望|前景(十分|非常)?(广阔|光明)|继续(蓬勃发展|迈向))/) {
+                add_pattern("generic-outlook")
+            }
+            if (lower ~ /(at its core|what really matters|the real question is|the heart of the matter)/ ||
+                paragraph ~ /(归根结底|从本质上说|真正重要的是|真正的问题是|问题的核心在于)/) {
+                add_pattern("manufactured-depth")
+            }
+
+            stock_text = lower
+            stock_count = gsub(/(crucial|pivotal|intricate|landscape|delve|underscore|showcase|foster|tapestry)/, "&", stock_text)
+            stock_text = paragraph
+            stock_count += gsub(/(至关重要|深入探讨|不断演变|格局|彰显|赋能|协同|多维度)/, "&", stock_text)
+            if (stock_count >= 3) add_pattern("stock-diction")
+
+            if (chatbot || pattern_count >= 2) {
+                excerpt = paragraph
+                gsub(/[[:space:]]+/, " ", excerpt)
+                sub(/^[[:space:]]+/, "", excerpt)
+                sub(/[[:space:]]+$/, "", excerpt)
+                printf "%s:%d\t%s\t%s\n", current_file, paragraph_start, patterns, excerpt
+            }
+            paragraph = ""
+        }
+        FNR == 1 {
+            if (NR > 1) flush_paragraph()
+            current_file = FILENAME
+            paragraph = ""
+        }
+        {
+            line = strip_comment($0)
+            gsub(/\r/, "", line)
+            trimmed = line
+            sub(/^[[:space:]]+/, "", trimmed)
+            sub(/[[:space:]]+$/, "", trimmed)
+
+            if (trimmed == "" || trimmed ~ /^\\(begin|end|chapter|section|subsection|subsubsection|paragraph|label|input|include|bibliography|bibliographystyle)[*]?[[:space:]]*\{/) {
+                flush_paragraph()
+                next
+            }
+
+            clean = line
+            gsub(/\\(cite|citep|citet|citeauthor|parencite|textcite|ref|eqref|autoref|label|url)(\[[^]]*\])?\{[^}]*\}/, " ", clean)
+            gsub(/\$[^$]*\$/, " ", clean)
+            gsub(/\\[[:alpha:]@]+[*]?/, " ", clean)
+            gsub(/[{}]/, " ", clean)
+            gsub(/[[:space:]]+/, " ", clean)
+            sub(/^[[:space:]]+/, "", clean)
+            sub(/[[:space:]]+$/, "", clean)
+            if (clean == "") next
+
+            if (paragraph == "") paragraph_start = FNR
+            paragraph = paragraph " " clean
+        }
+        END { flush_paragraph() }
+    ' "${prose_files[@]}")"
+
+    if [[ -z "${prose_output}" ]]; then
+        log 'Prose review: no high-confidence chatbot residue or clustered formulaic prose found.'
+        return
+    fi
+
+    while IFS=$'\t' read -r location patterns snippet; do
+        [[ -n "${location}" ]] || continue
+        if (( ${#snippet} > 140 )); then
+            snippet="${snippet:0:137}..."
+        fi
+        warn "${location}: prose review (${patterns}); ${snippet}"
+        prose_count=$((prose_count + 1))
+    done <<< "${prose_output}"
+    log "Prose review: ${prose_count} passage(s) need human review; findings are advisory, not proof of AI authorship."
+}
+
 while (( $# > 0 )); do
     case "$1" in
         --no-build) NO_BUILD=true ;;
@@ -82,6 +214,8 @@ TODO_COUNT="$({
 if (( TODO_COUNT > 0 )); then
     hard "${TODO_COUNT} visible \\todo marker(s) remain under manus/."
 fi
+
+check_prose_patterns
 
 DEGREE_LEVEL="$(sed -nE 's/^[[:space:]]*%[[:space:]]*degree_level:[[:space:]]*([^[:space:]]+)[[:space:]]*$/\1/p' degree/profile.tex 2>/dev/null | tail -1)"
 case "${DEGREE_LEVEL}" in

@@ -4,10 +4,10 @@ Use the roster below to route a master's or doctoral thesis request to exactly o
 
 | Skill | | Purpose |
 | --- | --- | --- |
-| `story-chap-drafter` | | Draft or revise one evidence-bound chapter |
+| `story-chap-drafter` | | Draft or revise one evidence-bound chapter in the author's scholarly voice |
 | `story-cite-auditor` | | Audit citation keys, literature assertions, and bibliography hygiene |
 | `story-clms-auditor` | | Audit numbers, comparisons, degree contributions, and source anchors |
-| `story-copy-editor` | | Edit voice, terminology, transitions, and consistency without changing claims |
+| `story-copy-editor` | | Remove formulaic prose and edit voice, terminology, transitions, and consistency without changing claims |
 | `story-defn-builder` | † | Build a defense narrative and deck from confirmed rules and claims |
 | `story-depo-packer` | † | Preflight and freeze a named deposit package |
 | `story-evid-curator` | | Import, register, refresh, or integrity-check evidence |

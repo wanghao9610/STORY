@@ -29,11 +29,11 @@ flowchart LR
 | `story-evid-curator` | 导入、登记、刷新或检查证据 | `mates/` 与 `mates/MANIFEST.md` |
 | `story-syns-coach` | 总问题、中心论点、研究问题或贡献不清楚 | 总叙事、贡献、出版物与论断元数据 |
 | `story-outl-planner` | 把研究主线变成章节规划 | `notes/outline.md`、`notes/notation.md` 与章节骨架 |
-| `story-chap-drafter` | 起草或基于证据修改一章 | 一个章节文件与记录表更新 |
+| `story-chap-drafter` | 以学位论文和作者声音起草或基于证据修改一章 | 一个章节文件与记录表更新 |
 | `story-tabs-builder` | 从已登记证据生成表格 | `manus/tabs/*.tex` |
 | `story-figs-designer` | 规划或制作图及可编辑源文件 | `manus/figs/` 与 `manus/figs/srcs/` |
 | `story-refs-curator` | 添加、核验、阅读或组织文献 | bibliography 与 `notes/refs/` |
-| `story-copy-editor` | 统一声音、术语、过渡或删减重复 | 正文修改、报告或 `notes/style.md` |
+| `story-copy-editor` | 统一作者声音，修改公式化表达、术语、过渡或重复 | 正文修改、报告或 `notes/style.md` |
 | `story-clms-auditor` | 检查数字和贡献论断的可追溯性 | 论断结论与任务 |
 | `story-cite-auditor` | 检查引用键与文献陈述 | 引用报告与任务 |
 | `story-exam-reviewer` | 进行适合学位层级的模拟审查 | 里程碑审查文件 |
@@ -45,3 +45,4 @@ flowchart LR
 每个 skill 都共用同一个参数形状——`<skill> [TARGET] [DESCRIPTION] [involve=<level>]`。`involve=low|medium|high` 最先被剥离，用来设定这次运行询问的频率；每个 skill 都要剥离它，包括 `argument-hint` 里没有标出它的 skill。目标按各 skill 自己写明的规则解析，剩下的一切是描述：用自由文本说明这次运行是为了什么，例如 `/story-chap-drafter 3 消融是重点，开篇就摆出来，答辩委员会问到了`。它是线索而不是命令，完整规则见[规约 §7](writing-workflow-conventions.zh-CN.md)。Claude Code 与 Qwen Code 会在各自的 skill 菜单里把每个 skill 的形状显示为 `argument-hint`；其他 harness 不读取该字段。
 
 每个 skill 首先读取 [writing-workflow-conventions.md](writing-workflow-conventions.md)。
+章节起草、润色和模拟审查还会应用共享的[学术自然写作指南](human-writing-guide.zh-CN.md)。该指南把 Humanizer 模式改编为受证据约束的学术表达，不会把孤立词语当作 AI 创作的证明。

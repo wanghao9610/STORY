@@ -1,7 +1,7 @@
 interface:
   display_name: "Thesis Copy Editor"
-  short_description: "Polish cross-chapter prose without changing facts"
+  short_description: "Polish natural thesis prose without changing facts"
   brand_color: "#173B57"
-  default_prompt: "Use $story-copy-editor to harmonize terminology and flow across the thesis."
+  default_prompt: "Use $story-copy-editor to remove formulaic prose from chapter 3 without changing its claims."
 policy:
   allow_implicit_invocation: true

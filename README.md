@@ -283,7 +283,7 @@ bash execs/scpts/lint.sh
 bash execs/scpts/fmt.sh --check
 ```
 
-`run.sh` invokes `latexmk`, builds out of tree under `wkdrs/builds/`, and prints the PDF path and page count when `pdfinfo` is available. `lint.sh` builds by default, then fails on undefined citations or references, visible `\todo` markers, invalid or conflicting degree metadata, and a confirmed page-limit overrun; placeholders, overfull boxes, formatting drift, and an unknown degree level are reported explicitly. Use `--no-build` only when a current PDF and log already exist.
+`run.sh` invokes `latexmk`, builds out of tree under `wkdrs/builds/`, and prints the PDF path and page count when `pdfinfo` is available. `lint.sh` builds by default, then fails on undefined citations or references, visible `\todo` markers, invalid or conflicting degree metadata, and a confirmed page-limit overrun; placeholders, overfull boxes, formatting drift, an unknown degree level, high-confidence chatbot residue, and clustered formulaic prose are reported explicitly. Prose findings are advisory review signals, not proof of AI authorship and not hard failures. Use `--no-build` only when a current PDF and log already exist.
 
 `fmt.sh` uses the repository's `latexindent` configuration to preserve one sentence per line without changing typeset text. It excludes reusable styles and official institutional templates. Run it without `--check` to apply formatting.
 
@@ -311,11 +311,11 @@ The sixteen skills form a pipeline, not a rigid sequence. Use the smallest skill
 | `story-evid-curator` | Evidence must be imported, registered, refreshed, or integrity-checked | `mates/`, `mates/MANIFEST.md` |
 | `story-syns-coach` † | The thesis problem, central argument, questions, research arc, or contributions need confirmation | `notes/story.md`, `contributions.md`, `publications.md`, `claims.md` |
 | `story-outl-planner` † | The confirmed thesis story must become a chapter architecture | `notes/outline.md`, `notation.md`, chapter scaffolds |
-| `story-chap-drafter` | One chapter needs evidence-bound drafting or revision | One `manus/chaps/*.tex` file and synchronized ledgers |
+| `story-chap-drafter` | One chapter needs evidence-bound drafting or revision in the author's scholarly voice | One `manus/chaps/*.tex` file and synchronized ledgers |
 | `story-tabs-builder` | One result, comparison, mapping, or synthesis table is needed | One `manus/tabs/*.tex` file with row-level source anchors |
 | `story-figs-designer` | One conceptual, method, result, or synthesis figure is needed | Rendered figure plus editable source under `manus/figs/` |
 | `story-refs-curator` | A source must be added, verified, read, deduplicated, or positioned | Bibliography entries and `notes/refs/` reading notes |
-| `story-copy-editor` | Voice, terminology, transitions, repetition, or notation need polishing | Manuscript edits, report, or `notes/style.md` |
+| `story-copy-editor` | Authorial voice, formulaic prose, terminology, transitions, repetition, or notation need polishing | Manuscript edits, report, or `notes/style.md` |
 | `story-clms-auditor` | Numbers, comparisons, and degree-contribution claims need traceability checks | Claim verdicts, regenerable report, durable tasks |
 | `story-cite-auditor` | Citation keys, literature assertions, and bibliography hygiene need checking | Citation report and durable tasks |
 | `story-exam-reviewer` | A degree-appropriate mock examiner or committee review is needed | `milestones/<slug>/feedback/SIM_EXAM_<date>.md` |
@@ -325,6 +325,8 @@ The sixteen skills form a pipeline, not a rigid sequence. Use the smallest skill
 | `story-flow-status` | The next action is unclear | Read-only status report and exactly one next action |
 
 The six skills marked † control thesis-wide argument, chapter boundaries, institutional milestones, or finalization. The generic router never starts one without returning the exact explicit command and waiting for confirmation. This is the workflow boundary that keeps an agent from silently changing the thesis's central claim, structure, response position, defense, or deposit state.
+
+Chapter drafting, copy-editing, mock examination, and lint share the [human-writing guide](docs/mds/story-workflow/human-writing-guide.md). It adapts Humanizer patterns to academic prose while preserving evidence, qualifications, terminology, and author-confirmed voice; it does not classify authorship from isolated words or punctuation.
 
 ## The path from research to deposit
 
@@ -336,7 +338,7 @@ The common path is:
 4. **Plan the chapters** — `story-outl-planner` maps every chapter to its purpose, questions, contributions, claims, evidence, visuals, dependencies, and exit condition.
 5. **Build the literature base** — `story-refs-curator` verifies bibliographic identity, reads claim-bearing sources, and creates checkable notes under `notes/refs/`.
 6. **Draft one chapter at a time** — `story-chap-drafter` writes from the confirmed brief and evidence; `story-tabs-builder` and `story-figs-designer` create traceable visuals. Claim, notation, and outline records change in the same edit.
-7. **Polish without moving the facts** — `story-copy-editor` harmonizes terminology, voice, transitions, and cross-chapter synthesis while preserving numbers, citations, attribution, and claim scope.
+7. **Polish without moving the facts** — `story-copy-editor` removes clustered formulaic prose and harmonizes terminology, authorial voice, transitions, and cross-chapter synthesis while preserving numbers, citations, attribution, uncertainty, and claim scope.
 8. **Audit** — `story-clms-auditor` traces numbers and contribution claims; `story-cite-auditor` checks citation keys and literature assertions. Failures become durable tasks rather than disappearing in a report.
 9. **Examine and revise** — `story-exam-reviewer` simulates the applicable degree-level examination; received feedback remains immutable under `feedback/`; `story-revs-resolver` records a disposition and completion evidence for every point.
 10. **Prepare the defense** — when the confirmed program requires it, `story-defn-builder` creates the narrative and editable deck from verified claims and confirmed timing and format rules.

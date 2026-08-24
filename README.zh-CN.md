@@ -283,7 +283,7 @@ bash execs/scpts/lint.sh
 bash execs/scpts/fmt.sh --check
 ```
 
-`run.sh` 调用 `latexmk`，在 `wkdrs/builds/` 中进行源目录外构建，并在 `pdfinfo` 可用时打印 PDF 路径与页数。`lint.sh` 默认先构建，再把未定义引用或交叉引用、可见 `\todo`、非法或冲突的学位元数据，以及超出已确认页数限制视为失败；占位符、overfull box、格式漂移和未知学位层级会被明确报告。只有当前 PDF 与日志已经存在时才使用 `--no-build`。
+`run.sh` 调用 `latexmk`，在 `wkdrs/builds/` 中进行源目录外构建，并在 `pdfinfo` 可用时打印 PDF 路径与页数。`lint.sh` 默认先构建，再把未定义引用或交叉引用、可见 `\todo`、非法或冲突的学位元数据，以及超出已确认页数限制视为失败；占位符、overfull box、格式漂移、未知学位层级、高置信度聊天机器人残留和集中出现的公式化表达会被明确报告。正文警告只是建议性复核信号，既不能证明文本由 AI 创作，也不构成硬失败。只有当前 PDF 与日志已经存在时才使用 `--no-build`。
 
 `fmt.sh` 使用仓库的 `latexindent` 配置，在不改变排版文本的前提下维持一句一行。它排除可复用样式和学校正式模板。不带 `--check` 运行即可应用格式化。
 
@@ -311,11 +311,11 @@ bash execs/scpts/fmt.sh --check
 | `story-evid-curator` | 需要导入、登记、刷新或完整性检查证据 | `mates/`、`mates/MANIFEST.md` |
 | `story-syns-coach` † | 需要确认论文问题、中心论点、研究问题、主线或贡献 | `notes/story.md`、`contributions.md`、`publications.md`、`claims.md` |
 | `story-outl-planner` † | 已确认的论文总叙事需要转化为章节结构 | `notes/outline.md`、`notation.md`、章节骨架 |
-| `story-chap-drafter` | 一个章节需要依据证据起草或修改 | 一个 `manus/chaps/*.tex` 文件及同步台账 |
+| `story-chap-drafter` | 一个章节需要以作者的学术声音依据证据起草或修改 | 一个 `manus/chaps/*.tex` 文件及同步台账 |
 | `story-tabs-builder` | 需要一张结果、比较、映射或综合表格 | 一个带逐行来源锚点的 `manus/tabs/*.tex` 文件 |
 | `story-figs-designer` | 需要一张概念、方法、结果或综合图 | `manus/figs/` 下的成图与可编辑源文件 |
 | `story-refs-curator` | 需要添加、核验、阅读、去重或定位一项来源 | 参考文献条目与 `notes/refs/` 阅读笔记 |
-| `story-copy-editor` | 需要润色声音、术语、衔接、重复或符号一致性 | 手稿修改、报告或 `notes/style.md` |
+| `story-copy-editor` | 需要润色作者声音、公式化表达、术语、衔接、重复或符号一致性 | 手稿修改、报告或 `notes/style.md` |
 | `story-clms-auditor` | 数值、比较和学位贡献论断需要可追溯性检查 | 论断结论、可再生成报告、持久任务 |
 | `story-cite-auditor` | 引用键、文献断言和参考文献卫生需要检查 | 引用报告与持久任务 |
 | `story-exam-reviewer` | 需要适合当前学位层级的模拟外审或委员会审查 | `milestones/<slug>/feedback/SIM_EXAM_<date>.md` |
@@ -325,6 +325,8 @@ bash execs/scpts/fmt.sh --check
 | `story-flow-status` | 不清楚下一步做什么 | 只读状态报告与唯一下一步行动 |
 
 标有 † 的六个 skill 控制论文总论点、章节边界、学校里程碑或最终定稿。通用分流器不会直接启动它们，而是返回准确的显式命令并等待确认。这条边界防止 agent 静默改变论文中心论点、整体结构、反馈立场、答辩或归档状态。
+
+章节起草、润色、模拟审查和 lint 共用[学术自然写作指南](docs/mds/story-workflow/human-writing-guide.zh-CN.md)。该指南把 Humanizer 模式适配到学术正文，同时保留证据、限定、术语和经作者确认的声音；它不会依据孤立词语或标点判断作者身份。
 
 ## 从研究到归档的路径
 
@@ -336,7 +338,7 @@ bash execs/scpts/fmt.sh --check
 4. **规划章节**——`story-outl-planner` 为每章映射目的、研究问题、贡献、论断、证据、视觉材料、依赖和退出条件。
 5. **建立文献基础**——`story-refs-curator` 核验书目身份，阅读承载论断的来源，并在 `notes/refs/` 下创建可检查的笔记。
 6. **逐章起草**——`story-chap-drafter` 依据已确认简报和证据写作；`story-tabs-builder` 与 `story-figs-designer` 创建可追溯视觉材料；同一次修改同步更新论断、符号与提纲记录。
-7. **润色而不移动事实**——`story-copy-editor` 统一术语、声音、衔接与跨章节综合，同时保持数值、引用、作者贡献和论断范围不变。
+7. **润色而不移动事实**——`story-copy-editor` 删除集中出现的公式化表达，统一术语、作者声音、衔接与跨章节综合，同时保持数值、引用、作者贡献、不确定性和论断范围不变。
 8. **审计**——`story-clms-auditor` 追溯数值和贡献论断；`story-cite-auditor` 检查引用键与文献断言。失败项成为持久任务，而不会埋在报告里消失。
 9. **外审与修改**——`story-exam-reviewer` 模拟适用于当前学位层级的审查；收到的反馈在 `feedback/` 下保持不变；`story-revs-resolver` 为每点记录处理方式和完成证据。
 10. **准备答辩**——培养项目确认要求答辩时，`story-defn-builder` 依据已核验论断以及已确认时长和格式规则创建叙事与可编辑演示文稿。

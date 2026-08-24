@@ -128,6 +128,12 @@
 
 前置部分放在 `manus/fronts/`；附录及其他后置部分放在 `manus/backs/`。项目专用 LaTeX 命令写在 `manus/main.tex`，不能写入可复用的 class 或 package。
 
+### 学术自然写作契约
+
+学位论文正文应保持作者的学术声音，不得用公式化语言夸大论断、隐藏来源或制造虚假的重要性。起草和润色工作流遵循[学术自然写作指南](human-writing-guide.zh-CN.md)：有样本时使用经作者确认的样本；按模式组合进行复核，不机械禁用单个词或句式；必要时在段落尺度重写。风格编辑不得改变事实、数字、引用、来源锚点、论断强度、技术区别、不确定性边界或贡献归属，也不得在没有作者与证据支持时增加个性或具体细节。
+
+`bash execs/scpts/lint.sh` 把高置信度聊天机器人残留和集中出现的公式化表达报告为建议性警告。这些警告只用于定位需要人工复核的段落；它们不能证明文本由 AI 生成，也不会单独阻塞归档。
+
 ## 6. 里程碑契约
 
 每项适用的持久事件放在 `milestones/<slug>/` 下，并带有一份由用户确认的 `milestone.yml`。建议字段为：
@@ -191,7 +197,7 @@ confirmed_on: ""
 | `story-tabs-builder` | 证据驱动表格 |
 | `story-figs-designer` | 证据驱动图及可编辑源文件 |
 | `story-refs-curator` | 参考文献与阅读笔记 |
-| `story-copy-editor` | 语言、术语、衔接与一致性 |
+| `story-copy-editor` | 作者声音、自然学术表达、术语、衔接与一致性 |
 | `story-clms-auditor` | 定量内容与论断可追溯审计 |
 | `story-cite-auditor` | 引用键和文献陈述审计 |
 | `story-exam-reviewer` | 模拟外审或委员会审查 |

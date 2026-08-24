@@ -20,6 +20,7 @@ This repository uses STORY — **Systematic Toolchain for Organizing Research ov
 - Assertions about cited work must be checkable against `notes/refs/` or imported reference material.
 - Fix incorrect evidence at its source and re-import it. Never silently edit a snapshot under `mates/`.
 - A published paper is evidence, not automatically the thesis's final wording. Reconcile terminology, scope, attribution, and overlap before reuse.
+- Drafting and copy-editing follow `docs/mds/story-workflow/human-writing-guide.md`: preserve author-confirmed voice, diagnose formulaic prose from pattern clusters rather than isolated words, and never add facts or personality merely to sound human.
 
 ## 3. Thesis-level coherence
 

@@ -6,7 +6,7 @@ argument-hint: "[MILESTONE] [DESCRIPTION]"
 
 # Run a degree-appropriate mock examination
 
-Read `docs/mds/story-workflow/writing-workflow-conventions.md` first. Resolve the degree level and an active or named milestone that applies to it, then build the thesis before reviewing it. If the institution supplies an examiner rubric, use only the confirmed copy; otherwise label the level-appropriate generic rubric as simulated.
+Read `docs/mds/story-workflow/writing-workflow-conventions.md` and `docs/mds/story-workflow/human-writing-guide.md` first. Resolve the degree level and an active or named milestone that applies to it, then build the thesis before reviewing it. If the institution supplies an examiner rubric, use only the confirmed copy; otherwise label the level-appropriate generic rubric as simulated.
 
 Evaluate:
 
@@ -18,6 +18,7 @@ Evaluate:
 - methodological soundness and reproducibility;
 - command of the literature and accurate positioning;
 - degree-appropriate synthesis, limitations, and generalization boundaries;
-- presentation quality and likely oral-examination questions.
+- presentation quality, including unsupported significance, vague attribution, repeated chapter or paragraph templates, generic outlook language, terminology cycling, and chatbot residue, judged as pattern clusters rather than proof of AI authorship;
+- likely oral-examination questions.
 
 Write `milestones/<slug>/feedback/SIM_EXAM_<date>.md` with an executive verdict, major concerns, minor concerns, required clarifications, claim/contribution IDs attacked, and a defense question bank. Never edit the manuscript or claim ledger in this skill.

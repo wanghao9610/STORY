@@ -6,7 +6,7 @@ argument-hint: "[MILESTONE] [描述]"
 
 # 进行适合学位层级的模拟审查
 
-首先完整阅读 `docs/mds/story-workflow/writing-workflow-conventions.md`。解析学位层级及适用于该层级的当前或指定里程碑，并在审查前构建学位论文。如果学校提供了评审标准，只使用已确认的副本；否则把与层级相符的通用标准明确标为模拟标准。
+首先完整阅读 `docs/mds/story-workflow/writing-workflow-conventions.md` 和 `docs/mds/story-workflow/human-writing-guide.md`。解析学位层级及适用于该层级的当前或指定里程碑，并在审查前构建学位论文。如果学校提供了评审标准，只使用已确认的副本；否则把与层级相符的通用标准明确标为模拟标准。
 
 评估：
 
@@ -18,6 +18,7 @@ argument-hint: "[MILESTONE] [描述]"
 - 方法是否可靠以及研究能否复现；
 - 对文献的掌握和定位是否准确；
 - 与学位层级相称的综合、局限与泛化边界；
-- 表达质量和可能的口试问题。
+- 表达质量，包括没有支持的意义拔高、模糊归因、重复章节或段落模板、通用展望措辞、术语轮换和聊天机器人残留；这些问题按模式组合判断，不能作为 AI 创作的证明；
+- 可能的口试问题。
 
 写入 `milestones/<slug>/feedback/SIM_EXAM_<date>.md`，包含总体结论、重大问题、次要问题、必须澄清项、被质疑的论断/贡献 ID 和答辩问题库。本 skill 不修改正文或论断记录表。

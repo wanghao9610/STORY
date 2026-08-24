@@ -6,10 +6,10 @@
 
 | Skill | | 用途 |
 | --- | --- | --- |
-| `story-chap-drafter` | | 起草或修改一个受证据约束的章节 |
+| `story-chap-drafter` | | 以作者的学术声音起草或修改一个受证据约束的章节 |
 | `story-cite-auditor` | | 审计引用键、文献陈述和书目质量 |
 | `story-clms-auditor` | | 审计数字、比较、学位贡献和来源锚点 |
-| `story-copy-editor` | | 在不改变论断的前提下编辑文风、术语、过渡与一致性 |
+| `story-copy-editor` | | 在不改变论断的前提下删除公式化表达并编辑文风、术语、过渡与一致性 |
 | `story-defn-builder` | † | 根据已确认规则和论断构建答辩叙事与演示文稿 |
 | `story-depo-packer` | † | 预检并冻结一个指定的归档包 |
 | `story-evid-curator` | | 导入、登记、刷新或完整性检查证据 |

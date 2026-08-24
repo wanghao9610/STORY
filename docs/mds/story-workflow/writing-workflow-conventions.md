@@ -128,6 +128,12 @@ Each chapter brief states its purpose, research questions, contribution IDs, cla
 
 Front matter lives in `manus/fronts/`; appendices and other back matter live in `manus/backs/`. Project-specific LaTeX commands belong in `manus/main.tex`, not the reusable class or package.
 
+### Human-writing contract
+
+Thesis prose must preserve the author's scholarly voice without using formulaic language to inflate a claim, hide a source, or simulate significance. Drafting and copy-editing workflows follow the [human-writing guide](human-writing-guide.md): use author-confirmed samples where available, review patterns in clusters rather than banning isolated words or constructions, and rewrite at paragraph scale when needed. A style edit never changes a fact, number, citation, source anchor, claim strength, technical distinction, uncertainty boundary, or contribution attribution. It never adds personality or concrete detail without authorial and evidential support.
+
+`bash execs/scpts/lint.sh` reports high-confidence chatbot residue and clustered formulaic prose as advisory warnings. These warnings identify passages for human review; they neither establish that AI produced the text nor block deposit by themselves.
+
 ## 6. Milestone contract
 
 Each applicable durable event lives in `milestones/<slug>/`, with a user-confirmed `milestone.yml`. Recommended fields are:
@@ -191,7 +197,7 @@ Skills marked † are explicit-only: they change thesis-wide structure, mileston
 | `story-tabs-builder` | Evidence-backed tables |
 | `story-figs-designer` | Evidence-backed figures and editable sources |
 | `story-refs-curator` | Bibliography and reading notes |
-| `story-copy-editor` | Voice, terminology, flow, and consistency |
+| `story-copy-editor` | Authorial voice, natural scholarly prose, terminology, flow, and consistency |
 | `story-clms-auditor` | Quantitative and claim traceability audit |
 | `story-cite-auditor` | Citation-key and literature-assertion audit |
 | `story-exam-reviewer` | Mock examiner or committee review |
