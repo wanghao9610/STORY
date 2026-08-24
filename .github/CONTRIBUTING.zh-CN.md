@@ -6,6 +6,21 @@
 
 Codex 元数据的存储方向例外：`.codex/skills/<name>/agents/openai.yaml` 拥有各自的 manifest，而 `.agents/skills/<name>/agents/openai.yaml` 链接到它，因为 Codex 会发现中立根目录。六个仅限显式调用的 skill 以 `allow_implicit_invocation: false` 标识；它们的私有 `SKILL.md` 和 `SKILL_zh.md` 由脚本生成，并带有 `disable-model-invocation: true`。
 
+## `argument-hint` 不做跨 harness 移植
+
+`argument-hint` **不在**中立源里。`port.sh` 为每个 skill 的每种语言各持有一条 hint，只注入到真正读取该字段的 harness，因此 `.claude` 与 `.qwen` 下的 `SKILL.md` 和 `SKILL_zh.md` 是生成的普通文件而不是链接。
+
+| 树 | `argument-hint` | 原因 |
+|---|---|---|
+| `.claude` | 生成进 manifest | Claude Code 读取该字段并在 `/` 菜单中显示 |
+| `.qwen` | 生成进 manifest | Qwen Code 读取该字段；`allowedTools` 不移植，因为它是授予而不是限制 |
+| `.agents` | 从不写入 | 这是 Codex 的发现根目录，其市场校验器拒绝 `name`、`description`、`license`、`allowed-tools`、`metadata` 之外的任何键 |
+| `.cursor` | 从不写入 | Cursor 的 frontmatter 字段表是封闭的，不含该字段 |
+| `.dsh`、`.kimi-code` | 从不写入 | 该键会被保留并忽略——一个无人报错的失效字段 |
+| `.pi` | 仅 prompt 模板 | 在 Pi 中它不是 skill 字段，因此 hint 写在 `.pi/prompts/<skill>.md` 里 |
+
+每条 hint 都遵循[规约 §7](../docs/mds/story-workflow/writing-workflow-conventions.zh-CN.md) 的形状：`[TARGET] [DESCRIPTION] [involve=<level>]`。大写占位符是作者填入的值，小写单词是字面模式；`SKILL_zh.md` 只翻译自由文本占位符 `DESCRIPTION`，因为目标、模式和 token 在任何语言下都保持英文。新增 skill 时必须同时在 `port.sh` 的 `argument_hint()` 中补上它的 hint——缺失时移植会直接失败，而不会发布一个没有 hint 的 skill。`allowed-tools` 在任何树中都不携带：Claude 之外的预授权属于项目级或用户级配置改动，作用范围比 Claude 的单轮授权更广。
+
 编辑中立 skill 或 Codex 策略后运行：
 
 ```bash

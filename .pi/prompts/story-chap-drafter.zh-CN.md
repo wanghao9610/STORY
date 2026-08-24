@@ -1,6 +1,6 @@
 ---
 description: 使用 STORY 工作流指令运行 story-chap-drafter
-argument-hint: "[目标]"
+argument-hint: "CHAPTER [描述] [involve=low]"
 ---
 
 **语言：** [English](story-chap-drafter.md) | 简体中文

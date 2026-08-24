@@ -2,6 +2,7 @@
 name: story-syns-coach
 disable-model-invocation: true
 description: Shape or revise a master's or doctoral thesis-level problem, central argument, research questions, research arc, synthesis, and degree contributions from the author's intent and registered evidence; use before outlining or when the thesis lacks a coherent argument.
+argument-hint: "[DESCRIPTION] [involve=high]"
 ---
 
 # Shape the degree-level synthesis

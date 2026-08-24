@@ -1,6 +1,6 @@
 ---
 description: Run story-figs-designer with its STORY workflow instructions
-argument-hint: "[TARGET]"
+argument-hint: "[FIGURE | new] [DESCRIPTION] [involve=low]"
 ---
 
 **Language:** English | [简体中文](story-figs-designer.zh-CN.md)

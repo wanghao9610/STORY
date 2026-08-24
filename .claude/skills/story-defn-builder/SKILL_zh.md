@@ -2,6 +2,7 @@
 name: story-defn-builder
 disable-model-invocation: true
 description: 依据已核验论断、确认的时长/规则和可编辑素材规划、制作并检查硕士或博士答辩叙事与演示文稿；适用于确实要求的预答辩或正式答辩。
+argument-hint: "[MILESTONE] [描述] [involve=high]"
 ---
 
 # 构建学位答辩

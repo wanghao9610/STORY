@@ -1,6 +1,6 @@
 ---
 description: Run story-refs-curator with its STORY workflow instructions
-argument-hint: "[TARGET]"
+argument-hint: "PAPER... [DESCRIPTION] [involve=low]"
 ---
 
 **Language:** English | [简体中文](story-refs-curator.zh-CN.md)

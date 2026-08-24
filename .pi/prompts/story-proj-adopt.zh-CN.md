@@ -1,6 +1,6 @@
 ---
 description: 使用 STORY 工作流指令运行 story-proj-adopt
-argument-hint: "[目标]"
+argument-hint: "SOURCE_PATH [描述] [involve=low]"
 ---
 
 **语言：** [English](story-proj-adopt.md) | 简体中文

@@ -247,7 +247,7 @@ INVOLVE=medium
 STORY_LANG=
 ```
 
-`.env` is ignored by Git. `STORY_MAIN` selects the default entry point for both build and lint, while `--main` overrides it for one command. `INVOLVE=low|medium|high` controls how often skills ask before ordinary judgment calls; it never bypasses confirmation of institutional facts, attribution, deletion, overwriting, or a final freeze. `STORY_LANG=en|zh` controls replies and newly written Markdown; empty follows the conversation and never translates an existing file. The manuscript language and degree level remain in `degree/profile.tex`.
+`.env` is ignored by Git. `STORY_MAIN` selects the default entry point for both build and lint, while `--main` overrides it for one command. `INVOLVE=low|medium|high` controls how often skills ask before ordinary judgment calls; it never bypasses confirmation of institutional facts, attribution, deletion, overwriting, or a final freeze. It is the project default, and an `involve=<level>` token in a single invocation overrides it for that run only. `STORY_LANG=en|zh` controls replies and newly written Markdown; empty follows the conversation and never translates an existing file. The manuscript language and degree level remain in `degree/profile.tex`.
 
 Next, fill `degree/profile.tex`, `degree/requirements.md`, and `degree/committee.md` only from official material or records the author has confirmed. Unknown values stay empty; do not infer a degree level from the thesis title or degree name.
 

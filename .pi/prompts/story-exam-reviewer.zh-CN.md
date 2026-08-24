@@ -1,6 +1,6 @@
 ---
 description: 使用 STORY 工作流指令运行 story-exam-reviewer
-argument-hint: "[目标]"
+argument-hint: "[MILESTONE] [描述]"
 ---
 
 **语言：** [English](story-exam-reviewer.md) | 简体中文

@@ -1,6 +1,6 @@
 ---
 description: Run story-outl-planner with its STORY workflow instructions
-argument-hint: "[TARGET]"
+argument-hint: "[DESCRIPTION] [involve=high]"
 ---
 
 **Language:** English | [简体中文](story-outl-planner.zh-CN.md)

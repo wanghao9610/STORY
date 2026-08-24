@@ -2,6 +2,7 @@
 name: story-revs-resolver
 disable-model-invocation: true
 description: 将导师、委员会、外审、答辩、修改或归档反馈转成保留原文的逐点记录、处理理由和可跟踪承诺；适用于收到反馈后。
+argument-hint: "[MILESTONE] [描述] [involve=high]"
 ---
 
 # 处理学位论文反馈

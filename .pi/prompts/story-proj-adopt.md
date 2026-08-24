@@ -1,6 +1,6 @@
 ---
 description: Run story-proj-adopt with its STORY workflow instructions
-argument-hint: "[TARGET]"
+argument-hint: "SOURCE_PATH [DESCRIPTION] [involve=low]"
 ---
 
 **Language:** English | [简体中文](story-proj-adopt.zh-CN.md)

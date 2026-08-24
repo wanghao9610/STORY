@@ -2,6 +2,7 @@
 name: story-proj-adopt
 disable-model-invocation: true
 description: 安全地把已有硕士或博士学位论文草稿、Overleaf 导出接入 STORY：先盘点并确认文件映射，再保留原源文件、登记无来源论断并验证构建。
+argument-hint: "SOURCE_PATH [描述] [involve=low]"
 ---
 
 # 接入已有学位论文

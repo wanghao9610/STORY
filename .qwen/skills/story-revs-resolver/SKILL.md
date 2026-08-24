@@ -2,6 +2,7 @@
 name: story-revs-resolver
 disable-model-invocation: true
 description: Convert master's or doctoral thesis feedback from supervisors, committees, examiners, defenses, corrections, or deposits into an immutable-source point ledger, reasoned dispositions, and tracked promises; use after feedback arrives.
+argument-hint: "[MILESTONE] [DESCRIPTION] [involve=high]"
 ---
 
 # Resolve thesis feedback

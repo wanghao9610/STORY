@@ -6,6 +6,21 @@
 
 Codex metadata is the exception to the storage direction: `.codex/skills/<name>/agents/openai.yaml` owns each manifest, and `.agents/skills/<name>/agents/openai.yaml` links to it because Codex discovers the neutral root. The six explicit-only skills are identified by `allow_implicit_invocation: false`; their private `SKILL.md` and `SKILL_zh.md` files are generated with `disable-model-invocation: true`.
 
+## `argument-hint` does not port
+
+`argument-hint` is **not** in the neutral source. `port.sh` owns one hint per skill per language and injects it only where the harness reads it, so `.claude` and `.qwen` hold generated `SKILL.md` and `SKILL_zh.md` files rather than links.
+
+| Tree | `argument-hint` | Why |
+|---|---|---|
+| `.claude` | generated into the manifest | Claude Code reads it and shows it in the `/` menu |
+| `.qwen` | generated into the manifest | Qwen Code reads it; `allowedTools` stays out, because it grants rather than restricts |
+| `.agents` | never | this is Codex's discovery root, and its marketplace validator rejects any key outside `name`, `description`, `license`, `allowed-tools`, and `metadata` |
+| `.cursor` | never | Cursor's frontmatter table is closed without it |
+| `.dsh`, `.kimi-code` | never | the key is kept and ignored — an inert field nothing reports |
+| `.pi` | prompt templates only | not a skill field in Pi, so the hint rides in `.pi/prompts/<skill>.md` instead |
+
+Every hint follows the shape in [conventions §7](../docs/mds/story-workflow/writing-workflow-conventions.md): `[TARGET] [DESCRIPTION] [involve=<level>]`. Uppercase placeholders are author-supplied values and lowercase words are literal modes; only the free-text `DESCRIPTION` placeholder is translated for `SKILL_zh.md`, because targets, modes, and tokens stay English everywhere. Adding a skill means adding its hint to `argument_hint()` in `port.sh` — the port fails loudly rather than shipping a skill without one. `allowed-tools` is carried by no tree: pre-approval outside Claude is a project- or user-level config change with a wider scope than the turn-scoped Claude equivalent.
+
 After editing a neutral skill or a Codex policy, run:
 
 ```bash

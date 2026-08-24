@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Materialize the six harness-owned skill trees from the neutral source under
 # .agents/skills. Byte-identical files are relative symlinks back to .agents;
-# only slash-only SKILL.md/SKILL_zh.md frontmatter remains harness-owned.
+# SKILL.md/SKILL_zh.md frontmatter stays harness-owned wherever a tree needs the
+# slash-only guard or the argument-hint only .claude and .qwen read.
 set -euo pipefail
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd -P)"
@@ -42,6 +43,45 @@ is_slash_only() {
         "${CODEX_ROOT}/$1/agents/openai.yaml"
 }
 
+# Only Claude Code and Qwen Code read argument-hint from skill frontmatter. It is
+# kept out of the neutral source because .agents is Codex's discovery root, whose
+# manifest validator rejects the key outright, and because Cursor, Kimi, DSH, and
+# Pi would carry an inert field nothing reports. See .github/CONTRIBUTING.md.
+takes_argument_hint() { # $1 = tree
+    case "$1" in
+        .claude/skills|.qwen/skills) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+# One shape for the whole roster: <skill> [TARGET] [DESCRIPTION] [involve=<level>]
+# (writing workflow conventions §7). Uppercase placeholders are values the author
+# supplies, lowercase words are literal modes, and only the free-text placeholder
+# is translated — targets, modes, and tokens stay English everywhere.
+argument_hint() { # $1 = skill, $2 = en|zh
+    local description="DESCRIPTION"
+    [[ "$2" == "zh" ]] && description="描述"
+    case "$1" in
+        story-chap-drafter)  printf 'CHAPTER [%s] [involve=low]' "${description}" ;;
+        story-cite-auditor)  printf '[CHAPTER | full] [%s]' "${description}" ;;
+        story-clms-auditor)  printf '[CHAPTER | CLAIM_ID | full] [%s]' "${description}" ;;
+        story-copy-editor)   printf '[CHAPTER | full | style] [%s] [involve=low]' "${description}" ;;
+        story-defn-builder)  printf '[MILESTONE] [%s] [involve=high]' "${description}" ;;
+        story-depo-packer)   printf 'MILESTONE [%s] [involve=high]' "${description}" ;;
+        story-evid-curator)  printf '[check | import source=PATH [slug=NAME] | register path=FILE] [%s] [involve=low]' "${description}" ;;
+        story-exam-reviewer) printf '[MILESTONE] [%s]' "${description}" ;;
+        story-figs-designer) printf '[FIGURE | new] [%s] [involve=low]' "${description}" ;;
+        story-flow-status)   printf '[%s]' "${description}" ;;
+        story-outl-planner)  printf '[%s] [involve=high]' "${description}" ;;
+        story-proj-adopt)    printf 'SOURCE_PATH [%s] [involve=low]' "${description}" ;;
+        story-refs-curator)  printf 'PAPER... [%s] [involve=low]' "${description}" ;;
+        story-revs-resolver) printf '[MILESTONE] [%s] [involve=high]' "${description}" ;;
+        story-syns-coach)    printf '[%s] [involve=high]' "${description}" ;;
+        story-tabs-builder)  printf '[TABLE | new] [%s] [involve=low]' "${description}" ;;
+        *) return 1 ;;
+    esac
+}
+
 relative_link() { # $1 = destination path, $2 = source path from repository root
     local destination="$1"
     local source="$2"
@@ -74,15 +114,37 @@ install_link() { # $1 = destination, $2 = source
     fi
 }
 
-render_guarded() { # $1 = neutral SKILL.md, $2 = destination
+render_manifest() { # $1 = neutral manifest, $2 = destination, $3 = true|false guard, $4 = argument hint
     local source="$1"
     local destination="$2"
-    local temporary
+    local guard="$3"
+    local hint="$4"
+    local temporary wanted
     temporary="$(mktemp)"
-    awk '
+    if ! awk -v guard="${guard}" -v hint="${hint}" '
+        /^---[[:space:]]*$/ { boundary++ }
         { print }
-        NR == 2 && /^name:[[:space:]]*story-/ { print "disable-model-invocation: true" }
-    ' "${source}" > "${temporary}"
+        boundary == 1 && guard == "true" && !guarded && /^name:[[:space:]]*story-/ {
+            print "disable-model-invocation: true"
+            guarded = 1
+        }
+        boundary == 1 && hint != "" && !hinted && /^description:/ {
+            printf "argument-hint: \"%s\"\n", hint
+            hinted = 1
+        }
+        END {
+            if (guard == "true" && !guarded) exit 3
+            if (hint != "" && !hinted) exit 4
+        }
+    ' "${source}" > "${temporary}"; then
+        rm -f "${temporary}"
+        fail "${source} frontmatter has no anchor line for the ${destination} render"
+        return 0
+    fi
+
+    wanted="the neutral manifest"
+    [[ "${guard}" == "true" ]] && wanted="${wanted} plus the slash-only guard"
+    [[ -n "${hint}" ]] && wanted="${wanted} plus its argument-hint"
 
     if [[ -f "${destination}" && ! -L "${destination}" ]] && cmp -s "${temporary}" "${destination}"; then
         rm -f "${temporary}"
@@ -95,32 +157,36 @@ render_guarded() { # $1 = neutral SKILL.md, $2 = destination
         WRITTEN=$((WRITTEN + 1))
     else
         rm -f "${temporary}"
-        fail "${destination} must be the neutral manifest plus the slash-only guard"
+        fail "${destination} must be ${wanted}"
     fi
 }
 
 render_pi_prompt() { # $1 = skill name, $2 = language (en|zh)
     local skill="$1"
     local language="$2"
-    local destination counterpart description argument_hint skill_file temporary
+    local destination counterpart description hint skill_file temporary
     if [[ "${language}" == "zh" ]]; then
         destination=".pi/prompts/${skill}.zh-CN.md"
         counterpart="${skill}.md"
         description="使用 STORY 工作流指令运行 ${skill}"
-        argument_hint="[目标]"
         skill_file="SKILL_zh.md"
     else
         destination=".pi/prompts/${skill}.md"
         counterpart="${skill}.zh-CN.md"
         description="Run ${skill} with its STORY workflow instructions"
-        argument_hint="[TARGET]"
         skill_file="SKILL.md"
+    fi
+    # argument-hint is a prompt-template field in Pi even though it is not a skill
+    # one, so the per-skill hint belongs here rather than in .pi/skills.
+    if ! hint="$(argument_hint "${skill}" "${language}")"; then
+        fail "no argument-hint is defined for ${skill}"
+        return 0
     fi
     temporary="$(mktemp)"
     {
         printf '%s\n' '---'
         printf 'description: %s\n' "${description}"
-        printf 'argument-hint: "%s"\n' "${argument_hint}"
+        printf 'argument-hint: "%s"\n' "${hint}"
         printf '%s\n' '---' ''
         if [[ "${language}" == "zh" ]]; then
             printf '**语言：** [English](%s) | 简体中文\n\n' "${counterpart}"
@@ -177,13 +243,28 @@ while IFS= read -r skill; do
     fi
     install_link "${neutral_manifest}" "${codex_manifest}"
 
+    guard=false
+    if is_slash_only "${skill}"; then
+        guard=true
+    fi
+
     for tree in "${TREES[@]}"; do
         while IFS= read -r source; do
             rel="${source#${SOURCE_ROOT}/${skill}/}"
             [[ "${rel}" == agents/* ]] && continue
             destination="${tree}/${skill}/${rel}"
-            if [[ "${rel}" == "SKILL.md" || "${rel}" == "SKILL_zh.md" ]] && is_slash_only "${skill}"; then
-                render_guarded "${source}" "${destination}"
+            case "${rel}" in
+                SKILL.md) language=en ;;
+                SKILL_zh.md) language=zh ;;
+                *) install_link "${destination}" "${source}"; continue ;;
+            esac
+            hint=""
+            if takes_argument_hint "${tree}" && ! hint="$(argument_hint "${skill}" "${language}")"; then
+                fail "no argument-hint is defined for ${skill}"
+                continue
+            fi
+            if [[ "${guard}" == "true" || -n "${hint}" ]]; then
+                render_manifest "${source}" "${destination}" "${guard}" "${hint}"
             else
                 install_link "${destination}" "${source}"
             fi

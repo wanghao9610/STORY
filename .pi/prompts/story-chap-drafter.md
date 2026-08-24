@@ -1,6 +1,6 @@
 ---
 description: Run story-chap-drafter with its STORY workflow instructions
-argument-hint: "[TARGET]"
+argument-hint: "CHAPTER [DESCRIPTION] [involve=low]"
 ---
 
 **Language:** English | [简体中文](story-chap-drafter.zh-CN.md)

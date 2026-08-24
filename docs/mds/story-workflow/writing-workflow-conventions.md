@@ -160,7 +160,9 @@ The final `deposit` milestone is blocked by unresolved `\todo` markers, failed l
 
 ## 7. Interaction, language, and provenance
 
+- Every skill takes the same argument shape: `<skill> [TARGET] [DESCRIPTION] [involve=<level>]`. Strip `involve=<level>` first, resolve the target next, and treat whatever remains as a description. A description is a lead, not a command: it may select among a skill's own documented paths and supply wording the run records, and it never replaces a confirmation point, settles an ambiguous target, licenses an unsourced number, or authorizes a freeze. Where a skill's first argument is already free text, that argument is the description.
 - `INVOLVE=low|medium|high` controls how often a skill asks before judgment calls. It never bypasses confirmation of institutional facts, attribution, deletion, overwriting, or final freeze.
+- Resolve the level once at the start of a run, in this order: `INVOLVE` in `.env` (absent, unset, or invalid means `medium`), then an `involve=<level>` token in the invocation, then plain language during the run. The last instruction holds for the rest of the run. Every skill strips the token, including one whose `argument-hint` never advertises it and one that takes no other argument; a skill matching its first argument against outline rows must never read `involve=low` as a target.
 - `STORY_LANG=en|zh` controls replies and newly written Markdown. Empty follows the conversation. Existing files retain their language.
 - `STORY_MAIN` selects the default manuscript entry point for build and lint. A command-line `--main` overrides it; neither setting changes the manuscript language recorded in `degree/profile.tex`.
 - Degree level and manuscript language come from `degree/profile.tex`; do not switch either because of wording in the conversation.

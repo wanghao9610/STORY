@@ -1,6 +1,6 @@
 ---
 description: 使用 STORY 工作流指令运行 story-clms-auditor
-argument-hint: "[目标]"
+argument-hint: "[CHAPTER | CLAIM_ID | full] [描述]"
 ---
 
 **语言：** [English](story-clms-auditor.md) | 简体中文

@@ -1,6 +1,6 @@
 ---
 description: Run story-cite-auditor with its STORY workflow instructions
-argument-hint: "[TARGET]"
+argument-hint: "[CHAPTER | full] [DESCRIPTION]"
 ---
 
 **Language:** English | [简体中文](story-cite-auditor.zh-CN.md)

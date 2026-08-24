@@ -1,6 +1,6 @@
 ---
 description: 使用 STORY 工作流指令运行 story-outl-planner
-argument-hint: "[目标]"
+argument-hint: "[描述] [involve=high]"
 ---
 
 **语言：** [English](story-outl-planner.md) | 简体中文

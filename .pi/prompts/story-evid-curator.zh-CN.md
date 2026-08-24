@@ -1,6 +1,6 @@
 ---
 description: 使用 STORY 工作流指令运行 story-evid-curator
-argument-hint: "[目标]"
+argument-hint: "[check | import source=PATH [slug=NAME] | register path=FILE] [描述] [involve=low]"
 ---
 
 **语言：** [English](story-evid-curator.md) | 简体中文

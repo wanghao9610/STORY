@@ -1,6 +1,6 @@
 ---
 description: Run story-flow-status with its STORY workflow instructions
-argument-hint: "[TARGET]"
+argument-hint: "[DESCRIPTION]"
 ---
 
 **Language:** English | [简体中文](story-flow-status.zh-CN.md)

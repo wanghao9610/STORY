@@ -1,6 +1,6 @@
 ---
 description: 使用 STORY 工作流指令运行 story-figs-designer
-argument-hint: "[目标]"
+argument-hint: "[FIGURE | new] [描述] [involve=low]"
 ---
 
 **语言：** [English](story-figs-designer.md) | 简体中文

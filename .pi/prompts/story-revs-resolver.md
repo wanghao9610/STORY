@@ -1,6 +1,6 @@
 ---
 description: Run story-revs-resolver with its STORY workflow instructions
-argument-hint: "[TARGET]"
+argument-hint: "[MILESTONE] [DESCRIPTION] [involve=high]"
 ---
 
 **Language:** English | [简体中文](story-revs-resolver.zh-CN.md)

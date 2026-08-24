@@ -2,6 +2,7 @@
 name: story-syns-coach
 disable-model-invocation: true
 description: 根据作者意图和已登记证据建立或修改硕士/博士学位论文的研究问题、中心论点、研究主线、综合结论和学位贡献；适用于提纲前或论文缺少连贯论证时。
+argument-hint: "[描述] [involve=high]"
 ---
 
 # 建立适合学位层级的综合叙事

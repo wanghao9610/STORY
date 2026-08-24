@@ -1,6 +1,6 @@
 ---
 description: Run story-clms-auditor with its STORY workflow instructions
-argument-hint: "[TARGET]"
+argument-hint: "[CHAPTER | CLAIM_ID | full] [DESCRIPTION]"
 ---
 
 **Language:** English | [简体中文](story-clms-auditor.zh-CN.md)

@@ -1,6 +1,6 @@
 ---
 description: 使用 STORY 工作流指令运行 story-defn-builder
-argument-hint: "[目标]"
+argument-hint: "[MILESTONE] [描述] [involve=high]"
 ---
 
 **语言：** [English](story-defn-builder.md) | 简体中文

@@ -2,6 +2,7 @@
 name: story-outl-planner
 disable-model-invocation: true
 description: Turn a confirmed master's or doctoral thesis story and contribution map into a coherent chapter architecture, chapter briefs, figure/table plans, and compilable chapter scaffolds; use for monograph or publication-based structures.
+argument-hint: "[DESCRIPTION] [involve=high]"
 ---
 
 # Plan the thesis outline

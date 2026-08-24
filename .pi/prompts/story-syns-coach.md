@@ -1,6 +1,6 @@
 ---
 description: Run story-syns-coach with its STORY workflow instructions
-argument-hint: "[TARGET]"
+argument-hint: "[DESCRIPTION] [involve=high]"
 ---
 
 **Language:** English | [简体中文](story-syns-coach.zh-CN.md)

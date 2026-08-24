@@ -160,7 +160,9 @@ confirmed_on: ""
 
 ## 7. 交互、语言与来源记录
 
+- 所有 skill 共用同一个参数形状：`<skill> [TARGET] [DESCRIPTION] [involve=<level>]`。先剥离 `involve=<level>`，再解析目标，剩下的一切都是描述。描述是线索而不是命令：它可以在该 skill 自己已写明的路径之间做选择，也可以提供运行随后记下的文字，但绝不代替确认点，绝不替有歧义的目标下结论，绝不放行没有来源的数字，也绝不授权冻结。若某个 skill 的首参数本身就是自由文本，那个参数就是描述。
 - `INVOLVE=low|medium|high` 控制 skill 就判断性选择询问作者的频率。它绝不能绕过对学校事实、作者归属、删除、覆盖或最终冻结的确认。
+- 每次运行开始时按以下顺序解析一次档位：`.env` 中的 `INVOLVE`（缺失、未设置或非法时按 `medium`），再被调用参数中的 `involve=<level>` 覆盖，再被运行过程中的自然语言覆盖；最后一条指令在本次运行的剩余部分生效。每个 skill 都要剥离该 token，包括 `argument-hint` 从未标出它的 skill 和不接受其他参数的 skill；用首参数去匹配提纲行的 skill 绝不能把 `involve=low` 当成目标。
 - `STORY_LANG=en|zh` 控制回复和新写 Markdown；未设置时跟随对话。已有文件不会自动翻译。
 - `STORY_MAIN` 选择构建与 lint 的默认论文入口；命令行 `--main` 可覆盖它，但两者都不会改变 `degree/profile.tex` 记录的论文语言。
 - 学位层级和论文语言都来自 `degree/profile.tex`；不能因为对话措辞而切换其中任何一项。

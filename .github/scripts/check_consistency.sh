@@ -7,6 +7,10 @@ cd "${ROOT_DIR}" || exit 1
 
 ROOTS=(.agents/skills .claude/skills .cursor/skills .dsh/skills .kimi-code/skills .pi/skills .qwen/skills)
 NAMED_ROOTS=(.claude/skills .cursor/skills .dsh/skills .kimi-code/skills .pi/skills .qwen/skills)
+# Claude Code and Qwen Code are the only skill roots that read argument-hint.
+# .agents is Codex's discovery root, whose validator rejects the key; the rest
+# would carry an inert field. Pi reads it, but as a prompt-template field.
+HINT_ROOTS=".claude/skills .qwen/skills"
 FAILURES=0
 
 fail() { printf 'FAIL  %s\n' "$*"; FAILURES=$((FAILURES + 1)); }
@@ -19,6 +23,10 @@ list_skills() {
 
 frontmatter_has_line() {
     awk -v want="$2" 'NR == 1 { next } /^---[[:space:]]*$/ { exit } $0 == want { found = 1; exit } END { exit !found }' "$1"
+}
+
+frontmatter_has_key() {
+    awk -v key="$2:" 'NR == 1 { next } /^---[[:space:]]*$/ { exit } index($0, key) == 1 { found = 1; exit } END { exit !found }' "$1"
 }
 
 section 'Seven skill trees and shared storage'
@@ -61,6 +69,18 @@ while IFS= read -r skill; do
             [[ -f "${path}" ]] || { fail "missing ${path}"; policy_errors=1; continue; }
             frontmatter_has_line "${path}" "name: ${skill}" || { fail "frontmatter name mismatch: ${path}"; policy_errors=1; }
             grep -q 'docs/mds/story-workflow/writing-workflow-conventions\.md' "${path}" || { fail "conventions not loaded: ${path}"; policy_errors=1; }
+            case " ${HINT_ROOTS} " in
+                *" ${root} "*)
+                    frontmatter_has_key "${path}" 'argument-hint' \
+                        || { fail "missing argument-hint: ${path}"; policy_errors=1; }
+                    ;;
+                *)
+                    if frontmatter_has_key "${path}" 'argument-hint'; then
+                        fail "${path} carries an argument-hint this harness does not read"
+                        policy_errors=1
+                    fi
+                    ;;
+            esac
         done
     done
 
@@ -309,8 +329,15 @@ for wrapper in \
     fi
 done
 while IFS= read -r skill; do
-    [[ -f ".pi/prompts/${skill}.md" ]] || { fail "missing Pi prompt: .pi/prompts/${skill}.md"; harness_errors=1; }
-    [[ -f ".pi/prompts/${skill}.zh-CN.md" ]] || { fail "missing Chinese Pi prompt: .pi/prompts/${skill}.zh-CN.md"; harness_errors=1; }
+    for prompt in ".pi/prompts/${skill}.md" ".pi/prompts/${skill}.zh-CN.md"; do
+        if [[ ! -f "${prompt}" ]]; then
+            fail "missing Pi prompt: ${prompt}"
+            harness_errors=1
+        elif ! frontmatter_has_key "${prompt}" 'argument-hint'; then
+            fail "${prompt} lacks the per-skill argument-hint Pi reads from a prompt template"
+            harness_errors=1
+        fi
+    done
 done <<< "${BASE}"
 
 for cfg in .claude/settings.json .codex/hooks.json .cursor/hooks.json .dsh/hooks.json .pi/settings.json .qwen/settings.json; do

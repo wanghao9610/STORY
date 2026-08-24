@@ -1,6 +1,6 @@
 ---
 description: Run story-exam-reviewer with its STORY workflow instructions
-argument-hint: "[TARGET]"
+argument-hint: "[MILESTONE] [DESCRIPTION]"
 ---
 
 **Language:** English | [简体中文](story-exam-reviewer.zh-CN.md)

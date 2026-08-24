@@ -1,6 +1,6 @@
 ---
 description: Run story-depo-packer with its STORY workflow instructions
-argument-hint: "[TARGET]"
+argument-hint: "MILESTONE [DESCRIPTION] [involve=high]"
 ---
 
 **Language:** English | [简体中文](story-depo-packer.zh-CN.md)

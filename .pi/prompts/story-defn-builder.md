@@ -1,6 +1,6 @@
 ---
 description: Run story-defn-builder with its STORY workflow instructions
-argument-hint: "[TARGET]"
+argument-hint: "[MILESTONE] [DESCRIPTION] [involve=high]"
 ---
 
 **Language:** English | [简体中文](story-defn-builder.zh-CN.md)

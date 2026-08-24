@@ -1,6 +1,6 @@
 ---
 description: Run story-tabs-builder with its STORY workflow instructions
-argument-hint: "[TARGET]"
+argument-hint: "[TABLE | new] [DESCRIPTION] [involve=low]"
 ---
 
 **Language:** English | [简体中文](story-tabs-builder.zh-CN.md)

@@ -1,6 +1,6 @@
 ---
 description: Run story-copy-editor with its STORY workflow instructions
-argument-hint: "[TARGET]"
+argument-hint: "[CHAPTER | full | style] [DESCRIPTION] [involve=low]"
 ---
 
 **Language:** English | [简体中文](story-copy-editor.zh-CN.md)

@@ -42,4 +42,6 @@ flowchart LR
 | `story-depo-packer` | A final package needs preflight and a freeze record | deposit bundle and record |
 | `story-flow-status` | The next action is unclear | read-only status summary |
 
+Every skill takes the same argument shape — `<skill> [TARGET] [DESCRIPTION] [involve=<level>]`. `involve=low|medium|high` is stripped first and sets how much this run asks; every skill strips it, including one whose `argument-hint` does not advertise it. The target resolves as that skill documents it, and whatever remains is a description: free text saying what this run is for, such as `/story-chap-drafter 3 lead with the ablation, the committee asked for it`. It is a lead, not a command — the full rule is [conventions §7](writing-workflow-conventions.md). Claude Code and Qwen Code show each skill's shape as an `argument-hint` in their own skill menus; the other harnesses do not read that field.
+
 Every skill first reads [writing-workflow-conventions.md](writing-workflow-conventions.md).

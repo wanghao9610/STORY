@@ -2,6 +2,7 @@
 name: story-defn-builder
 disable-model-invocation: true
 description: Plan, build, and check a master's or doctoral defense narrative and slide deck from verified thesis claims, confirmed timing/rules, and editable assets; use for an applicable pre-defense or final defense.
+argument-hint: "[MILESTONE] [DESCRIPTION] [involve=high]"
 ---
 
 # Build the degree defense

@@ -2,6 +2,7 @@
 name: story-depo-packer
 disable-model-invocation: true
 description: 根据已确认学校要求检查、打包并冻结最终学位论文归档版本；仅用于明确的 deposit 里程碑，不上传、提交、推送或静默修改正文。
+argument-hint: "MILESTONE [描述] [involve=high]"
 ---
 
 # 打包学位论文归档版本

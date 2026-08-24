@@ -42,4 +42,6 @@ flowchart LR
 | `story-depo-packer` | 最终检查、打包并冻结版本 | 归档包与记录 |
 | `story-flow-status` | 不清楚下一步做什么 | 只读状态摘要 |
 
+每个 skill 都共用同一个参数形状——`<skill> [TARGET] [DESCRIPTION] [involve=<level>]`。`involve=low|medium|high` 最先被剥离，用来设定这次运行询问的频率；每个 skill 都要剥离它，包括 `argument-hint` 里没有标出它的 skill。目标按各 skill 自己写明的规则解析，剩下的一切是描述：用自由文本说明这次运行是为了什么，例如 `/story-chap-drafter 3 消融是重点，开篇就摆出来，答辩委员会问到了`。它是线索而不是命令，完整规则见[规约 §7](writing-workflow-conventions.zh-CN.md)。Claude Code 与 Qwen Code 会在各自的 skill 菜单里把每个 skill 的形状显示为 `argument-hint`；其他 harness 不读取该字段。
+
 每个 skill 首先读取 [writing-workflow-conventions.md](writing-workflow-conventions.md)。

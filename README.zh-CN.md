@@ -247,7 +247,7 @@ INVOLVE=medium
 STORY_LANG=
 ```
 
-`.env` 已被 Git 忽略。`STORY_MAIN` 为构建与 lint 选择默认入口，单次命令中的 `--main` 优先。`INVOLVE=low|medium|high` 控制 skill 在一般裁量题前询问的频率，但绝不会绕过学校事实、作者贡献、删除、覆盖或最终冻结的确认。`STORY_LANG=en|zh` 控制回复与新写入 Markdown 的语言；留空时跟随对话，且永远不会翻译已有文件。手稿语言和学位层级仍保存在 `degree/profile.tex`。
+`.env` 已被 Git 忽略。`STORY_MAIN` 为构建与 lint 选择默认入口，单次命令中的 `--main` 优先。`INVOLVE=low|medium|high` 控制 skill 在一般裁量题前询问的频率，但绝不会绕过学校事实、作者贡献、删除、覆盖或最终冻结的确认。它是项目默认值；单次调用中的 `involve=<level>` token 只覆盖那一次运行。`STORY_LANG=en|zh` 控制回复与新写入 Markdown 的语言；留空时跟随对话，且永远不会翻译已有文件。手稿语言和学位层级仍保存在 `degree/profile.tex`。
 
 随后，只依据正式材料或作者确认过的记录填写 `degree/profile.tex`、`degree/requirements.md` 和 `degree/committee.md`。未知值保持为空；不得根据论文题名或学位名称推断学位层级。
 

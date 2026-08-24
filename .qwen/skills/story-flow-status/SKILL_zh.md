@@ -1,1 +1,22 @@
-../../../.agents/skills/story-flow-status/SKILL_zh.md
+---
+name: story-flow-status
+description: 只读检查整个 STORY 仓库并汇报硕士或博士学位论文进度、学位层级有效性、证据健康、章节/论断/贡献覆盖、适用里程碑关口、构建状态和唯一下一步建议。
+argument-hint: "[描述]"
+---
+
+# 汇报学位论文工作流状态
+
+首先完整阅读 `docs/mds/story-workflow/writing-workflow-conventions.md`。本 skill 严格只读。
+
+从仓库根目录运行随附的 `scripts/scan.sh`，然后汇总：
+
+- 学位层级、档案一致性和未勾选的学校要求；
+- 在已确认层级下，学位论文总叙事与贡献映射的就绪情况；
+- 提纲中的章节、图和表状态；
+- 按状态统计的论断数量及证据 manifest 完整性信号；
+- 尚未解决的发表复用或作者归属记录；
+- 参考文献与阅读笔记覆盖；
+- 当前里程碑、反馈承诺及只对已确认层级适用的答辩/归档门槛；
+- 最近构建、页数和 lint 信号。
+
+明确区分 `absent`、`unknown`、`invalid`、`stale`、`blocked` 与 `complete`。学位层级缺失或非法时，它是所有层级相关工作流的最早关口；由于没有 skill 负责学校事实，只推荐一个作者动作——确认 `degree/profile.tex`——不得假设模式。否则，新仓库或部分初始化仓库中缺失的 `notes/*.md` 表示工作流阶段尚未初始化，不是仓库损坏；当它是其余最早关口时，按照规范 §1 推荐其首次创建者。只推荐一个下一步动作，并给出负责该动作的 `story-*` skill 和具体目标；不得把状态检查变成对建议动作的执行。

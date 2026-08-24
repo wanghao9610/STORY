@@ -1,6 +1,6 @@
 ---
 description: 使用 STORY 工作流指令运行 story-copy-editor
-argument-hint: "[目标]"
+argument-hint: "[CHAPTER | full | style] [描述] [involve=low]"
 ---
 
 **语言：** [English](story-copy-editor.md) | 简体中文

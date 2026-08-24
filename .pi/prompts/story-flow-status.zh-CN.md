@@ -1,6 +1,6 @@
 ---
 description: 使用 STORY 工作流指令运行 story-flow-status
-argument-hint: "[目标]"
+argument-hint: "[描述]"
 ---
 
 **语言：** [English](story-flow-status.md) | 简体中文

@@ -1,6 +1,6 @@
 ---
 description: Run story-evid-curator with its STORY workflow instructions
-argument-hint: "[TARGET]"
+argument-hint: "[check | import source=PATH [slug=NAME] | register path=FILE] [DESCRIPTION] [involve=low]"
 ---
 
 **Language:** English | [简体中文](story-evid-curator.zh-CN.md)

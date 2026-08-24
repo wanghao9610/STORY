@@ -1,6 +1,6 @@
 ---
 description: 使用 STORY 工作流指令运行 story-refs-curator
-argument-hint: "[目标]"
+argument-hint: "PAPER... [描述] [involve=low]"
 ---
 
 **语言：** [English](story-refs-curator.md) | 简体中文

@@ -2,6 +2,7 @@
 name: story-outl-planner
 disable-model-invocation: true
 description: 将已确认的硕士或博士学位论文总叙事和贡献映射转化为连贯章节架构、章节简报、图表计划与可编译骨架；适用于专著式或基于发表论文的结构。
+argument-hint: "[描述] [involve=high]"
 ---
 
 # 规划学位论文提纲

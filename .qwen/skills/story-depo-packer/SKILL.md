@@ -2,6 +2,7 @@
 name: story-depo-packer
 disable-model-invocation: true
 description: Preflight, package, and freeze a final master's or doctoral thesis deposit from confirmed institutional requirements; use only for a named deposit milestone, never to upload, submit, push, or silently change the manuscript.
+argument-hint: "MILESTONE [DESCRIPTION] [involve=high]"
 ---
 
 # Package the thesis deposit
