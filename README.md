@@ -12,7 +12,7 @@ STORY turns years of graduate research into one coherent, defensible, and deposi
 
 The central contract is provenance. Every quantitative or comparative statement in the thesis traces to a fingerprinted file under `mates/` or remains visibly unresolved as `\todo{...}`; every assertion about cited work is checked against a reading note or imported source; every degree contribution records its evidence, chapter, publication, and attribution boundaries. STORY therefore treats a thesis as a synthesis of research rather than a stack of papers pasted together.
 
-STORY is double-layered: this repository is the **template**; one degree thesis = one **instance**, created by cloning the template or installing its skeleton into an existing thesis repository with `execs/update.sh --adopt`. An instance may import any number of [STAR](https://github.com/wanghao9610/STAR) research repositories, [STAGE](https://github.com/wanghao9610/STAGE) paper repositories, other STORY theses, and manually registered sources. The pairing is optional—STORY also works as a standalone thesis repository.
+STORY has two layers: this repository is the **template**; one degree thesis = one **instance**, created by cloning the template or installing its skeleton into an existing thesis repository with `execs/update.sh --adopt`. An instance may import any number of [STAR](https://github.com/wanghao9610/STAR) research repositories, [STAGE](https://github.com/wanghao9610/STAGE) paper repositories, other STORY theses, and manually registered sources. The pairing is optional—STORY also works as a standalone thesis repository.
 
 ## Contents
 
@@ -63,7 +63,7 @@ The handoff is one-way and auditable: STAR produces research records and results
 - **A thesis-level source of truth** under `notes/`: the central argument, research arc, contribution map, publication/reuse map, chapter architecture, notation, style, reading notes, and claim ledger are created on demand by their owning workflows.
 - **Degree-aware standards**: `degree/profile.tex` selects `master` or `doctoral`; level-specific synthesis, examination, defense, and deposit gates remain disabled while that fact is unknown.
 - **Institutional facts kept separate from guesses**: official requirements, title-page wording, committee records, templates, limits, approvals, and deadlines enter only from author-confirmed sources under `degree/` and `milestones/`.
-- **A complete thesis lifecycle through sixteen skills**: adoption, evidence curation, synthesis, outlining, chapter drafting, figures, tables, references, copy editing, audits, mock examination, feedback resolution, defense, deposit, and status reporting.
+- **The full thesis lifecycle through sixteen skills**: adoption, evidence curation, synthesis, outlining, chapter drafting, figures, tables, references, copy editing, audits, mock examination, feedback resolution, defense, deposit, and status reporting.
 - **Deterministic build and checks**: `execs/run.sh` builds out of tree; `lint.sh` checks references, todos, degree-profile consistency, page limits, and formatting; `fmt.sh` preserves one sentence per line; `import.sh --diff` detects evidence drift.
 - **One workflow across seven agent harnesses**: Codex, Claude Code, Cursor, DeepSeek Harness, Kimi Code, Pi, and Qwen Code share the same neutral skills and request router.
 - **Project-owned memory** under `.story/memory/` for durable session knowledge that no evidence, degree, note, milestone, or task file already owns.
@@ -316,7 +316,7 @@ The sixteen skills form a pipeline, not a rigid sequence. Use the smallest skill
 | `story-figs-designer` | One conceptual, method, result, or synthesis figure is needed | Rendered figure plus editable source under `manus/figs/` |
 | `story-refs-curator` | A source must be added, verified, read, deduplicated, or positioned | Bibliography entries and `notes/refs/` reading notes |
 | `story-copy-editor` | Authorial voice, formulaic prose, terminology, transitions, repetition, or notation need polishing | Manuscript edits, report, or `notes/style.md` |
-| `story-clms-auditor` | Numbers, comparisons, and degree-contribution claims need traceability checks | Claim verdicts, regenerable report, durable tasks |
+| `story-clms-auditor` | Numbers, comparisons, and degree-contribution claims need traceability checks | Claim verdicts, regenerable findings, durable tasks |
 | `story-cite-auditor` | Citation keys, literature assertions, and bibliography hygiene need checking | Citation report and durable tasks |
 | `story-exam-reviewer` | A degree-appropriate mock examiner or committee review is needed | `milestones/<slug>/feedback/SIM_EXAM_<date>.md` |
 | `story-revs-resolver` † | Supervisor, committee, examiner, defense, correction, or deposit feedback arrived | Point ledger, responses, tracked promises |
@@ -324,7 +324,7 @@ The sixteen skills form a pipeline, not a rigid sequence. Use the smallest skill
 | `story-depo-packer` † | A named deposit milestone is ready for preflight and freeze | Deposit bundle, checksums, record, optional local freeze tag |
 | `story-flow-status` | The next action is unclear | Read-only status report and exactly one next action |
 
-The six skills marked † control thesis-wide argument, chapter boundaries, institutional milestones, or finalization. The generic router never starts one without returning the exact explicit command and waiting for confirmation. This is the workflow boundary that keeps an agent from silently changing the thesis's central claim, structure, response position, defense, or deposit state.
+The six skills marked † control thesis-wide argument, chapter boundaries, institutional milestones, or finalization. The generic router never starts one without returning the exact explicit command and waiting for confirmation. This boundary keeps an agent from silently changing the thesis's central claim, structure, response position, defense, or deposit state.
 
 Chapter drafting, copy-editing, mock examination, and lint share the [human-writing guide](docs/mds/story-workflow/human-writing-guide.md). It adapts Humanizer patterns to academic prose while preserving evidence, qualifications, terminology, and author-confirmed voice; it does not classify authorship from isolated words or punctuation.
 
@@ -433,7 +433,7 @@ Use `$story` or `/story` with no request for thesis status, or pass a plain-lang
 
 ## Project memory
 
-What a session learns that no repository file owns—a machine-specific TeX limitation, a standing author preference, a reusable project judgment, or a framing already tried and rejected—may live under `.story/memory/`. One fact lives in one file and one index line appears in `.story/memory/MEMORY.md`; session hooks put the index in front of each supported harness.
+What a session learns that no repository file owns—a machine-specific TeX limitation, a standing author preference, a reusable project judgment, or a framing already tried and rejected—may live under `.story/memory/`. Each fact lives in its own file and gets one index line in `.story/memory/MEMORY.md`; session hooks put the index in front of each supported harness.
 
 Four types keep the store legible: `env`, `pref`, `insight`, and `deadend`. Machine-only facts live under `.story/memory/local/`, which Git ignores; an `env` fact older than 180 days is marked stale. A memory is never evidence and cannot override a file that already owns the fact: values belong to `mates/`, claims to `notes/claims.md`, institutional requirements to `degree/`, publication reuse to `notes/publications.md`, feedback to `milestones/`, and promises to `tasks/`.
 

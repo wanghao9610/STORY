@@ -14,6 +14,6 @@ Choose one mode:
 - `import source=<path> [slug=<name>]`: run `bash execs/scpts/import.sh` for a STAR, STAGE, STORY, or structured evidence repository.
 - `register path=<file>`: copy a user-supplied artifact into `mates/manual/` only after its origin, author/owner, date, and coverage are known.
 
-For each registered file, record source type, source path or record, source commit when available, SHA-256, import date from the system clock, and what the file can support. A description of what a file covers is not evidence for a claim; drafting skills must still read the file.
+For each registered file, record its source type, source path or record, source commit when available, SHA-256, import date from the system clock, and what the file can support. A description of what a file covers is not evidence for a claim; drafting skills must still read the file.
 
-Never repair content under `mates/`. Identify the upstream correction or register a new corrected artifact. Update no manuscript prose in this skill.
+Never repair content under `mates/`. Identify the upstream correction or register a new corrected artifact instead. Do not update manuscript prose in this skill.

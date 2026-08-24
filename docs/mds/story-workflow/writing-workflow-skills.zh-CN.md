@@ -2,7 +2,7 @@
 
 **语言：** [English](writing-workflow-skills.md) | 简体中文
 
-这些 skill 构成硕士/博士学位论文流水线，但不是僵硬的线性步骤。每次选择拥有目标文件的最小 skill。
+这些 skill 构成硕士/博士学位论文流水线，但不是僵硬的线性步骤。每次选择拥有目标产物的最小 skill。
 新克隆不预置 `notes/*.md`：下表中的主要产物在首次使用时由负责它的 skill 创建，下游 skill 把缺失视为阶段尚未初始化。
 在开展层级相关的综合叙事、提纲、审查、答辩或归档工作前，先在 `degree/profile.tex` 中写入经作者确认的 `% degree_level: master|doctoral`。两种模式采用相同的证据与归属契约；贡献范围和里程碑关口按所选层级及已确认学校规则确定。
 
@@ -42,7 +42,7 @@ flowchart LR
 | `story-depo-packer` | 最终检查、打包并冻结版本 | 归档包与记录 |
 | `story-flow-status` | 不清楚下一步做什么 | 只读状态摘要 |
 
-每个 skill 都共用同一个参数形状——`<skill> [TARGET] [DESCRIPTION] [involve=<level>]`。`involve=low|medium|high` 最先被剥离，用来设定这次运行询问的频率；每个 skill 都要剥离它，包括 `argument-hint` 里没有标出它的 skill。目标按各 skill 自己写明的规则解析，剩下的一切是描述：用自由文本说明这次运行是为了什么，例如 `/story-chap-drafter 3 消融是重点，开篇就摆出来，答辩委员会问到了`。它是线索而不是命令，完整规则见[规约 §7](writing-workflow-conventions.zh-CN.md)。Claude Code 与 Qwen Code 会在各自的 skill 菜单里把每个 skill 的形状显示为 `argument-hint`；其他 harness 不读取该字段。
+所有 skill 共用同一个参数形状：`<skill> [TARGET] [DESCRIPTION] [involve=<level>]`。`involve=low|medium|high` 最先被剥离，它决定这次运行询问的多少；即使某个 skill 的 `argument-hint` 没有标出它，这一步也不例外。目标按各 skill 自己写明的规则解析，剩下的一切是描述：用自由文本说明这次运行是为了什么，例如 `/story-chap-drafter 3 消融是重点，开篇就摆出来，答辩委员会问到了`。描述是线索而不是命令。完整规则见[规约 §7](writing-workflow-conventions.zh-CN.md)。Claude Code 与 Qwen Code 会在各自的 skill 菜单里把每个 skill 的形状显示为 `argument-hint`；其他 harness 不读取该字段。
 
-每个 skill 首先读取 [writing-workflow-conventions.md](writing-workflow-conventions.md)。
+开始任何工作前，每个 skill 都先读取 [writing-workflow-conventions.md](writing-workflow-conventions.md)。
 章节起草、润色和模拟审查还会应用共享的[学术自然写作指南](human-writing-guide.zh-CN.md)。该指南把 Humanizer 模式改编为受证据约束的学术表达，不会把孤立词语当作 AI 创作的证明。

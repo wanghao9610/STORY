@@ -8,7 +8,7 @@ argument-hint: "CHAPTER [DESCRIPTION] [involve=low]"
 
 Read `docs/mds/story-workflow/writing-workflow-conventions.md` first. Resolve the target by chapter number, slug, or unique title in `notes/outline.md`; ask when it is absent or ambiguous.
 
-Before writing, load the chapter brief, `notes/story.md`, linked contribution and publication rows, linked claim rows, relevant reading notes, every evidence file needed in this run, and `notes/style.md` where present. Read `docs/mds/story-workflow/human-writing-guide.md` before drafting prose; an absent style profile is not a blocker.
+Before writing, load the chapter brief, `notes/story.md`, linked contribution and publication rows, linked claim rows, relevant reading notes, every evidence file needed in this run, and `notes/style.md` where present. Read `docs/mds/story-workflow/human-writing-guide.md` before drafting prose; a missing style profile is not a blocker.
 
 Write one sentence per source line. Keep the chapter's local argument connected to the thesis's central argument. Lead with the substantive point, use stable technical terms, and let sentence and paragraph rhythm follow the reasoning rather than a repeated template. Adapt paper material into a consistent thesis voice; preserve coauthor attribution and do not copy substantial published wording before its reuse row is resolved.
 

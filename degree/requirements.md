@@ -2,7 +2,7 @@
 
 **Language:** English | [简体中文](requirements.zh-CN.md)
 
-Record each item from an official, author-confirmed source. Keep the source URL or supplied file path beside the requirement. If an item does not apply to the selected degree level, record that confirmed fact and check it as resolved rather than leaving an ambiguous open gate.
+Record each item from an official, author-confirmed source, and keep the source URL or supplied file path beside the requirement. When an item does not apply to the selected degree level, record that confirmed fact and check the row as resolved instead of leaving an ambiguous open gate.
 
 ## Filling guide
 

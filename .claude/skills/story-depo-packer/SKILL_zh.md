@@ -1,7 +1,7 @@
 ---
 name: story-depo-packer
 disable-model-invocation: true
-description: 根据已确认学校要求检查、打包并冻结最终学位论文归档版本；仅用于明确的 deposit 里程碑，不上传、提交、推送或静默修改正文。
+description: 根据已确认的学校要求检查、打包并冻结最终学位论文归档版本；仅用于明确的 deposit 里程碑，不上传、提交、推送或静默修改正文。
 argument-hint: "MILESTONE [描述] [involve=high]"
 ---
 
@@ -13,7 +13,7 @@ argument-hint: "MILESTONE [描述] [involve=high]"
 
 1. `bash execs/run.sh` 和 `bash execs/scpts/lint.sh` 通过；
 2. `degree/requirements.md` 中每个必需复选框都已勾选并附有来源；
-3. 该学位层级要求的每项批准和里程碑事实均已记录；
+3. 该学位层级要求的每项批准和所有里程碑事实均已记录；
 4. `tasks/` 下不存在未兑现的承诺；
 5. 论断与引用审计没有尚未解决的硬性失败；
 6. 发表内容复用、作者归属和许可均已解决；

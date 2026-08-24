@@ -1,6 +1,6 @@
 # `mates/MANIFEST.md` 中文对照
 
-> `mates/` 是不可原地修改的证据库。为避免把翻译文件误登记为论文证据，本中文对照放在 `docs/`，权威 manifest 仍是 [`mates/MANIFEST.md`](../../../mates/MANIFEST.md)。
+> `mates/` 是证据库，不可原地修改。为避免把翻译文件误登记为论文证据，本中文对照放在 `docs/`，权威 manifest 仍是 [`mates/MANIFEST.md`](../../../mates/MANIFEST.md)。
 
 ## 证据清单
 

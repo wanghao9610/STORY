@@ -2,7 +2,7 @@
 
 **Language:** English | [简体中文](human-writing-guide.zh-CN.md)
 
-This guide adapts common observations about formulaic AI prose to a master's or doctoral thesis.
+This guide adapts common observations about formulaic AI prose to the writing of a master's or doctoral thesis.
 Its purpose is better scholarly writing and a stable authorial voice, not guessing how text was produced or defeating an AI detector.
 The evidence, citation, attribution, and claim contracts in [writing-workflow-conventions.md](writing-workflow-conventions.md) always take priority.
 
@@ -19,7 +19,7 @@ Humanizing a passage is a prose edit, not permission to change its scholarship.
 
 ## 2. Match the author before applying defaults
 
-When `notes/style.md` names author-confirmed samples, read the relevant samples before drafting or editing.
+When `notes/style.md` names author-confirmed samples, read the relevant ones before drafting or editing.
 Observe sentence length, paragraph movement, preferred transitions, punctuation, first-person practice, qualification, repeated terms, and deliberate quirks.
 A traceable author sample outranks the defaults below.
 
@@ -145,13 +145,3 @@ Use these review dimensions instead:
 
 A passage is ready only when claim fidelity passes.
 The other dimensions identify revision needs; they do not classify the author.
-
-## 7. Sources and adaptation
-
-This guide adapts ideas from:
-
-- [`blader/humanizer` version 2.11.2 at commit `e2e92e7`](https://github.com/blader/humanizer/blob/e2e92e7b4b8229253ed5c8e81dc65463fdeddda5/SKILL.md), MIT licensed, including its claim-preservation rule, writer-sample priority, pattern clusters, paragraph-level rewrite, and false-positive safeguards;
-- [`op7418/humanizer-zh` at commit `91f3d39`](https://github.com/op7418/humanizer-zh/blob/91f3d394db8419c20d67ebe22a96cf8fee0a404b/SKILL.md), MIT licensed, including its Chinese pattern adaptations and review dimensions.
-
-The wording and academic workflow here are STORY-specific.
-Where either source suggests adding personality or concrete detail, STORY's evidence and author-voice contracts govern.

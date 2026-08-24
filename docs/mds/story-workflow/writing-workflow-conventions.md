@@ -23,7 +23,7 @@ Chat history and `.story/memory/` never override these files.
 
 ### Degree-level contract
 
-`degree/profile.tex` records the author-confirmed `% degree_level: master|doctoral` value. These are the only valid values. A missing or invalid value is `unknown`: read-only workflows report it, while any workflow that would make level-specific judgments stops and asks the author to confirm and record it. Never infer the level from the title, degree name, chapter count, publications, or conversation.
+`degree/profile.tex` records the author-confirmed `% degree_level: master|doctoral` value. These are the only valid values. A missing or invalid entry is `unknown`: read-only workflows report it, while any workflow that would make level-specific judgments stops and asks the author to confirm and record it. Never infer the level from the title, degree name, chapter count, publications, or conversation.
 
 Use *thesis* as the generic workflow term; use *master's thesis*, *doctoral dissertation*, or an institution's official wording when the level or document title matters. Institutional rules in `degree/requirements.md` always override generic expectations.
 
@@ -45,8 +45,8 @@ The Markdown artifacts under `notes/` are created on first use by their owning s
 | `notes/style.md` | `story-copy-editor style` |
 | `notes/refs/refs_index.md`, `notes/refs/<key>.md` | `story-refs-curator` |
 
-An absent artifact means that workflow stage is not initialized; it is not by itself corruption.
-The owning skill creates the file immediately before its first durable write, preserves any existing content, and creates the English/Simplified-Chinese Markdown pair in the same change.
+An absent artifact means that workflow stage is not initialized; by itself it is not corruption.
+The owning skill creates the file immediately before its first durable write, preserves any existing content, and adds the English/Simplified-Chinese Markdown pair in the same change.
 A consuming skill that finds a required artifact absent stops and routes to its first creator instead of inventing a substitute schema.
 Changing `STORY_LANG` never translates or replaces an existing artifact.
 
@@ -61,7 +61,7 @@ Changing `STORY_LANG` never translates or replaces an existing artifact.
 
 ## 3. Structured record IDs and states
 
-Use the canonical lowercase tokens below in machine-read fields and `Status` columns; do not substitute synonyms. Leave an optional value empty when it is unknown. Use `none` in a free-text or list cell only when the absence or non-applicability has been confirmed; never use `none` as a status. Dates use `YYYY-MM-DD`, paths are repository-relative, URLs use stable `https://` locations, and multi-value cells use comma-separated stable IDs or paths.
+Use the canonical lowercase tokens below in machine-read fields and `Status` columns; do not substitute synonyms. Leave an optional value empty when it is unknown. Use `none` in a free-text or list cell only when the absence or non-applicability has been confirmed; never use `none` as a status. Dates use `YYYY-MM-DD`, paths are repository-relative, URLs point to stable `https://` locations, and multi-value cells take comma-separated stable IDs or paths.
 
 `notes/story.md` frontmatter accepts:
 
@@ -169,7 +169,7 @@ The final `deposit` milestone is blocked by unresolved `\todo` markers, failed l
 - Every skill takes the same argument shape: `<skill> [TARGET] [DESCRIPTION] [involve=<level>]`. Strip `involve=<level>` first, resolve the target next, and treat whatever remains as a description. A description is a lead, not a command: it may select among a skill's own documented paths and supply wording the run records, and it never replaces a confirmation point, settles an ambiguous target, licenses an unsourced number, or authorizes a freeze. Where a skill's first argument is already free text, that argument is the description.
 - `INVOLVE=low|medium|high` controls how often a skill asks before judgment calls. It never bypasses confirmation of institutional facts, attribution, deletion, overwriting, or final freeze.
 - Resolve the level once at the start of a run, in this order: `INVOLVE` in `.env` (absent, unset, or invalid means `medium`), then an `involve=<level>` token in the invocation, then plain language during the run. The last instruction holds for the rest of the run. Every skill strips the token, including one whose `argument-hint` never advertises it and one that takes no other argument; a skill matching its first argument against outline rows must never read `involve=low` as a target.
-- `STORY_LANG=en|zh` controls replies and newly written Markdown. Empty follows the conversation. Existing files retain their language.
+- `STORY_LANG=en|zh` controls replies and newly written Markdown. When unset, it follows the conversation. Existing files retain their language.
 - `STORY_MAIN` selects the default manuscript entry point for build and lint. A command-line `--main` overrides it; neither setting changes the manuscript language recorded in `degree/profile.tex`.
 - Degree level and manuscript language come from `degree/profile.tex`; do not switch either because of wording in the conversation.
 - Dated artifacts use the system date. When model provenance is recorded, use the session-provided model ID; never invent one.

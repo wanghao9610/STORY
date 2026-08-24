@@ -12,7 +12,7 @@ Preflight all hard gates:
 
 1. `bash execs/run.sh` and `bash execs/scpts/lint.sh` pass;
 2. every required box in `degree/requirements.md` is checked with a source;
-3. every approval required for this degree level and the milestone facts are recorded;
+3. every approval required for this degree level and all milestone facts are recorded;
 4. no open promise remains under `tasks/`;
 5. claim and citation audits have no unresolved hard failures;
 6. publication reuse, attribution, and permissions are resolved;

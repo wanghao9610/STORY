@@ -16,7 +16,7 @@ This repository uses STORY — **Systematic Toolchain for Organizing Research ov
 ## 2. Evidence before prose
 
 - Every quantitative or comparative claim in `manus/` must trace to a fingerprinted `mates/` file through a nearby `% src:` comment or a claim-ledger entry.
-- Missing evidence is written visibly as `\todo{...}`. A plausible invented value is never acceptable.
+- Write missing evidence visibly as `\todo{...}`. A plausible invented value is never acceptable.
 - Assertions about cited work must be checkable against `notes/refs/` or imported reference material.
 - Fix incorrect evidence at its source and re-import it. Never silently edit a snapshot under `mates/`.
 - A published paper is evidence, not automatically the thesis's final wording. Reconcile terminology, scope, attribution, and overlap before reuse.
@@ -45,7 +45,7 @@ This repository uses STORY — **Systematic Toolchain for Organizing Research ov
 - `manus/figs/`, `manus/tabs/`, `manus/bibs/`, `manus/stys/`: figures, tables, bibliography, and template layers.
 - `degree/`: profile, committee record, and institutional checklist.
 - `notes/`: narrative, outline, claims, contribution/publication maps, notation, style, adoption record, and reading notes.
-- A fresh clone keeps only `notes/.gitkeep` and `notes/refs/.gitkeep`; the owning workflow skill creates each `notes/*.md` artifact on first use. Treat absence as an uninitialized stage and route consumers to the owning creator.
+- A fresh clone keeps only `notes/.gitkeep` and `notes/refs/.gitkeep`; the owning workflow skill creates each `notes/*.md` artifact on first use. Treat absence as an uninitialized stage and route consumers to the skill that creates it.
 - `wkdrs/`: builds and regenerable reports; never treat it as durable project state.
 - `tasks/`: durable unresolved work and feedback promises.
 
@@ -68,8 +68,8 @@ This repository uses STORY — **Systematic Toolchain for Organizing Research ov
 
 ## 8. Language and project memory
 
-- `.env` `STORY_LANG=en|zh` controls replies and newly written Markdown; unset follows the conversation. It does not silently translate existing files.
-- Keep every English Markdown file paired with a Simplified Chinese counterpart: use `*.zh-CN.md` for ordinary documents and `SKILL_zh.md` for skill instructions. Because `mates/` is read-only, the counterpart of `mates/MANIFEST.md` lives at `docs/mds/story-workflow/mates-MANIFEST.zh-CN.md`.
+- `.env` `STORY_LANG=en|zh` controls replies and newly written Markdown, following the conversation when unset; it never silently translates existing files.
+- Pair every English Markdown file with a Simplified Chinese counterpart: use `*.zh-CN.md` for ordinary documents and `SKILL_zh.md` for skill instructions. Because `mates/` is read-only, the counterpart of `mates/MANIFEST.md` lives at `docs/mds/story-workflow/mates-MANIFEST.zh-CN.md`.
 - `degree/profile.tex` controls the manuscript language.
 - Store session knowledge in `.story/memory/` only when no repository file already owns it. Machine-local facts go under `.story/memory/local/`.
 - Offer, never assume: make at most two memory offers per session and write only after the author agrees. `INVOLVE=low` records without asking and says so.

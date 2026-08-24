@@ -8,7 +8,7 @@
 
 **语言：** [English](README.md) | 简体中文
 
-STORY 把多年的研究生阶段研究组织成一部连贯、可答辩、可归档的硕士学位论文或博士学位论文。它把手稿、研究证据、出版物复用、学位要求、章节计划、贡献与论断记录、导师和委员会反馈、答辩材料、修改过程及归档历史放在可预测的位置。研究者和 AI 写作 agent 依据同一套由仓库拥有的指令协作，因此即使一次对话早已结束，学位论文仍可在后续会话中继续推进并接受复核。
+STORY 把多年的研究生阶段研究组织成一部连贯、可答辩、可归档的硕士学位论文或博士学位论文。它把手稿、研究证据、出版物复用、学位要求、章节计划、贡献与论断记录、委员会反馈、答辩材料、修改过程及归档历史放在可预测的位置。研究者和 AI 写作 agent 依据同一套由仓库拥有的指令协作，因此即使一次对话早已结束，学位论文仍可在后续会话中继续推进并接受复核。
 
 这套系统的核心契约是来源可追溯。论文中的每项定量或比较性陈述，都必须追溯到 `mates/` 下带指纹的文件，否则就以 `\todo{...}` 显式保留为未解决项；关于引用文献的每项断言，都必须能由阅读笔记或已导入材料核验；每项学位贡献都要记录对应的证据、章节、出版物和作者贡献边界。因此，STORY 把学位论文视为对研究的综合，而不是把若干论文简单拼接在一起。
 
@@ -45,7 +45,7 @@ STORY 有两层：本仓库是**模板**；一部学位论文对应一个**实�
 
 ## STAR · STAGE · STORY
 
-三个项目覆盖研究者工作的不同尺度。它们可以各自独立使用，也可以通过带指纹的证据彼此衔接。
+三个项目覆盖研究者工作中相继递进的尺度。它们可以各自独立使用，也可以通过带指纹的证据彼此衔接。
 
 | 项目 | 范围 | 链接 |
 | --- | --- | --- |
@@ -139,7 +139,7 @@ STORY/
 | `mds/` | Markdowns | 按主题组织的 Markdown 文档 |
 | `srcs/` | Static sources | 文档图片与可编辑视觉源文件 |
 
-有三条规则比目录名称更重要。`mates/` 除 `execs/scpts/import.sh` 与 `story-evid-curator` 外一律只读；`wkdrs/` 可以重新生成，因此持久结果应写入 `notes/`、`milestones/` 或 `tasks/`；新克隆有意只包含 `notes/.gitkeep` 与 `notes/refs/.gitkeep`。各工作流在第一次使用时创建自己拥有的 `notes/*.md`——文件缺席表示“尚未初始化”，不表示模板损坏。
+有三条规则比目录名称更重要。`mates/` 除 `execs/scpts/import.sh` 与 `story-evid-curator` 外一律只读；`wkdrs/` 可以重新生成，因此持久结果应写入 `notes/`、`milestones/` 或 `tasks/`；新克隆有意只包含 `notes/.gitkeep` 与 `notes/refs/.gitkeep`。各工作流在第一次使用时创建自己拥有的 `notes/*.md`——文件缺席表示“尚未初始化”，而不是“模板里缺了它”。
 
 ## 学位论文模板
 
@@ -153,13 +153,13 @@ STORY/
 | 参考文献样式 | `manus/stys/story.bst` | 参考文献条目的排版方式 |
 | 学位事实 | `degree/profile.tex` | 学位层级、论文语言、正式标题页字段、经确认页数上限 |
 
-项目专属命令，例如 `\newcommand{\method}{...}`，应写在入口文件中，而不是写入 `story.cls` 或 `story.sty`。这种分层使学校格式适配可以被清楚审查；实例拥有整个 `manus/` 树，`execs/update.sh` 永远不会替换它。
+项目专属命令，例如 `\newcommand{\method}{...}`，应写在入口文件中，而不是写入 `story.cls` 或 `story.sty`。这种分层便于审查学校格式适配；实例拥有整个 `manus/` 树，`execs/update.sh` 永远不会替换它。
 
 class 接受常规 `book` 选项，以及 `draft|final` 与 `en|english|zh|chinese`。默认模式是英文草稿。英文入口使用 `\documentclass[oneside]{stys/story}`；中文起始模板使用 `\documentclass[oneside,zh]{stys/story}`，并包含 `% !TeX program = xelatex` 指令。
 
 ### 英文与简体中文
 
-`manus/main.tex` 和 `manus/main-zh.tex` 共用 `story.cls`、`story.sty` 和唯一一份 `degree/profile.tex`。标题页字段采用 `\storylocalized{English}{中文}`，两个入口会自动选择对应形式，无需复制学校元数据。
+`manus/main.tex` 和 `manus/main-zh.tex` 共用 `story.cls`、`story.sty` 和唯一一份 `degree/profile.tex`。标题页字段采用 `\storylocalized{English}{中文}`，两个入口各自选择对应形式，无需复制学校元数据。
 
 本地试用中文起始模板：
 
@@ -218,7 +218,7 @@ curl -fsSL https://raw.githubusercontent.com/wanghao9610/STORY/main/execs/update
 bash /tmp/story-update.sh --adopt
 ```
 
-接入不会覆盖任何已有路径：它只复制缺失文件，并报告保留了什么。加上 `--harnesses claude`——或从 `claude`、`codex`、`cursor`、`dsh`、`kimi`、`pi`、`qwen` 中任选多个并用逗号分隔——即可只安装实际使用的 agent 树。随后显式调用 `story-proj-adopt`；它会盘点草稿，在修改文件映射前征求确认，确认学位档案和要求，保留原始源文件，把已有但无来源的陈述记录为审计工作，并验证接入后的构建。
+接入不会覆盖任何已有路径：它只复制缺失文件，并报告保留了什么。加上 `--harnesses claude`——或从 `claude`、`codex`、`cursor`、`dsh`、`kimi`、`pi`、`qwen` 中任选多个并用逗号分隔——即可只安装实际使用的 agent 树。随后调用 `story-proj-adopt`；它会盘点草稿，在修改文件映射前征求确认，确认学位档案和要求，保留原始源文件，把已有但无来源的陈述记录为审计工作，并验证接入后的构建。
 
 ### 2. 配置本地运行环境和学位档案
 
@@ -247,7 +247,7 @@ INVOLVE=medium
 STORY_LANG=
 ```
 
-`.env` 已被 Git 忽略。`STORY_MAIN` 为构建与 lint 选择默认入口，单次命令中的 `--main` 优先。`INVOLVE=low|medium|high` 控制 skill 在一般裁量题前询问的频率，但绝不会绕过学校事实、作者贡献、删除、覆盖或最终冻结的确认。它是项目默认值；单次调用中的 `involve=<level>` token 只覆盖那一次运行。`STORY_LANG=en|zh` 控制回复与新写入 Markdown 的语言；留空时跟随对话，且永远不会翻译已有文件。手稿语言和学位层级仍保存在 `degree/profile.tex`。
+`.env` 已被 Git 忽略。`STORY_MAIN` 为构建与 lint 选择默认入口，单次命令中的 `--main` 优先。`INVOLVE=low|medium|high` 控制 skill 在一般裁量事项前询问的频率，但绝不会绕过学校事实、作者贡献、删除、覆盖或最终冻结的确认。它是项目默认值；单次调用中的 `involve=<level>` token 只覆盖那一次运行。`STORY_LANG=en|zh` 控制回复与新写入 Markdown 的语言；留空时跟随对话，且永远不会翻译已有文件。手稿语言和学位层级仍保存在 `degree/profile.tex`。
 
 随后，只依据正式材料或作者确认过的记录填写 `degree/profile.tex`、`degree/requirements.md` 和 `degree/committee.md`。未知值保持为空；不得根据论文题名或学位名称推断学位层级。
 
@@ -283,7 +283,7 @@ bash execs/scpts/lint.sh
 bash execs/scpts/fmt.sh --check
 ```
 
-`run.sh` 调用 `latexmk`，在 `wkdrs/builds/` 中进行源目录外构建，并在 `pdfinfo` 可用时打印 PDF 路径与页数。`lint.sh` 默认先构建，再把未定义引用或交叉引用、可见 `\todo`、非法或冲突的学位元数据，以及超出已确认页数限制视为失败；占位符、overfull box、格式漂移、未知学位层级、高置信度聊天机器人残留和集中出现的公式化表达会被明确报告。正文警告只是建议性复核信号，既不能证明文本由 AI 创作，也不构成硬失败。只有当前 PDF 与日志已经存在时才使用 `--no-build`。
+`run.sh` 调用 `latexmk`，在 `wkdrs/builds/` 中进行源目录外构建，并在 `pdfinfo` 可用时打印 PDF 路径与页数。`lint.sh` 默认先构建，再把未定义引用或交叉引用、可见 `\todo`、非法或冲突的学位元数据，以及超出已确认页数限制视为失败；占位符、overfull box、格式漂移、未知学位层级、高置信度聊天机器人残留和集中出现的公式化表达会被明确报告。针对正文的检查发现只是建议性复核信号，既不能证明文本由 AI 创作，也不构成硬失败。只有当前 PDF 与日志已经存在时才使用 `--no-build`。
 
 `fmt.sh` 使用仓库的 `latexindent` 配置，在不改变排版文本的前提下维持一句一行。它排除可复用样式和学校正式模板。不带 `--check` 运行即可应用格式化。
 
@@ -303,7 +303,7 @@ bash execs/scpts/fmt.sh --check
 
 ## 写作工作流
 
-十六个 skill 组成的是流水线，而不是不可改变的固定顺序。始终使用拥有目标产物的最小 skill。每个 skill 都会先加载共享工作流规范。
+十六个 skill 组成一条流水线，而不是一套固定不变的顺序。始终使用拥有目标产物的最小 skill。每个 skill 都会先加载共享工作流规范。
 
 | Skill | 适用情形 | 主要产物 |
 | --- | --- | --- |
@@ -316,7 +316,7 @@ bash execs/scpts/fmt.sh --check
 | `story-figs-designer` | 需要一张概念、方法、结果或综合图 | `manus/figs/` 下的成图与可编辑源文件 |
 | `story-refs-curator` | 需要添加、核验、阅读、去重或定位一项来源 | 参考文献条目与 `notes/refs/` 阅读笔记 |
 | `story-copy-editor` | 需要润色作者声音、公式化表达、术语、衔接、重复或符号一致性 | 手稿修改、报告或 `notes/style.md` |
-| `story-clms-auditor` | 数值、比较和学位贡献论断需要可追溯性检查 | 论断结论、可再生成报告、持久任务 |
+| `story-clms-auditor` | 数值、比较和学位贡献论断需要可追溯性检查 | 论断结论、可再生成发现、持久任务 |
 | `story-cite-auditor` | 引用键、文献断言和参考文献卫生需要检查 | 引用报告与持久任务 |
 | `story-exam-reviewer` | 需要适合当前学位层级的模拟外审或委员会审查 | `milestones/<slug>/feedback/SIM_EXAM_<date>.md` |
 | `story-revs-resolver` † | 收到导师、委员会、外审、答辩、修改或归档反馈 | 逐点台账、回复、跟踪承诺 |
@@ -348,7 +348,7 @@ bash execs/scpts/fmt.sh --check
 
 ## 证据、作者贡献与论断记录表
 
-三份台账共同保证学位论文可答辩：
+三份台账让学位论文保持可答辩：
 
 **A. 证据只能单向流动。** 只有 `mates/MANIFEST.md` 保存了匹配的指纹和来源后，一个文件才成为证据：
 
@@ -435,9 +435,9 @@ dsh --profile YOUR_PROFILE --dump-config
 
 一次会话学到、但没有任何仓库文件认领的知识——本机特有的 TeX 限制、作者的长期偏好、可复用的项目判断，或已经尝试并否决的一种论述方式——可以放在 `.story/memory/` 下。一事一文件，每条在 `.story/memory/MEMORY.md` 中占一行；会话 hook 会在每个受支持 harness 的会话开头把索引交给 agent。
 
-四种类型让记忆库保持清楚：`env`、`pref`、`insight` 和 `deadend`。只在本机成立的事实写入 `.story/memory/local/`，Git 会忽略该目录；超过 180 天未核验的 `env` 事实会标为过期。记忆永远不是证据，也不能覆盖已经拥有该事实的文件：数值属于 `mates/`，论断属于 `notes/claims.md`，学校要求属于 `degree/`，出版物复用属于 `notes/publications.md`，反馈属于 `milestones/`，承诺属于 `tasks/`。
+四种类型让记忆库保持清楚：`env`、`pref`、`insight` 和 `deadend`。只在本机成立的事实写入 `.story/memory/local/`，Git 会忽略该目录；超过 180 天的 `env` 事实会标为过期。记忆永远不是证据，也不能覆盖已经拥有该事实的文件：数值属于 `mates/`，论断属于 `notes/claims.md`，学校要求属于 `degree/`，出版物复用属于 `notes/publications.md`，反馈属于 `milestones/`，承诺属于 `tasks/`。
 
-agent 会先询问是否记录记忆；`INVOLVE=low` 把它改为先记录再说明。文件格式、索引语法、退场规则和来源契约见[项目记忆](docs/mds/story-workflow/memory_spec.zh-CN.md)。
+agent 会先询问是否记录记忆；`INVOLVE=low` 把它改为先记录再说明。文件格式、索引语法、退役规则和来源契约见[项目记忆](docs/mds/story-workflow/memory_spec.zh-CN.md)。
 
 ## 更新 STORY 的 skill 与工作流文档
 
@@ -503,7 +503,7 @@ bash execs/update.sh --skill story-flow-status
 - 如果实例将公开，应把通用 README 与文档首页替换为该学位论文自己的身份，同时保留 `docs/mds/story-workflow/` 供工作流使用。
 - 除非实例有意继续作为 STORY fork，否则删除上游维护者 CI。
 
-这套骨架的目标是承载学位论文的来源和决定，而不是替作者规定学术论点或学校格式。
+这套骨架的作用是承载学位论文的来源和决定，而不是规定论文的学术论点或学校格式。
 
 ## 环境要求
 

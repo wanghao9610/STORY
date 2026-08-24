@@ -47,7 +47,7 @@
 - `manus/figs/`、`manus/tabs/`、`manus/bibs/`、`manus/stys/`：图、表、参考文献和模板层。
 - `degree/`：学位档案、委员会记录和学校要求检查表。
 - `notes/`：总叙事、提纲、论断、贡献/出版物映射、符号、风格、接入记录和阅读笔记。
-- 新克隆只保留 `notes/.gitkeep` 和 `notes/refs/.gitkeep`；负责各产物的工作流 skill 在首次使用时创建相应的 `notes/*.md`。文件缺失表示阶段尚未初始化，消费方应路由给负责创建它的 skill。
+- 新克隆只保留 `notes/.gitkeep` 和 `notes/refs/.gitkeep`；负责各产物的工作流 skill 在首次使用时创建相应的 `notes/*.md`。文件缺失表示阶段尚未初始化，消费方应路由到负责创建它的 skill。
 - `wkdrs/`：构建产物和可再生成报告；不得将其视为持久项目状态。
 - `tasks/`：持久化的未解决工作和反馈承诺。
 
@@ -56,7 +56,7 @@
 - 只能用 `bash execs/run.sh` 构建；输出放在 `wkdrs/builds/` 下。
 - 用 `bash execs/scpts/lint.sh` 运行确定性检查。
 - 用 `bash execs/scpts/fmt.sh` 保持一句一行，同时不改变排版后的文本。
-- 运行时配置来自由 `.env.example` 复制得到的 `.env`；不得硬编码机器路径。
+- 运行时配置来自 `.env`（由 `.env.example` 复制得到）；不得硬编码机器路径。
 - `.env` 中的 `STORY_MAIN` 为构建和 lint 选择默认论文入口；`--main` 可以为单次命令覆盖它。
 - 创建带日期的产物时使用系统实际日期。
 

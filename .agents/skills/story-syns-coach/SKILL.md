@@ -9,7 +9,7 @@ Read `docs/mds/story-workflow/writing-workflow-conventions.md` first.
 
 Resolve `% degree_level: master|doctoral` from `degree/profile.tex` before framing the problem or contributions. If it is missing or invalid, stop and ask the author to confirm and record it; never infer it from the work's apparent ambition or publication history. Apply the level-specific contract in conventions §1 and any confirmed institutional rubric.
 
-Load `degree/profile.tex`, the relevant registered evidence, and `notes/story.md`, `notes/contributions.md`, `notes/publications.md`, and `notes/claims.md` where present. Interview the author only for judgments the repository cannot supply: the intended thesis, contribution boundaries, attribution, exclusions, and how the research changed over time.
+Load `degree/profile.tex` and the relevant registered evidence; load `notes/story.md`, `notes/contributions.md`, `notes/publications.md`, and `notes/claims.md` where present. Interview the author only for judgments the repository cannot supply: the intended thesis, contribution boundaries, attribution, exclusions, and how the research changed over time.
 
 On first use, initialize any absent artifact immediately before writing it; never overwrite an existing file with a scaffold. Use the IDs, field formats, and statuses defined in conventions §3 with these schemas:
 

@@ -2,11 +2,10 @@
 
 **Language:** English | [简体中文](MEMORY.zh-CN.md)
 
-One line per durable project memory, newest first:
-
 The session hooks under `.claude/hooks/`, `.codex/hooks/`, `.cursor/hooks/`,
 `.dsh/hooks/`, `.kimi-code/hooks/`, `.qwen/hooks/`, and `.pi/extensions/story-hooks/`
-parse this English index byte-exactly, so its entry shape is fixed:
+parse this English index byte-exactly, so its entry shape is fixed.
+One line per durable project memory, newest first:
 
 ```text
 - <type> · <scope> · <verified> · [<slug>](<slug>.md) — <one-line fact>
