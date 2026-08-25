@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# STORY pre-push hook — run the repository consistency checks before a push
+# leaves this machine: the same script .github/workflows/consistency.yml runs
+# on GitHub, so a failure here is a failure CI would have reported minutes
+# later. Enable once per clone with:
+#
+#   git config core.hooksPath .github/hooks
+#
+# Skip a single push with `git push --no-verify` or STORY_SKIP_CHECKS=1.
+set -uo pipefail
+
+[[ "${STORY_SKIP_CHECKS:-}" == 1 ]] && exit 0
+
+root="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
+check="${root}/.github/scripts/check_consistency.sh"
+# A downstream clone that did not adopt the check keeps its push.
+[[ -f "${check}" ]] || exit 0
+
+if ! bash "${check}"; then
+    printf '\n[STORY pre-push] Consistency checks failed; push declined.\n' >&2
+    printf '[STORY pre-push] Fix the failures above, or skip once with git push --no-verify.\n' >&2
+    exit 1
+fi

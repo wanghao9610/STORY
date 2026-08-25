@@ -30,6 +30,14 @@ bash .github/scripts/check_consistency.sh
 
 `port.sh --check` verifies both content and storage shape. A byte-identical private file must be a relative link into `.agents`; a harness-only file must be a real file. Commands, prompts, hooks, and settings remain in their harness directories because their invocation syntax, events, payloads, or registration mechanisms differ.
 
+To run the same consistency checks automatically before every push — the script `.github/workflows/consistency.yml` runs on GitHub — enable the tracked pre-push hook once per clone:
+
+```bash
+git config core.hooksPath .github/hooks
+```
+
+A failing check declines the push; `git push --no-verify` or `STORY_SKIP_CHECKS=1` skips it once.
+
 `execs/update.sh` follows and materializes links when updating or adopting another thesis repository, so the upstream template stays deduplicated and no downstream installation depends on an unselected harness tree.
 
 Every English Markdown file has a Simplified Chinese counterpart. Use `*.zh-CN.md` for ordinary documents and `SKILL_zh.md` for skill instructions. The evidence manifest is the sole storage exception: because `mates/` is read-only, its translation lives at `docs/mds/story-workflow/mates-MANIFEST.zh-CN.md`. Keep paths, IDs, commands, status values, code blocks, and runtime policy equivalent across each pair; `check_consistency.sh` rejects a missing counterpart.

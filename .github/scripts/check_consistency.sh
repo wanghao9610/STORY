@@ -454,7 +454,7 @@ script_errors=0
 while IFS= read -r script; do
     bash -n "${script}" || { fail "bash syntax: ${script}"; script_errors=1; }
 done < <(find -L execs .agents/skills .claude/hooks .codex/hooks .cursor/hooks .dsh/hooks .kimi-code/hooks .pi/extensions/story-hooks .qwen/hooks -type f -name '*.sh' | sort)
-for script in execs/run.sh execs/update.sh execs/scpts/import.sh execs/scpts/lint.sh execs/scpts/fmt.sh .github/scripts/port.sh; do
+for script in execs/run.sh execs/update.sh execs/scpts/import.sh execs/scpts/lint.sh execs/scpts/fmt.sh .github/scripts/port.sh .github/hooks/pre-push; do
     [[ -x "${script}" ]] || { fail "non-executable entrypoint: ${script}"; script_errors=1; }
 done
 (( script_errors == 0 )) && ok 'shell scripts parse and managed entrypoints are executable'
