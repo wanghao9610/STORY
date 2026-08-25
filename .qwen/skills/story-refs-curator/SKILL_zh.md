@@ -8,7 +8,7 @@ argument-hint: "PAPER... [描述] [involve=low]"
 
 首先完整阅读 `docs/mds/story-workflow/writing-workflow-conventions.md`。
 
-每项工作在本轮通过 DOI、arXiv ID、稳定 URL 或准确标题获取权威记录，并将字段转录到 `manus/bibs/reference.bib`；不得凭记忆重建元数据。溯源信息保留在 `% src:` 行中；规范化 citekey 时不得静默破坏正文引用。
+每项工作在本轮通过 DOI、arXiv ID、稳定 URL 或准确标题获取权威记录，并将字段转录到 `manus/bibs/reference.bib`，该文件首次使用时创建；不得凭记忆重建元数据。文件获得第一条记录时，取消当前入口点中 `\bibliographystyle` 和 `\bibliography` 行的注释，让整理好的参考文献真正排入正文。溯源信息保留在 `% src:` 行中；规范化 citekey 时不得静默破坏正文引用。
 
 创建或更新 `notes/refs/<key>.md`，记录研究问题、方法、证据、发现、局限和实际核验过的简短可引用事实。在添加第一篇已核验文献之前，若 `notes/refs/refs_index.md` 缺失，立即以 `Bibkey | Work | Reading note | Used in chapters | Verification status` 创建。核验状态使用规范 §3 的值：只有获取权威身份记录后才能设为 `metadata-verified`，只有检查来源本身并完成阅读笔记后才能设为 `content-verified`。只发现候选而未添加任何内容时，不创建空索引。在同一次修改中创建配对的 `*.zh-CN.md` 产物。更新已有索引时不得替换其原有内容。
 

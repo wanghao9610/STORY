@@ -6,7 +6,7 @@ description: Convert master's or doctoral thesis feedback from supervisors, comm
 
 # Resolve thesis feedback
 
-Read `docs/mds/story-workflow/writing-workflow-conventions.md` first. Then resolve the milestone and read every file in its `feedback/` directory; do not edit them.
+Read `docs/mds/story-workflow/writing-workflow-conventions.md` first. Then resolve the milestone; if its directory or `milestone.yml` does not exist yet, create it from author-confirmed facts per conventions §6 before anything else. This skill owns feedback ingestion: copy feedback the author supplies verbatim into `feedback/` — never retyped, trimmed, or summarized — then read every file there; do not edit them. Generated simulations under `simulations/` enter the ledger only when the author explicitly asks.
 
 Create a point ledger under `milestones/<slug>/response/`. Each actionable point gets one stable ID, its exact source location, the affected chapters/claims/contributions, a disposition, a rationale, an owner skill, and completion evidence. Use only these dispositions: `accepted`, `completed`, `planned`, `disagreed`, and `needs-author`.
 

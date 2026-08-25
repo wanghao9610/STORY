@@ -83,7 +83,7 @@ STORY/
 │   ├── backs/                     # Appendices and other back matter
 │   ├── figs/                      # Rendered figures; figs/srcs/ holds editable sources
 │   ├── tabs/                      # Evidence-backed LaTeX tables
-│   ├── bibs/                      # reference.bib
+│   ├── bibs/                      # reference.bib (created on first use)
 │   └── stys/                      # story.cls, story.sty, story.bst
 ├── mates/                         # Imported evidence snapshots—read-only
 │   ├── <source-slug>/             # One namespaced source repository
@@ -283,7 +283,7 @@ bash execs/scpts/lint.sh
 bash execs/scpts/fmt.sh --check
 ```
 
-`run.sh` invokes `latexmk`, builds out of tree under `wkdrs/builds/`, and prints the PDF path and page count when `pdfinfo` is available. `lint.sh` builds by default, then fails on undefined citations or references, visible `\todo` markers, invalid or conflicting degree metadata, and a confirmed page-limit overrun; placeholders, overfull boxes, formatting drift, an unknown degree level, high-confidence chatbot residue, and clustered formulaic prose are reported explicitly. Prose findings are advisory review signals, not proof of AI authorship and not hard failures. Use `--no-build` only when a current PDF and log already exist.
+`run.sh` invokes `latexmk`, builds out of tree under `wkdrs/builds/`, and prints the PDF path and page count when `pdfinfo` is available. `lint.sh` builds by default, then fails on undefined citations or references, visible `\todo` markers, invalid or conflicting degree metadata, and a confirmed page-limit overrun; placeholders, overfull boxes, formatting drift, an unknown degree level, high-confidence chatbot residue, and clustered formulaic prose are reported explicitly. Prose findings are advisory review signals, not proof of AI authorship and not hard failures. A red lint result is the expected state of a mid-draft manuscript — the `\todo` markers the evidence contract requires you to write are themselves hard failures until resolved, and they block only deposit, not drafting. Use `--no-build` only when a current PDF and log already exist.
 
 `fmt.sh` uses the repository's `latexindent` configuration to preserve one sentence per line without changing typeset text. It excludes reusable styles and official institutional templates. Run it without `--check` to apply formatting.
 
@@ -319,7 +319,7 @@ After every skill finishes, its report closes with exactly one `Next action:` ha
 | `story-copy-editor` | Authorial voice, formulaic prose, terminology, transitions, repetition, or notation need polishing | Manuscript edits, report, or `notes/style.md` |
 | `story-clms-auditor` | Numbers, comparisons, and degree-contribution claims need traceability checks | Claim verdicts, regenerable findings, durable tasks |
 | `story-cite-auditor` | Citation keys, literature assertions, and bibliography hygiene need checking | Citation report and durable tasks |
-| `story-exam-reviewer` | A degree-appropriate mock examiner or committee review is needed | `milestones/<slug>/feedback/SIM_EXAM_<date>.md` |
+| `story-exam-reviewer` | A degree-appropriate mock examiner or committee review is needed | `milestones/<slug>/simulations/SIM_EXAM_<date>.md` |
 | `story-revs-resolver` † | Supervisor, committee, examiner, defense, correction, or deposit feedback arrived | Point ledger, responses, tracked promises |
 | `story-defn-builder` † | An applicable pre-defense or defense narrative and deck are needed | Defense plan and editable deck artifacts under the milestone |
 | `story-depo-packer` † | A named deposit milestone is ready for preflight and freeze | Deposit bundle, checksums, record, optional local freeze tag |

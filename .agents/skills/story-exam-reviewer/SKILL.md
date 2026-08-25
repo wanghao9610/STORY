@@ -20,4 +20,4 @@ Evaluate:
 - whether the presentation holds up, including unsupported significance, vague attribution, repeated chapter or paragraph templates, generic outlook language, terminology cycling, and chatbot residue, all judged as pattern clusters rather than proof of AI authorship;
 - which questions are likely in the oral examination.
 
-Write `milestones/<slug>/feedback/SIM_EXAM_<date>.md` with an executive verdict, major concerns, minor concerns, required clarifications, the claim/contribution IDs attacked, and a defense question bank. Never edit the manuscript or the claim ledger in this skill.
+Write `milestones/<slug>/simulations/SIM_EXAM_<date>.md` with an executive verdict, major concerns, minor concerns, required clarifications, the claim/contribution IDs attacked, and a defense question bank; create the milestone directory from author-confirmed facts per conventions §6 when it does not exist yet. `feedback/` holds only received comments — a simulated review never goes there. Never edit the manuscript or the claim ledger in this skill.

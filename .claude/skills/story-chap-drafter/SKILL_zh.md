@@ -6,7 +6,7 @@ argument-hint: "CHAPTER [描述] [involve=low]"
 
 # 起草一章可追溯正文
 
-首先完整阅读 `docs/mds/story-workflow/writing-workflow-conventions.md`。通过 `notes/outline.md` 中的章节编号、slug 或唯一标题解析目标；目标缺失或存在歧义时询问作者。
+首先完整阅读 `docs/mds/story-workflow/writing-workflow-conventions.md`。通过 `notes/outline.md` 中的章节编号、slug 或唯一标题解析目标；`manus/fronts/` 或 `manus/backs/` 下的前后置文件——摘要、致谢、附录——同样是有效目标，遵循同一契约，其中摘要还须与 `notes/story.md` 和已确认的贡献映射绑定。目标缺失或存在歧义时询问作者。
 
 写作前读取章节简报、`notes/story.md`、关联的贡献与发表记录、关联的论断记录、相关阅读笔记、本轮需要的全部证据文件，以及存在的 `notes/style.md`。起草正文前阅读 `docs/mds/story-workflow/human-writing-guide.md`；风格档案缺失不妨碍起草。
 

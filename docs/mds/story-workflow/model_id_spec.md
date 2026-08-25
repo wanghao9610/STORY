@@ -2,7 +2,7 @@
 
 **Language:** English | [简体中文](model_id_spec.zh-CN.md)
 
-The per-runtime detail behind the `model_id` rule in [`writing-workflow-conventions.md`](writing-workflow-conventions.md) §8. Read it when the provenance line a hook injects is missing, or carries a recovery command in place of an id. The rule itself — record what the runtime reports for the writing session, verbatim, and never guess — stays in §8 and is not repeated here.
+The per-runtime detail behind the `model_id` rule in [`writing-workflow-conventions.md`](writing-workflow-conventions.md) §7. Read it when the provenance line a hook injects is missing, or carries a recovery command in place of an id. The rule itself — record what the runtime reports for the writing session, verbatim, and never guess — stays in §7 and is not repeated here.
 
 ## How each runtime reports it
 

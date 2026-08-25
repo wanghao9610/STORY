@@ -12,4 +12,4 @@ argument-hint: "[CHAPTER | full] [描述]"
 
 识别重复记录、身份字段不完整、citekey 不一致、用二手来源代替原始来源、跨章节引用漂移和从未被引用的书目条目。手稿对某项工作作出详细论断时，不得仅凭其标题或摘要判断该工作。
 
-可再生成报告写入 `wkdrs/reports/`，失败写为持久任务；元数据工作交给 `story-refs-curator`，正文修改交给 `story-chap-drafter`。不得仅为增加引用数量而添加引用。
+可再生成报告写入 `wkdrs/reports/`，每项失败在 `tasks/audits.md` 中记一个复选框，该文件首次使用时创建；元数据工作交给 `story-refs-curator`，正文修改交给 `story-chap-drafter`。不得仅为增加引用数量而添加引用。

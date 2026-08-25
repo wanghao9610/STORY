@@ -7,7 +7,7 @@ description: Read the complete STORY repository state and report master's or doc
 
 Read `docs/mds/story-workflow/writing-workflow-conventions.md` first. This skill is strictly read-only.
 
-Run the bundled `scripts/scan.sh` from the repository root, then summarize:
+From the repository root, run the scan script bundled beside this skill file — `scripts/scan.sh` inside this skill's own directory — then summarize:
 
 - degree level, profile consistency, and unchecked institutional requirements;
 - thesis story and contribution-map readiness under the confirmed level;

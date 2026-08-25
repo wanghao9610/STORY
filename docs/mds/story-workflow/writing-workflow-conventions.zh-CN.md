@@ -44,6 +44,7 @@
 | `notes/outline.md`、`notes/notation.md` | `story-outl-planner` |
 | `notes/style.md` | `story-copy-editor style` |
 | `notes/refs/refs_index.md`、`notes/refs/<key>.md` | `story-refs-curator` |
+| `manus/bibs/reference.bib` | `story-refs-curator`；`execs/scpts/import.sh` 可用导入来源为其播种 |
 
 产物缺失表示对应工作流阶段尚未初始化，本身不代表仓库损坏。
 负责的 skill 应在第一次持久写入前创建该文件，保留任何已有内容，并在同一次修改中补齐英文与简体中文 Markdown 对照文件。
@@ -86,7 +87,7 @@
 - `weakened`：根据证据或审查意见缩小了范围；
 - `retired`：有意移出当前论文论证。
 
-贡献内容和作者归属用自由文本；研究问题和论断用逗号分隔的 ID；证据、出版物和章节用逗号分隔的仓库相对路径或 ID。一个章节不自动构成一项贡献；一篇出版物也不自动构成一项学位贡献。
+贡献内容和作者归属用自由文本；研究问题用逗号分隔的 ID；证据、出版物和章节用逗号分隔的仓库相对路径或 ID；论断与贡献的对应关系通过 `notes/claims.md` 的 `Contribution` 列建立，贡献表自身没有论断列。一个章节不自动构成一项贡献；一篇出版物也不自动构成一项学位贡献。
 
 出版物/复用 ID 使用 `P001`、`P002`，依此类推。出版物记录的合法状态为：
 
@@ -116,7 +117,7 @@
 - 候选学位论文章节；
 - 复用或改编的材料；
 - 版权、许可或培养项目政策状态；
-- 必须改写或披露的内容重叠。
+- 必须改写或披露的内容重叠，记录在该行的复用材料单元格中。
 
 不得把协作成果描述为候选人独立完成。不得因材料公开可访问而推定已有复用许可。
 
@@ -136,7 +137,7 @@
 
 ## 6. 里程碑契约
 
-每项适用的持久事件放在 `milestones/<slug>/` 下，并带有一份由用户确认的 `milestone.yml`。建议字段为：
+每项适用的持久事件放在 `milestones/<slug>/` 下，并带有一份由用户确认的 `milestone.yml`。与 `notes/` 一样，里程碑目录在首次使用时创建：第一个涉及里程碑的运行（`story-exam-reviewer`、`story-revs-resolver`、`story-defn-builder` 或 `story-depo-packer`）在首次持久写入之前，依据作者确认的事实创建 `milestones/<slug>/milestone.yml`；类型、日期或要求不明时应询问而不是编造。建议字段为：
 
 ```yaml
 kind: defense
@@ -160,7 +161,7 @@ confirmed_on: ""
 - `confirmed_by`：留空、`author`、经确认的人员姓名，或经确认的学校职务。
 - `confirmed_on`：留空，或填写 `YYYY-MM-DD` 格式的确认日期。
 
-收到的反馈原样复制到 `feedback/`。`response/` 下的逐点记录把每条意见映射为一种处理状态：`accepted`、`completed`、`planned`、`disagreed` 或 `needs-author`。承诺的修改还要成为 `tasks/` 下的复选框。
+反馈的收录由 `story-revs-resolver` 负责：它在阅读之前把收到的反馈原样复制到 `feedback/`，其他任何流程都不向该目录写入。生成的评审材料——模拟答辩、模拟委员会评审——放在 `milestones/<slug>/simulations/` 下，绝不进入 `feedback/`，只有作者明确要求时才进入回应记录。`response/` 下的逐点记录把每条意见映射为一种处理状态：`accepted`、`completed`、`planned`、`disagreed` 或 `needs-author`。承诺的修改还要成为 `tasks/` 下的复选框。
 
 只要还存在未解决的 `\todo`、lint 失败、未勾选的学校要求、未兑现的反馈承诺、缺失的复用许可或任何未记录的必需批准，最终 `deposit` 里程碑就处于 blocked 状态。
 
@@ -173,12 +174,13 @@ confirmed_on: ""
 - `STORY_MAIN` 选择构建与 lint 的默认论文入口；命令行 `--main` 可覆盖它，但两者都不会改变 `degree/profile.tex` 记录的论文语言。
 - 学位层级和论文语言都来自 `degree/profile.tex`；不能因为对话措辞而切换其中任何一项。
 - 带日期的产物使用系统日期。记录模型来源时使用会话提供的 model ID，绝不能编造。
-- 一个 skill 只修改自己拥有的文件；目标文件归属其他 skill 时应路由工作。
+- 一个 skill 只修改自己拥有的文件；目标文件归属其他 skill 时应路由工作。共享账本的所有权按行和字段划分：多个 skill 可以各自合法更新 `notes/outline.md`、`notes/claims.md` 以及章节 include 行中属于自己的行或列，"拥有"指该 skill 契约中点名的那些行和字段。
 
 ## 8. 验证
 
 - 任何 `manus/` 下的修改最后都要运行 `bash execs/run.sh`。
 - 引用、参考文献、todo、元数据、页数限制或归档就绪状态可能变化时，运行 `bash execs/scpts/lint.sh`。
+- 可见的 `\todo` 使 lint 失败是设计使然：证据缺口未闭合的稿件，lint 常红是正常状态。它阻塞的是归档里程碑而不是起草，应作为剩余关卡如实报告，而不是当作要消除的错误。
 - 本轮重新读取每个被引用的证据值；记忆中的数值或指纹不足以构成核验。
 - `wkdrs/` 下的报告可以再生成。持久决定应更新 `degree/`、`notes/`、`milestones/` 或 `tasks/`。
 - 完成报告要说明构建 PDF、页数、lint 结论、ledger 变化和剩余关口；某项检查不适用或未运行时，应明确写出“未运行”或“不适用”，不得静默省略。

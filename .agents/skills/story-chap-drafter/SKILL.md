@@ -5,7 +5,7 @@ description: Draft or revise exactly one master's or doctoral thesis chapter fro
 
 # Draft one evidence-bound chapter
 
-Read `docs/mds/story-workflow/writing-workflow-conventions.md` first. Resolve the target by chapter number, slug, or unique title in `notes/outline.md`; ask when it is absent or ambiguous.
+Read `docs/mds/story-workflow/writing-workflow-conventions.md` first. Resolve the target by chapter number, slug, or unique title in `notes/outline.md`; a front- or back-matter file under `manus/fronts/` or `manus/backs/` — the abstract, acknowledgements, an appendix — is also a valid target and follows this same contract, with the abstract additionally bound to `notes/story.md` and the confirmed contribution map. Ask when the target is absent or ambiguous.
 
 Before writing, load the chapter brief, `notes/story.md`, linked contribution and publication rows, linked claim rows, relevant reading notes, every evidence file needed in this run, and `notes/style.md` where present. Read `docs/mds/story-workflow/human-writing-guide.md` before drafting prose; a missing style profile is not a blocker.
 

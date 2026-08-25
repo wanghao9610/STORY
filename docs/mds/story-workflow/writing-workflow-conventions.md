@@ -44,6 +44,7 @@ The Markdown artifacts under `notes/` are created on first use by their owning s
 | `notes/outline.md`, `notes/notation.md` | `story-outl-planner` |
 | `notes/style.md` | `story-copy-editor style` |
 | `notes/refs/refs_index.md`, `notes/refs/<key>.md` | `story-refs-curator` |
+| `manus/bibs/reference.bib` | `story-refs-curator`; `execs/scpts/import.sh` may seed it from an imported source |
 
 An absent artifact means that workflow stage is not initialized; by itself it is not corruption.
 The owning skill creates the file immediately before its first durable write, preserves any existing content, and adds the English/Simplified-Chinese Markdown pair in the same change.
@@ -86,7 +87,7 @@ Degree-contribution IDs use `D001`, `D002`, and so on; `D` means *degree*, not *
 - `weakened`: its scope was narrowed after evidence or review;
 - `retired`: intentionally removed from the active thesis argument.
 
-A contribution row uses free text for the contribution and attribution, comma-separated IDs for research questions and claims, and comma-separated repository-relative paths or IDs for evidence, publications, and chapters. A chapter is not automatically a contribution; a publication is not automatically a degree contribution.
+A contribution row uses free text for the contribution and attribution, comma-separated IDs for research questions, and comma-separated repository-relative paths or IDs for evidence, publications, and chapters; claims map to contributions through the `Contribution` column of `notes/claims.md`, not through a column of their own. A chapter is not automatically a contribution; a publication is not automatically a degree contribution.
 
 Publication/reuse IDs use `P001`, `P002`, and so on. Valid publication row statuses are:
 
@@ -116,7 +117,7 @@ Before adapting substantial text, figures, tables, or structure from a paper, ad
 - candidate thesis chapters;
 - reused or adapted material;
 - copyright, license, or program policy status;
-- overlap that must be rewritten or disclosed.
+- overlap that must be rewritten or disclosed, recorded in the row's reused-material cell.
 
 Never describe collaborative work as solely the candidate's. Never infer permission from public availability.
 
@@ -136,7 +137,7 @@ Thesis prose must preserve the author's scholarly voice without using formulaic 
 
 ## 6. Milestone contract
 
-Each applicable durable event lives in `milestones/<slug>/`, with a user-confirmed `milestone.yml`. Recommended fields are:
+Each applicable durable event lives in `milestones/<slug>/`, with a user-confirmed `milestone.yml`. Like `notes/`, a milestone directory is created on first use: the first milestone-scoped run (`story-exam-reviewer`, `story-revs-resolver`, `story-defn-builder`, or `story-depo-packer`) creates `milestones/<slug>/milestone.yml` from author-confirmed facts immediately before its first durable write, and asks rather than inventing a kind, date, or requirement. Recommended fields are:
 
 ```yaml
 kind: defense
@@ -160,7 +161,7 @@ Milestone slugs match `^[a-z0-9][a-z0-9._-]*$`. Fill the fields as follows:
 - `confirmed_by`: empty, `author`, a confirmed person's name, or a confirmed institutional role.
 - `confirmed_on`: empty or the confirmation date in `YYYY-MM-DD` format.
 
-Received feedback is copied unchanged into `feedback/`. A response point ledger in `response/` maps every item to a disposition: `accepted`, `completed`, `planned`, `disagreed`, or `needs-author`. Promised changes also become checkboxes under `tasks/`.
+`story-revs-resolver` owns feedback ingestion: it copies received feedback unchanged into `feedback/` before reading it, and nothing else writes there. Generated review material — a mock examination, a simulated committee pass — lives in `milestones/<slug>/simulations/`, never in `feedback/`, and enters the response ledger only when the author explicitly asks for it. A response point ledger in `response/` maps every item to a disposition: `accepted`, `completed`, `planned`, `disagreed`, or `needs-author`. Promised changes also become checkboxes under `tasks/`.
 
 The final `deposit` milestone is blocked by unresolved `\todo` markers, failed lint, unchecked institutional requirements, open feedback promises, missing reuse permissions, or any required approval that is not recorded.
 
@@ -173,12 +174,13 @@ The final `deposit` milestone is blocked by unresolved `\todo` markers, failed l
 - `STORY_MAIN` selects the default manuscript entry point for build and lint. A command-line `--main` overrides it; neither setting changes the manuscript language recorded in `degree/profile.tex`.
 - Degree level and manuscript language come from `degree/profile.tex`; do not switch either because of wording in the conversation.
 - Dated artifacts use the system date. When model provenance is recorded, use the session-provided model ID; never invent one.
-- A skill edits only the files it owns. It routes work to another skill when ownership changes.
+- A skill edits only the files it owns. It routes work to another skill when ownership changes. For shared ledgers, ownership is row- and field-scoped: several skills legitimately update their own rows or columns in `notes/outline.md`, `notes/claims.md`, and a chapter's include lines, and "owns" means the rows and fields that skill's contract names.
 
 ## 8. Verification
 
 - Any change under `manus/` ends with `bash execs/run.sh`.
 - Run `bash execs/scpts/lint.sh` when citations, references, todos, metadata, page limits, or deposit readiness may have changed.
+- A visible `\todo` fails lint by design: red lint is the normal state of a manuscript with open evidence gaps. It blocks the deposit milestone, not drafting, and is reported as a remaining gate rather than treated as an error to silence.
 - Re-read each cited evidence value during the run; a remembered value or fingerprint is insufficient.
 - Reports under `wkdrs/` are regenerable. Durable decisions update `degree/`, `notes/`, `milestones/`, or `tasks/`.
 - A completion report names the built PDF, page count, lint verdict, ledger changes, and remaining gates, using `not run` or `not applicable` where a check does not apply rather than silently omitting it.

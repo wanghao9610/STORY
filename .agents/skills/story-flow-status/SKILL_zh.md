@@ -7,7 +7,7 @@ description: 只读检查整个 STORY 仓库并汇报硕士或博士学位论文
 
 首先完整阅读 `docs/mds/story-workflow/writing-workflow-conventions.md`。本 skill 严格只读。
 
-从仓库根目录运行随附的 `scripts/scan.sh`，然后汇总：
+从仓库根目录运行本 skill 文件旁随附的扫描脚本——即本 skill 自己目录下的 `scripts/scan.sh`——然后汇总：
 
 - 学位层级、档案一致性和未勾选的学校要求；
 - 在已确认层级下，学位论文总叙事与贡献映射的就绪情况；

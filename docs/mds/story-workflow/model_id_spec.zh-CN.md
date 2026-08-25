@@ -2,7 +2,7 @@
 
 **语言：** [English](model_id_spec.md) | 简体中文
 
-[`writing-workflow-conventions.zh-CN.md`](writing-workflow-conventions.zh-CN.md) §8 那条 `model_id` 规则背后的各运行时细节。钩子注入的那行溯源信息缺失，或者带来的是一条恢复命令而不是 id 时，读这里。规则本身——把运行时为当次写入会话报出的值原样记录，绝不猜——留在 §8，这里不重复。
+[`writing-workflow-conventions.zh-CN.md`](writing-workflow-conventions.zh-CN.md) §7 那条 `model_id` 规则背后的各运行时细节。钩子注入的那行溯源信息缺失，或者带来的是一条恢复命令而不是 id 时，读这里。规则本身——把运行时为当次写入会话报出的值原样记录，绝不猜——留在 §7，这里不重复。
 
 ## 各运行时怎么报
 

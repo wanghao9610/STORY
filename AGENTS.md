@@ -16,7 +16,7 @@ This repository uses STORY — **Systematic Toolchain for Organizing Research ov
 ## 2. Evidence before prose
 
 - Every quantitative or comparative claim in `manus/` must trace to a fingerprinted `mates/` file through a nearby `% src:` comment or a claim-ledger entry.
-- Write missing evidence visibly as `\todo{...}`. A plausible invented value is never acceptable.
+- Write missing evidence visibly as `\todo{...}`. A plausible invented value is never acceptable. Lint fails while visible todos remain: red lint is the expected state of a mid-draft manuscript and blocks only deposit, not drafting.
 - Assertions about cited work must be checkable against `notes/refs/` or imported reference material.
 - Fix incorrect evidence at its source and re-import it. Never silently edit a snapshot under `mates/`.
 - A published paper is evidence, not automatically the thesis's final wording. Reconcile terminology, scope, attribution, and overlap before reuse.
@@ -33,7 +33,7 @@ This repository uses STORY — **Systematic Toolchain for Organizing Research ov
 ## 4. Degree milestones
 
 - Each applicable proposal, review, pre-defense, defense, correction round, or deposit attempt lives under `milestones/<slug>/`; do not require a milestone merely because another degree level uses it.
-- `milestone.yml` contains user-confirmed facts; `feedback/` preserves received comments; `response/` records dispositions; `RECORD_<date>.md` freezes an outcome.
+- `milestone.yml` contains user-confirmed facts; `feedback/` preserves received comments; `simulations/` holds generated mock reviews; `response/` records dispositions; `RECORD_<date>.md` freezes an outcome.
 - Committee feedback is never edited in place. Responses distinguish completed changes, planned changes, reasoned disagreements, and questions requiring the author.
 - A deposit package cannot be declared ready while required checks in `degree/requirements.md` or open promises in `tasks/` remain unresolved.
 

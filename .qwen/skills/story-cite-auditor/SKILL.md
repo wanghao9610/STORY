@@ -12,4 +12,4 @@ This skill is read-only on `manus/`, the bibliography, and reading notes. Check 
 
 Detect duplicate records, incomplete identity fields, inconsistent citekeys, secondary-source substitution, citation drift between chapters, and bibliography entries never cited. Do not judge a work from its title or abstract alone when the manuscript makes a detailed claim.
 
-Write a regenerable report under `wkdrs/reports/` and durable tasks for failures. Route metadata work to `story-refs-curator` and prose changes to `story-chap-drafter`. Do not add citations merely to increase the count.
+Write a regenerable report under `wkdrs/reports/` and one checkbox per failure in `tasks/audits.md`, creating the file on first use. Route metadata work to `story-refs-curator` and prose changes to `story-chap-drafter`. Do not add citations merely to increase the count.

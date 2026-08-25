@@ -83,7 +83,7 @@ STORY/
 │   ├── backs/                     # 附录等后置部分
 │   ├── figs/                      # 成图；figs/srcs/ 保存可编辑源文件
 │   ├── tabs/                      # 有证据支持的 LaTeX 表格
-│   ├── bibs/                      # reference.bib
+│   ├── bibs/                      # reference.bib（首次使用时创建）
 │   └── stys/                      # story.cls、story.sty、story.bst
 ├── mates/                         # 导入的证据快照，只读
 │   ├── <source-slug>/             # 一个具有独立命名空间的来源仓库
@@ -283,7 +283,7 @@ bash execs/scpts/lint.sh
 bash execs/scpts/fmt.sh --check
 ```
 
-`run.sh` 调用 `latexmk`，在 `wkdrs/builds/` 中进行源目录外构建，并在 `pdfinfo` 可用时打印 PDF 路径与页数。`lint.sh` 默认先构建，再把未定义引用或交叉引用、可见 `\todo`、非法或冲突的学位元数据，以及超出已确认页数限制视为失败；占位符、overfull box、格式漂移、未知学位层级、高置信度聊天机器人残留和集中出现的公式化表达会被明确报告。针对正文的检查发现只是建议性复核信号，既不能证明文本由 AI 创作，也不构成硬失败。只有当前 PDF 与日志已经存在时才使用 `--no-build`。
+`run.sh` 调用 `latexmk`，在 `wkdrs/builds/` 中进行源目录外构建，并在 `pdfinfo` 可用时打印 PDF 路径与页数。`lint.sh` 默认先构建，再把未定义引用或交叉引用、可见 `\todo`、非法或冲突的学位元数据，以及超出已确认页数限制视为失败；占位符、overfull box、格式漂移、未知学位层级、高置信度聊天机器人残留和集中出现的公式化表达会被明确报告。针对正文的检查发现只是建议性复核信号，既不能证明文本由 AI 创作，也不构成硬失败。lint 报红是稿件起草期的预期状态——证据契约要求你写下的 `\todo` 标记在清零之前本身就是硬失败，它们只阻塞归档，不阻塞起草。只有当前 PDF 与日志已经存在时才使用 `--no-build`。
 
 `fmt.sh` 使用仓库的 `latexindent` 配置，在不改变排版文本的前提下维持一句一行。它排除可复用样式和学校正式模板。不带 `--check` 运行即可应用格式化。
 
@@ -319,7 +319,7 @@ bash execs/scpts/fmt.sh --check
 | `story-copy-editor` | 需要润色作者声音、公式化表达、术语、衔接、重复或符号一致性 | 手稿修改、报告或 `notes/style.md` |
 | `story-clms-auditor` | 数值、比较和学位贡献论断需要可追溯性检查 | 论断结论、可再生成发现、持久任务 |
 | `story-cite-auditor` | 引用键、文献断言和参考文献卫生需要检查 | 引用报告与持久任务 |
-| `story-exam-reviewer` | 需要适合当前学位层级的模拟外审或委员会审查 | `milestones/<slug>/feedback/SIM_EXAM_<date>.md` |
+| `story-exam-reviewer` | 需要适合当前学位层级的模拟外审或委员会审查 | `milestones/<slug>/simulations/SIM_EXAM_<date>.md` |
 | `story-revs-resolver` † | 收到导师、委员会、外审、答辩、修改或归档反馈 | 逐点台账、回复、跟踪承诺 |
 | `story-defn-builder` † | 适用的预答辩或答辩需要叙事与演示文稿 | 里程碑下的答辩计划和可编辑演示材料 |
 | `story-depo-packer` † | 一个具名归档里程碑已经可以预检和冻结 | 归档包、校验和、记录、可选本地冻结 tag |

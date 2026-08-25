@@ -5,7 +5,7 @@ description: 润色一章或全文，改善清晰度、作者声音、自然学�
 
 # 润色学位论文
 
-首先完整阅读 `docs/mds/story-workflow/writing-workflow-conventions.md` 和 `docs/mds/story-workflow/human-writing-guide.md`。确定要润色的章节，或明确确认执行全文处理。`notes/style.md` 存在时读取，并读取 `notes/notation.md`、`notes/story.md` 和相关提纲简报。风格档案所列、经作者确认的风格样本也要读取。缺少风格档案不妨碍普通润色；缺少总叙事、符号表或提纲元数据时，路由给负责创建它的 skill。
+首先完整阅读 `docs/mds/story-workflow/writing-workflow-conventions.md` 和 `docs/mds/story-workflow/human-writing-guide.md`。确定要润色的章节，或明确确认执行全文处理；全文处理包含 `manus/fronts/` 和 `manus/backs/`，单个前后置文件同样是有效目标。`notes/style.md` 存在时读取，并读取 `notes/notation.md`、`notes/story.md` 和相关提纲简报。风格档案所列、经作者确认的风格样本也要读取。缺少风格档案不妨碍普通润色；缺少总叙事、符号表或提纲元数据时，路由给负责创建它的 skill。
 
 编辑前标记受保护内容：事实、数字、日期、引文、引用键、来源注释、论断与不确定性边界、技术区别和归属。改进句式、段落衔接、路标、术语、缩写词引入和跨章节一致性。按模式组合和功能诊断公式化表达，不按孤立词语或标点判断。围绕段落主命题整体重写，不逐个修补观察词。全文处理时识别重复的论文式引言、重复的相关工作、反复出现的段落模板、通用的贡献或展望措辞、符号冲突和缺失的过渡。
 
