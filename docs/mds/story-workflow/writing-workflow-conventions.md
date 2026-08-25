@@ -181,7 +181,14 @@ The final `deposit` milestone is blocked by unresolved `\todo` markers, failed l
 - Run `bash execs/scpts/lint.sh` when citations, references, todos, metadata, page limits, or deposit readiness may have changed.
 - Re-read each cited evidence value during the run; a remembered value or fingerprint is insufficient.
 - Reports under `wkdrs/` are regenerable. Durable decisions update `degree/`, `notes/`, `milestones/`, or `tasks/`.
-- A completion report names the built PDF, page count, lint verdict, ledger changes, and remaining gates.
+- A completion report names the built PDF, page count, lint verdict, ledger changes, and remaining gates, using `not run` or `not applicable` where a check does not apply rather than silently omitting it.
+
+### Completion handoff
+
+- After every completed workflow step, finish the user-facing handoff with exactly one localized line beginning `Next action:` (English) or `下一步：` (Chinese). Do not scatter alternatives across the report.
+- Select the earliest unresolved gate that can make useful progress. Name its owning `story-*` skill and a concrete target or exact harness command. When no skill owns the needed institutional fact, attribution decision, or other author-only input, label it as an author action and name the file or fact to confirm.
+- The handoff is a recommendation, not authorization to start a different skill. If the current request already authorizes a multi-step workflow, state the handoff before continuing; otherwise stop after the report. Any thesis-wide argument, chapter-boundary, attribution, publication-reuse, milestone, or degree-requirement choice still requires the confirmation defined elsewhere in this contract.
+- If the requested workflow is complete and no applicable gate remains, write `Next action: none — the requested workflow is complete.` (or its localized equivalent) instead of inventing more work. A blocked or failed step still gives one next action: the concrete action most likely to clear the block.
 
 ## 9. Skill roster
 

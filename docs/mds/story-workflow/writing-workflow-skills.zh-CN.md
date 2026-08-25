@@ -45,4 +45,5 @@ flowchart LR
 所有 skill 共用同一个参数形状：`<skill> [TARGET] [DESCRIPTION] [involve=<level>]`。`involve=low|medium|high` 最先被剥离，它决定这次运行询问的多少；即使某个 skill 的 `argument-hint` 没有标出它，这一步也不例外。目标按各 skill 自己写明的规则解析，剩下的一切是描述：用自由文本说明这次运行是为了什么，例如 `/story-chap-drafter 3 消融是重点，开篇就摆出来，答辩委员会问到了`。描述是线索而不是命令。完整规则见[规约 §7](writing-workflow-conventions.zh-CN.md)。Claude Code 与 Qwen Code 会在各自的 skill 菜单里把每个 skill 的形状显示为 `argument-hint`；其他 harness 不读取该字段。
 
 开始任何工作前，每个 skill 都先读取 [writing-workflow-conventions.md](writing-workflow-conventions.md)。
+skill 完成后，交接报告末尾必须有且仅有一行 `下一步：`，写明负责最早剩余关口的 skill 及具体目标或命令。若只有作者能解除该关口，则写明所需作者行动；若已无剩余工作，则明确说明请求的工作流已完成。这项建议不构成运行另一个 skill 的授权。
 章节起草、润色和模拟审查还会应用共享的[学术自然写作指南](human-writing-guide.zh-CN.md)。该指南把 Humanizer 模式改编为受证据约束的学术表达，不会把孤立词语当作 AI 创作的证明。

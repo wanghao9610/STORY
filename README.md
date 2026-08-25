@@ -304,6 +304,7 @@ The exact command prefix depends on the harness: `$story-*` in Codex, `/story-*`
 ## Writing workflow
 
 The sixteen skills form a pipeline, not a rigid sequence. Use the smallest skill that owns the artifact in question. Every skill first loads the shared workflow conventions.
+After every skill finishes, its report closes with exactly one `Next action:` handoff: the owning skill and concrete target or command for the earliest remaining gate, an author action when only the author can clear it, or an explicit statement that the requested workflow is complete. The handoff recommends what to do next; it does not silently start another skill.
 
 | Skill | Use it when | Primary output |
 | --- | --- | --- |

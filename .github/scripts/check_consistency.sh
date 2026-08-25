@@ -159,6 +159,36 @@ for router in "${ROUTER}" "${ROUTER_ZH}"; do
 done
 (( policy_errors == 0 )) && ok "conventions and shared /story router list all $(printf '%s\n' "${BASE}" | wc -l | tr -d ' ') skills en/zh; $(printf '%s\n' "${SLASH_ONLY}" | wc -l | tr -d ' ') explicit-only skills are guarded in every harness"
 
+section 'Completion handoff contract'
+handoff_errors=0
+for path in \
+    AGENTS.md \
+    .cursor/rules/agent-instructions.mdc \
+    README.md \
+    docs/mds/story-workflow/writing-workflow-conventions.md \
+    docs/mds/story-workflow/writing-workflow-skills.md; do
+    if ! grep -qF '`Next action:`' "${path}"; then
+        fail "English completion handoff is missing from ${path}"
+        handoff_errors=1
+    fi
+done
+for path in \
+    AGENTS.zh-CN.md \
+    README.zh-CN.md \
+    docs/mds/story-workflow/writing-workflow-conventions.zh-CN.md \
+    docs/mds/story-workflow/writing-workflow-skills.zh-CN.md; do
+    if ! grep -qF '`下一步：`' "${path}"; then
+        fail "Chinese completion handoff is missing from ${path}"
+        handoff_errors=1
+    fi
+done
+if ! grep -qF 'recommendation, not authorization' docs/mds/story-workflow/writing-workflow-conventions.md || \
+   ! grep -qF '只是建议，并不构成' docs/mds/story-workflow/writing-workflow-conventions.zh-CN.md; then
+    fail 'completion handoff does not preserve the authorization boundary in both languages'
+    handoff_errors=1
+fi
+(( handoff_errors == 0 )) && ok 'every workflow step reports one localized next action without expanding authorization'
+
 # Codex gets the generic router through one plugin owned entirely by .codex.
 # .agents exposes only the marketplace file the host discovers; linking the
 # directory would leak every Codex-private plugin into a shared namespace.

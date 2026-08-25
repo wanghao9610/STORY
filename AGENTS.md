@@ -65,6 +65,7 @@ This repository uses STORY — **Systematic Toolchain for Organizing Research ov
 - Prefer the smallest applicable skill. Do not let a drafting request mutate evidence, degree requirements, or received feedback.
 - Build after changing `manus/`; run lint when references, claims, metadata, or finalization state may have changed.
 - Report what was verified: build path and page count, lint result, changed ledger rows, and any remaining gate.
+- After every completed workflow step, end the handoff with exactly one `Next action:` line. Name the owning `story-*` skill and a concrete target or command, or name the author action that clears the earliest remaining gate. A recommendation is not authorization to start another skill; ask first when the next action changes the thesis-wide argument, chapter boundaries, attribution, publication reuse, or a degree requirement. If no work remains, say so explicitly instead of inventing a task.
 
 ## 8. Language and project memory
 
