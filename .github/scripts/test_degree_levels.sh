@@ -66,6 +66,24 @@ grep -q 'degree_level is unset' "${WORK_DIR}/unset_level.log" || {
     exit 1
 }
 
+# A missing profile must reach the graceful absent-or-empty warning, not die
+# silently in a failing command substitution under set -e.
+rm "${WORK_DIR}/degree/profile.tex"
+expect_pass missing_profile
+grep -q 'degree/profile.tex is absent or empty' "${WORK_DIR}/missing_profile.log" || {
+    printf 'FAIL  missing-profile case did not report the absent-or-empty warning.\n' >&2
+    sed -n '1,60p' "${WORK_DIR}/missing_profile.log" >&2
+    exit 1
+}
+if grep -q 'degree_level is unset' "${WORK_DIR}/missing_profile.log"; then
+    printf 'FAIL  missing-profile case double-reported the unset warning.\n' >&2
+    exit 1
+fi
+if grep -q 'No such file or directory' "${WORK_DIR}/missing_profile.log"; then
+    printf 'FAIL  missing-profile case leaked a raw tool error.\n' >&2
+    exit 1
+fi
+
 write_profile master "A Master's Thesis" 'Master of Science'
 printf '%s\n' \
     'It is important to note that this pivotal result underscores the importance of the evolving landscape.' \

@@ -390,6 +390,33 @@ done
 [[ -f .pi/extensions/story-hooks/index.ts ]] || { fail 'missing Pi session-context extension'; harness_errors=1; }
 [[ -x .dsh/hooks/install.sh && -x .kimi-code/hooks/install.sh ]] || { fail 'DSH or Kimi global hook installer is not executable'; harness_errors=1; }
 [[ -f .dsh/cordis.patch.yml ]] || { fail 'missing DSH composition patch'; harness_errors=1; }
+
+# The commit guard's rule core is hand-synced across the six harness copies;
+# existence checks alone let a rule added to one tree drift out of the others,
+# so the marker-delimited core must stay byte-identical to the .claude copy.
+GUARD_MARKER='^# ==== STORY shared guard core'
+GUARD_REF="$(awk "/${GUARD_MARKER}/{p=1} p" .claude/hooks/story_commit_guard.sh)"
+if [[ -z "${GUARD_REF}" ]]; then
+    fail '.claude/hooks/story_commit_guard.sh lacks the shared-guard-core marker'
+    harness_errors=1
+else
+    for root in .codex/hooks .cursor/hooks .dsh/hooks .kimi-code/hooks .qwen/hooks; do
+        if [[ "$(awk "/${GUARD_MARKER}/{p=1} p" "${root}/story_commit_guard.sh" 2>/dev/null)" != "${GUARD_REF}" ]]; then
+            fail "${root}/story_commit_guard.sh shared guard core differs from the .claude copy"
+            harness_errors=1
+        fi
+    done
+fi
+
+# Every involve gate must refuse to auto-allow a path with a `..` component:
+# the root-prefix containment check is textual, and this hardening once lived
+# only in the Codex port.
+for gate in .claude/hooks/story_involve_gate.sh .codex/hooks/story_involve_gate.sh .qwen/hooks/story_involve_gate.sh; do
+    if ! grep -Eq 'path_ok|\*/\.\.' "${gate}"; then
+        fail "${gate} lacks the dot-dot traversal rejection"
+        harness_errors=1
+    fi
+done
 (( harness_errors == 0 )) && ok 'all seven harnesses have valid entry points, registrations, and runtime hooks; every harness exposes the shared /story router'
 
 section 'English and Simplified Chinese Markdown pairs'
@@ -406,7 +433,21 @@ while IFS= read -r path; do
         markdown_errors=1
     fi
 done < <(find . -path './.git' -prune -o -path './wkdrs' -prune -o \( -type f -o -type l \) -name '*.md' -print | sort)
-(( markdown_errors == 0 )) && ok 'every English Markdown file has a Simplified Chinese counterpart'
+# And the reverse direction: a Chinese file whose English original was deleted
+# or renamed is an orphan the forward walk cannot see.
+while IFS= read -r path; do
+    case "${path}" in
+        ./docs/mds/story-workflow/mates-MANIFEST.zh-CN.md) counterpart="./mates/MANIFEST.md" ;;
+        *_zh.md) counterpart="${path%_zh.md}.md" ;;
+        *.zh-CN.md) counterpart="${path%.zh-CN.md}.md" ;;
+        *) continue ;;
+    esac
+    if [[ ! -f "${counterpart}" ]]; then
+        fail "orphaned Chinese Markdown file: ${path} (missing ${counterpart})"
+        markdown_errors=1
+    fi
+done < <(find . -path './.git' -prune -o -path './wkdrs' -prune -o \( -type f -o -type l \) \( -name '*.zh-CN.md' -o -name '*_zh.md' \) -print | sort)
+(( markdown_errors == 0 )) && ok 'English and Simplified Chinese Markdown files pair in both directions'
 
 section 'Scripts and repository layout'
 script_errors=0
