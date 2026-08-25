@@ -3,7 +3,7 @@
 # One sentence per line: LaTeX reads a single newline as a space, so where a
 # sentence breaks costs the PDF nothing and buys the repository a per-sentence
 # diff, a per-sentence blame, and — the reason this workflow cares — a fixed
-# two-line shape for `% src:` and the sentence it heads (conventions §9a).
+# two-line shape for `% src:` and the sentence it heads (conventions §2).
 #
 # Read by `bash execs/scpts/fmt.sh`, which passes it with -l and refuses any
 # rewrite that would change the typeset text; the editor points at this same

@@ -113,9 +113,9 @@ transcript=$(payload_field transcript_path)
 self="${CLAUDE_PROJECT_DIR:-.}/.dsh/hooks/story_model_id.sh"
 
 if [ -n "${transcript:-}" ]; then
-    ctx="STORY provenance: read this session's model id when you record it, not from memory — DSH states no model at session start, and the route can change afterwards without saying so. Before a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 8), run: bash ${self} --resolve ${transcript} — then copy what it prints verbatim. Write 'unrecorded' only if it prints nothing, and do not guess."
+    ctx="STORY provenance: read this session's model id when you record it, not from memory — DSH states no model at session start, and the route can change afterwards without saying so. Before a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 7), run: bash ${self} --resolve ${transcript} — then copy what it prints verbatim. Write 'unrecorded' only if it prints nothing, and do not guess."
 else
-    ctx="STORY provenance: DSH named no session log for this session, so the model id cannot be recovered from it. Before a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 8), try: bash ${self} --resolve — with no argument it reads DSH_SESSION_JSONL from the shell environment. Write 'unrecorded' if it prints nothing, and do not guess."
+    ctx="STORY provenance: DSH named no session log for this session, so the model id cannot be recovered from it. Before a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 7), try: bash ${self} --resolve — with no argument it reads DSH_SESSION_JSONL from the shell environment. Write 'unrecorded' if it prints nothing, and do not guess."
 fi
 
 # ctx embeds a filesystem path, so encode it as JSON rather than assuming it is

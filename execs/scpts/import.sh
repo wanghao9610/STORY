@@ -116,7 +116,10 @@ if [[ "${DIFF}" == true ]]; then
             printf 'stale         %s\n' "${rel}"; drift=$((drift + 1))
         fi
     done < "${LIST_FILE}"
-    (( drift == 0 )) || exit 1
+    # 2, not 1: fail() uses 1 for every hard error, so a caller could not
+    # otherwise distinguish "the snapshot is stale" from "the check itself
+    # broke" — the same contract update.sh --diff keeps.
+    (( drift == 0 )) || exit 2
     log "mates/${SLUG}/ matches ${SOURCE_DIR}."
     exit 0
 fi
@@ -148,6 +151,13 @@ replace_entry() {
 mkdir -p "${ROOT_DIR}/mates"
 [[ -f "${MANIFEST}" ]] || printf '# Evidence manifest\n' > "${MANIFEST}"
 SOURCE_COMMIT="$(git -C "${SOURCE_DIR}" rev-parse HEAD 2>/dev/null || printf 'n/a')"
+# A fingerprint stamped with a commit the imported bytes may not match is a
+# provenance lie; mark a dirty source so the manifest says what was true.
+if [[ "${SOURCE_COMMIT}" != n/a ]] && \
+   [[ -n "$(git -C "${SOURCE_DIR}" status --porcelain 2>/dev/null)" ]]; then
+    SOURCE_COMMIT="${SOURCE_COMMIT}-dirty"
+    log "WARN: source repository has uncommitted changes; recording source-commit ${SOURCE_COMMIT}."
+fi
 TODAY="$(date +%Y-%m-%d)"
 count=0
 while IFS= read -r rel; do

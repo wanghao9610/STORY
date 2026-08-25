@@ -184,13 +184,18 @@ cd "${ROOT_DIR}"
 [[ -f "${MAIN_TEX}" ]] || { printf '[STORY lint] ERROR: entry point not found: %s\n' "${MAIN_TEX}" >&2; exit 2; }
 MAIN_BASE="$(basename -- "${MAIN_TEX}" .tex)"
 MAIN_DIR="$(cd -- "$(dirname -- "${MAIN_TEX}")" && pwd -P)"
+# Mirror run.sh: an entry point outside manus/ builds beside itself, so the log
+# and PDF the checks below read must come from the same place run.sh writes.
+if [[ "${MAIN_DIR}" != "${ROOT_DIR}/manus" ]]; then
+    BUILD_DIR="${MAIN_DIR}/.build"
+fi
 LOG_FILE="${BUILD_DIR}/${MAIN_BASE}.log"
 PDF_FILE="${BUILD_DIR}/${MAIN_BASE}.pdf"
 log "Entry point: ${MAIN_TEX}."
 if [[ "${NO_BUILD}" == false ]]; then
     bash execs/run.sh --main "${MAIN_TEX}"
 elif [[ ! -f "${LOG_FILE}" || ! -f "${PDF_FILE}" ]]; then
-    hard "--no-build requested but wkdrs/builds/${MAIN_BASE}.log or ${MAIN_BASE}.pdf is absent."
+    hard "--no-build requested but ${LOG_FILE} or ${PDF_FILE} is absent."
 fi
 
 if [[ -f "${LOG_FILE}" ]]; then
@@ -217,13 +222,21 @@ fi
 
 check_prose_patterns
 
-DEGREE_LEVEL="$(sed -nE 's/^[[:space:]]*%[[:space:]]*degree_level:[[:space:]]*([^[:space:]]+)[[:space:]]*$/\1/p' degree/profile.tex 2>/dev/null | tail -1)"
+# The file-existence guard matters: a bare command substitution over a missing
+# file fails the assignment under set -e and kills the script before the
+# graceful absent-or-empty warning below can fire.
+DEGREE_LEVEL=""
+if [[ -s degree/profile.tex ]]; then
+    DEGREE_LEVEL="$(sed -nE 's/^[[:space:]]*%[[:space:]]*degree_level:[[:space:]]*([^[:space:]]+)[[:space:]]*$/\1/p' degree/profile.tex | tail -1)"
+fi
 case "${DEGREE_LEVEL}" in
     master|doctoral)
         log "Degree level: ${DEGREE_LEVEL}."
         ;;
     "")
-        warn 'degree_level is unset in degree/profile.tex; confirm master or doctoral before level-specific review.'
+        if [[ -s degree/profile.tex ]]; then
+            warn 'degree_level is unset in degree/profile.tex; confirm master or doctoral before level-specific review.'
+        fi
         ;;
     *)
         hard "invalid degree_level '${DEGREE_LEVEL}' in degree/profile.tex; expected master or doctoral."
@@ -237,7 +250,7 @@ elif [[ "${DEGREE_LEVEL}" == doctoral ]] && grep -Eqi 'Master([^a-z]|$)|硕士' 
     hard 'doctoral degree_level conflicts with master wording in the title or degree field.'
 fi
 
-if grep -Eq 'Untitled Thesis|Degree Name|未命名学位论文|学位名称|University Name|Author Name|Advisor Name|Graduation Date' degree/profile.tex; then
+if [[ -s degree/profile.tex ]] && grep -Eq 'Untitled Thesis|Degree Name|未命名学位论文|学位名称|University Name|Author Name|Advisor Name|Graduation Date' degree/profile.tex; then
     warn 'title-page placeholders remain in degree/profile.tex.'
 fi
 
@@ -253,8 +266,8 @@ fi
 if [[ -n "${active}" && -f "milestones/${active}/milestone.yml" ]]; then
     limit="$(sed -nE 's/^max_pages:[[:space:]]*([0-9]+).*/\1/p' "milestones/${active}/milestone.yml" | head -1)"
 fi
-if [[ -z "${limit}" ]]; then
-    limit="$(sed -nE 's/^[[:space:]]*%?[[:space:]]*max_pages:[[:space:]]*([0-9]+).*/\1/p' degree/profile.tex 2>/dev/null | head -1)"
+if [[ -z "${limit}" && -s degree/profile.tex ]]; then
+    limit="$(sed -nE 's/^[[:space:]]*%?[[:space:]]*max_pages:[[:space:]]*([0-9]+).*/\1/p' degree/profile.tex | head -1)"
 fi
 if [[ -n "${limit}" && -f "${PDF_FILE}" ]] && command -v pdfinfo >/dev/null 2>&1; then
     pages="$(pdfinfo "${PDF_FILE}" 2>/dev/null | awk '/^Pages:/ {print $2}')"
@@ -265,9 +278,16 @@ if [[ -n "${limit}" && -f "${PDF_FILE}" ]] && command -v pdfinfo >/dev/null 2>&1
     fi
 fi
 
-if ! bash execs/scpts/fmt.sh --check >/dev/null 2>&1; then
-    warn 'manuscript is not in one-sentence-per-line format; run bash execs/scpts/fmt.sh.'
-fi
+# fmt.sh --check distinguishes drift (1) from a refused rewrite (2) and a
+# missing tool (3); only drift is fixable by running fmt.sh again.
+FMT_RC=0
+bash execs/scpts/fmt.sh --check >/dev/null 2>&1 || FMT_RC=$?
+case "${FMT_RC}" in
+    0) ;;
+    1) warn 'manuscript is not in one-sentence-per-line format; run bash execs/scpts/fmt.sh.' ;;
+    3) log 'Format check skipped: latexindent (or its config) is unavailable.' ;;
+    *) warn "fmt.sh --check could not verify formatting (exit ${FMT_RC}); run bash execs/scpts/fmt.sh --check for details." ;;
+esac
 
 if command -v texcount >/dev/null 2>&1; then
     WORDS="$(cd "${MAIN_DIR}" && TEXINPUTS="${ROOT_DIR}/manus/stys:${TEXINPUTS:-}" texcount -inc -sum -1 "$(basename -- "${MAIN_TEX}")" 2>/dev/null | tail -1 || true)"

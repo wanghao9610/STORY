@@ -6,16 +6,19 @@
 # rewrites are what turn a cheap local commit into one that needs surgery to
 # unpick.
 #
-# Declined: blanket or forced staging (add -A / . / * / :/ / -u / -f, commit -a),
-# the history rewrites named below (commit --amend, rebase, reset --hard,
-# filter-branch, filter-repo), the forced branch operations named below
-# (branch -D / -f, switch -C / -f / --discard-changes, checkout -B / -f), any
-# deletion or move of a tag (a freeze tag is the immutable record of what
-# was deposited, and exactly one skill creates one), and a commit whose staged
-# files exceed 10 MB — a build PDF, a raw figure export, or an evidence blob in
-# history is costly to remove, since clearing it back out
-# needs exactly those rewrites. `push` is deliberately absent: no rule here makes
-# a skill likelier to push, and a user who asks for one directly should get it.
+# Declined: blanket or forced staging (add -A / . / ./ / * / :/ / -u / -f,
+# commit -a), the history rewrites named below (commit --amend, rebase,
+# reset --hard, filter-branch, filter-repo), the forced branch operations named
+# below (branch -D / -f, switch -C / -f / --discard-changes, checkout -B / -f),
+# blanket discards of uncommitted work (checkout or restore of `.` or `:/`,
+# a forced clean, stash clear / drop), forced pushes (push -f / --force* /
+# --mirror — the remote's history is the user's too), any deletion or move of a
+# tag (a freeze tag is the immutable record of what was deposited, and exactly
+# one skill creates one), and a commit whose staged files exceed 10 MB — a build
+# PDF, a raw figure export, or an evidence blob in history is costly to remove,
+# since clearing it back out needs exactly those rewrites. A plain `push` stays
+# absent: no rule here makes a skill likelier to push, and a user who asks for
+# one directly should get it.
 #
 # Registered with event PreToolUse and matcher Bash. Kimi loads no project-level
 # config, so the entry lives in the global config and is written there by
@@ -65,6 +68,10 @@ deny() { # $1 = one-line reason
 
 # 10 MB. No tex source, note, or bibliography comes near it; a build PDF or a
 # raw figure export clears it easily.
+# ==== STORY shared guard core. Everything from here to the end of the file is
+# byte-identical across the six harness copies, and
+# .github/scripts/check_consistency.sh diffs it against the .claude copy — edit
+# it once, then propagate. ====
 size_limit=$((10 * 1024 * 1024))
 
 # Storyd paths over the limit, as a printable list. Empty when none are.
@@ -111,7 +118,7 @@ while IFS= read -r segment; do
                     \'*\'|\"*\") arg="${arg#?}"; arg="${arg%?}" ;;
                 esac
                 case "${arg}" in
-                    -A|--all|-u|--update|--no-ignore-removal|.|:/|:/*|'*')
+                    -A|--all|-u|--update|--no-ignore-removal|.|./|:/|:/*|'*')
                         deny "STORY git safety: a blanket add stages work this run did not do, and it sweeps in build litter, half-registered evidence, and the user's own uncommitted edits. Stage the paths this run wrote, by name." ;;
                     -f|--force)
                         deny "STORY git safety: a force-add puts a git-ignored path — .env, a build under wkdrs/ — into history. Stage a tracked path instead." ;;
@@ -208,11 +215,93 @@ while IFS= read -r segment; do
                     \'*\'|\"*\") arg="${arg#?}"; arg="${arg%?}" ;;
                 esac
                 case "${arg}" in
-                    --) break ;;
                     -B)
                         deny "STORY git safety: checkout -B resets an existing branch to another commit — a history rewrite in effect. Pick a fresh branch name." ;;
                     -f|--force)
                         deny "STORY git safety: a forced checkout discards uncommitted work, including anything the user had in the tree." ;;
+                    # A blanket pathspec — bare or after `--` — discards every
+                    # uncommitted change under it, the user's own edits included.
+                    .|./|:/|:/*)
+                        deny "STORY git safety: checking out a blanket pathspec discards every uncommitted change under it, including the user's own edits. Restore a named file instead." ;;
+                esac
+            done
+            ;;
+        restore)
+            # restore --staged only unstages — content survives, so it passes.
+            # Anything that touches the worktree with a blanket pathspec is the
+            # same discard `checkout -- .` is.
+            worktree=true
+            for ((j = i + 1; j < ${#tok[@]}; j++)); do
+                case "${tok[j]}" in
+                    -S|--staged) worktree=false ;;
+                    -W*|--worktree|-[!-]*W*) worktree=true ;;
+                esac
+            done
+            if [[ "${worktree}" == true ]]; then
+                for ((j = i + 1; j < ${#tok[@]}; j++)); do
+                    arg="${tok[j]}"
+                    case "${arg}" in
+                        \'*\'|\"*\") arg="${arg#?}"; arg="${arg%?}" ;;
+                    esac
+                    case "${arg}" in
+                        .|./|:/|:/*|'*')
+                            deny "STORY git safety: restoring a blanket pathspec discards every uncommitted change under it, including the user's own edits. Restore a named file instead." ;;
+                    esac
+                done
+            fi
+            ;;
+        clean)
+            # git honors -n over -f: a dry run stays a dry run, so it passes.
+            dry=false
+            for ((j = i + 1; j < ${#tok[@]}; j++)); do
+                case "${tok[j]}" in
+                    -n*|--dry-run|-[!-]*n*) dry=true ;;
+                esac
+            done
+            if [[ "${dry}" == false ]]; then
+                for ((j = i + 1; j < ${#tok[@]}; j++)); do
+                    arg="${tok[j]}"
+                    case "${arg}" in
+                        \'*\'|\"*\") arg="${arg#?}"; arg="${arg%?}" ;;
+                    esac
+                    case "${arg}" in
+                        -f|--force|-d|-x|-X)
+                            deny "STORY git safety: git clean deletes untracked files — unsaved drafts, unregistered evidence, the user's own scratch work — with no way back. Delete a named file instead." ;;
+                        --*) ;;
+                        -*[fdxX]*)
+                            deny "STORY git safety: this flag cluster forces a clean, deleting untracked files with no way back. Delete a named file instead." ;;
+                    esac
+                done
+            fi
+            ;;
+        stash)
+            # The subcommand is always the first argument; a later `clear` or
+            # `drop` is message text.
+            if (( i + 1 < ${#tok[@]} )); then
+                arg="${tok[i + 1]}"
+                case "${arg}" in
+                    \'*\'|\"*\") arg="${arg#?}"; arg="${arg%?}" ;;
+                esac
+                case "${arg}" in
+                    clear)
+                        deny "STORY git safety: stash clear deletes every stash, and each one is uncommitted work the user set aside. Leave the stash list to the user." ;;
+                    drop)
+                        deny "STORY git safety: stash drop deletes a stash — uncommitted work the user set aside. Leave the stash list to the user." ;;
+                esac
+            fi
+            ;;
+        push)
+            for ((j = i + 1; j < ${#tok[@]}; j++)); do
+                arg="${tok[j]}"
+                case "${arg}" in
+                    \'*\'|\"*\") arg="${arg#?}"; arg="${arg%?}" ;;
+                esac
+                case "${arg}" in
+                    -f|--force|--force-with-lease|--force-with-lease=*|--force-if-includes|--mirror)
+                        deny "STORY git safety: a forced push rewrites the remote, and the remote's history is the user's too — a freeze tag must keep pointing at what was deposited. Push a new commit instead." ;;
+                    --*) ;;
+                    -*f*)
+                        deny "STORY git safety: this flag cluster carries a forced push, which rewrites the remote the user owns. Push a new commit instead." ;;
                 esac
             done
             ;;

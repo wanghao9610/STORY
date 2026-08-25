@@ -8,9 +8,15 @@ fi
 
 heading() { printf '\n## %s\n' "$1"; }
 show_file() {
+    local total
     printf '\n### %s\n' "$1"
     if [[ -f "$1" ]]; then
         sed -n '1,220p' "$1"
+        total="$(wc -l < "$1" | tr -d '[:space:]')"
+        # A silent cut would corrupt any count the reader takes from this scan.
+        if (( total > 220 )); then
+            printf '(truncated: 220 of %s lines shown — read %s directly before counting rows)\n' "${total}" "$1"
+        fi
     else
         printf '(absent)\n'
     fi
@@ -63,17 +69,33 @@ heading 'Open tasks'
 grep -RnE '^[[:space:]]*- \[ \]' tasks milestones 2>/dev/null || printf '(none)\n'
 
 heading 'Latest build'
-if [[ -f wkdrs/builds/main.pdf ]]; then
+# The same entry-point and output-directory resolution run.sh uses: STORY_MAIN
+# from .env (default manus/main.tex), wkdrs/builds/ for a main under manus/,
+# <dir>/.build beside a main anywhere else.
+scan_main="$(sed -n 's/^[[:space:]]*STORY_MAIN=//p' .env 2>/dev/null | tail -1)"
+scan_main="${scan_main%$'\r'}"; scan_main="${scan_main%\"}"; scan_main="${scan_main#\"}"
+scan_main="${scan_main%\'}"; scan_main="${scan_main#\'}"
+scan_main="${scan_main:-manus/main.tex}"
+scan_base="$(basename -- "${scan_main}" .tex)"
+scan_dir="$(dirname -- "${scan_main}")"
+if [[ "${scan_dir}" == manus || \
+      "$(cd -- "${scan_dir}" 2>/dev/null && pwd -P)" == "$(pwd -P)/manus" ]]; then
+    build_dir="wkdrs/builds"
+else
+    build_dir="${scan_dir}/.build"
+fi
+printf 'entry point: %s\n' "${scan_main}"
+if [[ -f "${build_dir}/${scan_base}.pdf" ]]; then
     if command -v pdfinfo >/dev/null 2>&1; then
-        pdfinfo wkdrs/builds/main.pdf 2>/dev/null | awk '/^(Pages|File size|CreationDate):/'
+        pdfinfo "${build_dir}/${scan_base}.pdf" 2>/dev/null | awk '/^(Pages|File size|CreationDate):/'
     else
-        ls -l wkdrs/builds/main.pdf
+        ls -l "${build_dir}/${scan_base}.pdf"
     fi
-    if [[ -f wkdrs/builds/main.log ]]; then
+    if [[ -f "${build_dir}/${scan_base}.log" ]]; then
         printf 'undefined diagnostics: '
-        grep -Eic 'undefined citations|undefined references|Citation .* undefined|Reference .* undefined' wkdrs/builds/main.log || true
+        grep -Eic 'undefined citations|undefined references|Citation .* undefined|Reference .* undefined' "${build_dir}/${scan_base}.log" || true
         printf 'overfull hboxes: '
-        grep -Ec 'Overfull \\hbox' wkdrs/builds/main.log || true
+        grep -Ec 'Overfull \\hbox' "${build_dir}/${scan_base}.log" || true
     fi
 else
     printf '(no build)\n'

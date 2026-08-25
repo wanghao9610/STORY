@@ -96,11 +96,11 @@ transcript=$(payload_field transcript_path)
 self="${QWEN_PROJECT_DIR:-.}/.qwen/hooks/story_model_id.sh"
 
 if [ -n "${transcript:-}" ]; then
-    ctx="STORY provenance: read this session's model id when you record it, not from memory — the runtime states it at session start only, and /model changes it afterwards without saying so. Before a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 8), run: bash ${self} --resolve ${transcript}${model:+ ${model}} — then copy what it prints verbatim. Write 'unrecorded' only if it prints nothing, and do not guess."
+    ctx="STORY provenance: read this session's model id when you record it, not from memory — the runtime states it at session start only, and /model changes it afterwards without saying so. Before a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 7), run: bash ${self} --resolve ${transcript}${model:+ ${model}} — then copy what it prints verbatim. Write 'unrecorded' only if it prints nothing, and do not guess."
 elif [ -n "${model:-}" ]; then
-    ctx="STORY provenance: this session's runtime-reported model id is ${model}, and the runtime named no transcript to check it against later. When a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 8), copy this exact string verbatim; do not write 'unrecorded'. If you switch models mid-session, this string is the one you started with, not the one writing."
+    ctx="STORY provenance: this session's runtime-reported model id is ${model}, and the runtime named no transcript to check it against later. When a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 7), copy this exact string verbatim; do not write 'unrecorded'. If you switch models mid-session, this string is the one you started with, not the one writing."
 else
-    ctx="STORY provenance: the runtime stated no model id for this session and named no transcript to recover it from. When a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 8), write 'unrecorded' and do not guess."
+    ctx="STORY provenance: the runtime stated no model id for this session and named no transcript to recover it from. When a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 7), write 'unrecorded' and do not guess."
 fi
 
 # ctx now embeds a filesystem path, so encode it as JSON rather than assuming it

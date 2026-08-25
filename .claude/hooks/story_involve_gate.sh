@@ -41,7 +41,11 @@ esac
 # Dot-directories at the project root — .git, .claude, .story, the other tool
 # trees — keep their prompt, the way acceptEdits mode keeps one for protected
 # paths. Their contents are project machinery, not the manuscript, the notes, or
-# the milestone files a run is writing.
-[[ "${path#"${root}"/}" == .* ]] && exit 0
+# the milestone files a run is writing. A `..` component keeps its prompt too:
+# the root-prefix match above is textual, so without this a path spelled
+# `<root>/manus/../..` would read as inside the project while pointing out of it.
+case "${path#"${root}"/}" in
+    .*|*/..|*/../*) exit 0 ;;
+esac
 
 printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow","permissionDecisionReason":"INVOLVE=low"}}\n'

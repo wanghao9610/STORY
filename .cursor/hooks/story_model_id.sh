@@ -24,9 +24,9 @@ else
 fi
 
 if [ -n "${model:-}" ]; then
-  ctx="STORY provenance: this session's runtime-reported model id is ${model}. When a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 8), copy this exact string verbatim; do not write 'unrecorded'."
+  ctx="STORY provenance: this session's runtime-reported model id is ${model}. When a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 7), copy this exact string verbatim; do not write 'unrecorded'."
 else
-  ctx="STORY provenance: the runtime stated no model id for this session. When a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 8), write 'unrecorded' and do not guess."
+  ctx="STORY provenance: the runtime stated no model id for this session. When a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 7), write 'unrecorded' and do not guess."
 fi
 
 # ctx is controlled text with no double quotes or backslashes, so this is valid JSON.

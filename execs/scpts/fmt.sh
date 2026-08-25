@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# execs/scpts/fmt.sh — one sentence per line, mechanically (conventions §3.7).
+# execs/scpts/fmt.sh — one sentence per line, mechanically (AGENTS.md §6).
 #
 # latexindent does the rewriting, configured by .latexindent.yaml at the
 # repository root. This script decides what it is allowed to touch and — the
@@ -84,7 +84,7 @@ while (( $# > 0 )); do
 done
 
 command -v latexindent >/dev/null 2>&1 || \
-    fail "latexindent not found. It ships with TeX Live and MacTeX; install it, or install the Perl script from https://github.com/cmhughes/latexindent.pl. No script here installs anything (conventions §3.5)."
+    fail "latexindent not found. It ships with TeX Live and MacTeX; install it, or install the Perl script from https://github.com/cmhughes/latexindent.pl. No script here installs anything."
 [[ -f "${CONFIG}" ]] || \
     fail "no .latexindent.yaml at the repository root — the line-break rule has no definition to apply."
 

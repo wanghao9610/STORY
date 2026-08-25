@@ -46,8 +46,9 @@ DOCS_TREE="docs/mds/story-workflow"
 # STORY-owned hook assets. Two inject at the start of a session: the script that
 # puts the project-memory index (.story/memory/) in front of the agent, and the
 # one that states the runtime's model id so an artifact records who wrote it
-# (conventions §8). Two decide instead: the commit guard that declines the git
-# commands conventions §1 forbids, in every tree, and the involve gate that
+# (conventions §7). Two decide instead: the commit guard that declines the git
+# commands the STORY git safety policy forbids (its own header states the
+# policy), in every tree, and the involve gate that
 # answers a file-edit permission prompt at INVOLVE=low (§7), in the two trees
 # whose harness lets a hook decide one. One copy of each per harness, because
 # every runtime spells the event and the output field differently. Overwritten
@@ -436,8 +437,13 @@ ENV_DIR="${ROOT_DIR}"
 [[ "${ADOPT}" == false ]] || ENV_DIR="$(pwd -P)"
 
 env_value() { # $1 = key; print its last assignment in the target .env
+    # Same tolerance as run.sh, lint.sh, and import.sh: leading whitespace and
+    # one layer of quotes come off, so a quoted .env value reads the same here.
+    local val
     [[ -f "${ENV_DIR}/.env" ]] || return 0
-    sed -n "s/^$1=//p" "${ENV_DIR}/.env" | tail -1
+    val="$(sed -n "s/^[[:space:]]*$1=//p" "${ENV_DIR}/.env" | tail -1)"
+    val="${val%$'\r'}"; val="${val%\"}"; val="${val#\"}"; val="${val%\'}"; val="${val#\'}"
+    printf '%s' "${val}"
 }
 
 HARNESSES_SPEC="${HARNESSES_ARG}"
@@ -778,7 +784,9 @@ if [[ "${ADOPT}" == false ]]; then
         DIRTY_PATHS=("${SYNCED[@]}")
         if [[ "${FORCE}" == true && -z "${SKILL_NAME}" ]]; then
             filter_paths "${HARNESS_FILES[@]}"
-            DIRTY_PATHS+=("${FILTERED[@]}")
+            # FILTERED is empty under --harnesses none, and bash 3.2 treats an
+            # empty-array expansion as unbound under set -u.
+            DIRTY_PATHS+=(${FILTERED[@]+"${FILTERED[@]}"})
         fi
         DIRTY="$(git -C "${ROOT_DIR}" status --porcelain -- "${DIRTY_PATHS[@]}" 2>/dev/null || true)"
         if [[ -n "${DIRTY}" ]]; then
@@ -811,9 +819,12 @@ if [[ "${ADOPT}" == false ]]; then
     # Materialize upstream symlinks. Downstream projects may update only one
     # harness, so installing links into an unselected tree would be fragile.
     TAR_CREATE_ARGS=(-ch)
-    if tar --help 2>/dev/null | grep -q -- --hard-dereference; then
-        TAR_CREATE_ARGS+=(--hard-dereference)
-    fi
+    # Captured, not piped: grep -q closing the pipe early can hand tar a
+    # SIGPIPE, and under pipefail a real match then reads as a miss.
+    TAR_HELP="$(tar --help 2>/dev/null || true)"
+    case "${TAR_HELP}" in
+        *--hard-dereference*) TAR_CREATE_ARGS+=(--hard-dereference) ;;
+    esac
     tar -C "${SOURCE_DIR}" "${TAR_CREATE_ARGS[@]}" -f "${ARCHIVE_FILE}" "${TAR_PATHS[@]}"
     tar -C "${ROOT_DIR}" -xf "${ARCHIVE_FILE}"
 
