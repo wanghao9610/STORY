@@ -31,7 +31,10 @@
   \LoadClass[12pt,openany]{book}
 \fi
 
-\RequirePackage[letterpaper,margin=1in,bindingoffset=0.25in]{geometry}
+%% A4 is the near-universal thesis paper size outside North America and the
+%% default for Chinese institutions; a letterpaper program can override this in
+%% its official template layer.
+\RequirePackage[a4paper,margin=1in,bindingoffset=0.25in]{geometry}
 \ifstory@chinese\else
   \RequirePackage[T1]{fontenc}
   \RequirePackage{lmodern}
