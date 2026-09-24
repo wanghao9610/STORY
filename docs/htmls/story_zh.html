@@ -905,6 +905,11 @@
         <h3>原生 AI 协作，与 STAR、STAGE 联动</h3>
         <p>十六个 skill 同时供给 <strong>Codex</strong>、<strong>Claude Code</strong>、<strong>Cursor</strong>、<strong>DeepSeek Harness</strong>、<strong>Kimi Code</strong>、<strong>Pi</strong> 和 <strong>Qwen Code</strong>，出自同一份共享 skill 源，运行时可用中文或英文回复并撰写文档。一条命令即可从配套的 STAR 或 STAGE 仓库导入证据，也可以完全独立使用、人工登记材料。</p>
       </div>
+      <div class="card wide reveal" style="--card-glow: rgba(76,195,255,0.14); --card-c: #4cc3ff">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
+        <h3>项目记忆，绝不充当证据</h3>
+        <p>会话中学到、却没有任何仓库文件负责的事——本机缺少的 TeX 宏包、长期的写作偏好、被模拟答辩否定过的思路——写入 <code>.story/memory/</code>，每条事实一个文件，附一行 <code>summary</code>。每次会话开始时，各个 harness 的 hook 都会从这些文件生成索引，交给 agent。记忆只帮 agent 认路：它不能代替证据，也不能覆盖 <code>degree/</code>、<code>mates/</code>、<code>notes/</code> 或 <code>milestones/</code>。只在本机成立的事实放在 git 忽略的 <code>.story/memory/local/</code>；agent 每次会话最多记录两条记忆，除非你设置 <code>INVOLVE=low</code>，否则都会先征得你同意。</p>
+      </div>
     </div>
   </div>
 </section>
@@ -947,6 +952,7 @@
 │   ├── <span class="file">run.sh</span>    <span class="cm"># ← 唯一构建入口</span>
 │   ├── <span class="file">update.sh</span> <span class="cm"># 同步 skill；--adopt 安装骨架</span>
 │   └── <span class="dir">scpts/</span>   <span class="cm"># import.sh · lint.sh · fmt.sh</span>
+├── <span class="dir">.story/memory/</span> <span class="cm"># 项目记忆，每条事实一个文件</span>
 ├── <span class="file">.env</span>         <span class="cm"># 本机配置（绝不提交）</span>
 └── <span class="file">AGENTS.md</span>    <span class="cm"># 人与 agent 共享的约定</span></div>
       </div>
@@ -958,6 +964,7 @@
         <div class="legend-row"><code>milestones/</code><span><strong>里程碑</strong> — 每次评审事件一个目录</span></div>
         <div class="legend-row"><code>tasks/</code><span><strong>待办</strong> — 持久化未决事项与反馈承诺</span></div>
         <div class="legend-row"><code>wkdrs/</code><span><strong>工作目录</strong> — 构建产物与临时报告，绝不提交</span></div>
+        <div class="legend-row"><code>.story/memory/</code><span><strong>项目记忆</strong> — 会话积累的经验，由 hook 建立索引；绝不作为证据</span></div>
         <div class="legend-row"><code>scpts/</code><span><strong>脚本</strong> — 证据导入与确定性检查</span></div>
       </div>
     </div>
@@ -981,8 +988,8 @@
           <h3>搭建<small>接好仓库，引入带指纹的证据。</small></h3>
         </div>
         <div class="skills">
-          <div class="skill"><code>$story-proj-adopt</code><p>接入已有的硕士或博士学位论文而不做改动——勘察、记录，学校事实一律经作者确认。</p></div>
-          <div class="skill"><code>$story-evid-curator</code><p>从 STAR 或 STAGE 仓库导入证据、登记人工材料、刷新指纹，并完整性检查 <em>mates/</em>。</p></div>
+          <div class="skill"><code>story-proj-adopt</code><p>接入已有的硕士或博士学位论文而不做改动——勘察、记录，学校事实一律经作者确认。</p></div>
+          <div class="skill"><code>story-evid-curator</code><p>从 STAR 或 STAGE 仓库导入证据、登记人工材料、刷新指纹，并完整性检查 <em>mates/</em>。</p></div>
         </div>
       </div>
 
@@ -992,9 +999,9 @@
           <h3>规划<small>确立论文主线与章节架构。</small></h3>
         </div>
         <div class="skills">
-          <div class="skill"><code>$story-syns-coach</code><p>按照已确认的硕士或博士层级，确立研究主线和学位贡献。</p></div>
-          <div class="skill"><code>$story-outl-planner</code><p>把主线展开为连贯的章节架构，每章服务于全文论证。</p></div>
-          <div class="skill"><code>$story-refs-curator</code><p>为每条文献断言备好可核验的文献记录与阅读笔记。</p></div>
+          <div class="skill"><code>story-syns-coach</code><p>按照已确认的硕士或博士层级，确立研究主线和学位贡献。</p></div>
+          <div class="skill"><code>story-outl-planner</code><p>把主线展开为连贯的章节架构，每章服务于全文论证。</p></div>
+          <div class="skill"><code>story-refs-curator</code><p>为每条文献断言备好可核验的文献记录与阅读笔记。</p></div>
         </div>
       </div>
 
@@ -1004,9 +1011,9 @@
           <h3>写作<small>依据证据写作，绝不凭记忆。</small></h3>
         </div>
         <div class="skills">
-          <div class="skill"><code>$story-chap-drafter</code><p>每次运行针对一章或一份前置/后置部分文件，依据确认的章节简报、论文主线与映射好的证据——缺失的数字写成 <em>\todo{}</em>。</p></div>
-          <div class="skill"><code>$story-tabs-builder</code><p>表格只取自 <em>mates/</em> 证据——每个含数字或比较的行一条 <em>% src:</em> 指纹锚点。</p></div>
-          <div class="skill"><code>$story-figs-designer</code><p>每张图端到端完成：用途、可编辑源文件、渲染 PDF、映射到证据的图注。</p></div>
+          <div class="skill"><code>story-chap-drafter</code><p>每次运行针对一章或一份前置/后置部分文件，依据确认的章节简报、论文主线与映射好的证据——缺失的数字写成 <em>\todo{}</em>。</p></div>
+          <div class="skill"><code>story-tabs-builder</code><p>表格只取自 <em>mates/</em> 证据——每个含数字或比较的行一条 <em>% src:</em> 指纹锚点。</p></div>
+          <div class="skill"><code>story-figs-designer</code><p>每张图端到端完成：用途、可编辑源文件、渲染 PDF、映射到证据的图注。</p></div>
         </div>
       </div>
 
@@ -1016,9 +1023,9 @@
           <h3>打磨与审计<small>统一文字。追溯每个数字。</small></h3>
         </div>
         <div class="skills">
-          <div class="skill"><code>$story-copy-editor</code><p>清晰度、作者声音、术语与跨章衔接——事实、数字与论断范围不可动。</p></div>
-          <div class="skill"><code>$story-clms-auditor</code><p>每个数字与比较都追溯到指纹：匹配 / 不符 / 无来源。</p></div>
-          <div class="skill"><code>$story-cite-auditor</code><p>每个 <em>\cite</em> 都能解析；每条文献断言都能对照阅读笔记核验。</p></div>
+          <div class="skill"><code>story-copy-editor</code><p>清晰度、作者声音、术语与跨章衔接——事实、数字与论断范围不可动。</p></div>
+          <div class="skill"><code>story-clms-auditor</code><p>每个数字与比较都追溯到指纹：匹配 / 不符 / 无来源。</p></div>
+          <div class="skill"><code>story-cite-auditor</code><p>每个 <em>\cite</em> 都能解析；每条文献断言都能对照阅读笔记核验。</p></div>
         </div>
       </div>
 
@@ -1028,10 +1035,10 @@
           <h3>评审<small>审查、回应、答辩、归档。</small></h3>
         </div>
         <div class="skills">
-          <div class="skill"><code>$story-exam-reviewer</code><p>对构建好的论文做与学位层级相称的模拟评审——贡献范围、连贯性、证据与答辩准备度。</p></div>
-          <div class="skill"><code>$story-revs-resolver</code><p>逐点跟踪并处理委员会反馈——收到的意见绝不就地修改。</p></div>
-          <div class="skill"><code>$story-defn-builder</code><p>在适用时准备答辩演示文稿，并对照其呈现的论文逐一检查。</p></div>
-          <div class="skill"><code>$story-depo-packer</code><p>对照 <em>degree/</em> 要求预检归档包，并冻结最终记录。</p></div>
+          <div class="skill"><code>story-exam-reviewer</code><p>对构建好的论文做与学位层级相称的模拟评审——贡献范围、连贯性、证据与答辩准备度。</p></div>
+          <div class="skill"><code>story-revs-resolver</code><p>逐点跟踪并处理委员会反馈——收到的意见绝不就地修改。</p></div>
+          <div class="skill"><code>story-defn-builder</code><p>在适用时准备答辩演示文稿，并对照其呈现的论文逐一检查。</p></div>
+          <div class="skill"><code>story-depo-packer</code><p>对照 <em>degree/</em> 要求预检归档包，并冻结最终记录。</p></div>
         </div>
       </div>
 
@@ -1041,7 +1048,17 @@
           <h3>纵览<small>汇报整体流程，指明下一步。</small></h3>
         </div>
         <div class="skills">
-          <div class="skill"><code>$story-flow-status</code><p>只读地图：章节、论断、证据与里程碑关口——并给出唯一下一步及其确切命令。从不写文件。</p></div>
+          <div class="skill"><code>story-flow-status</code><p>只读地图：章节、论断、证据与里程碑关口——并给出唯一下一步及其确切命令。从不写文件。</p></div>
+        </div>
+      </div>
+
+      <div class="phase reveal" style="--phase-c: var(--gold-deep); --phase-glow: rgba(245,166,35,0.45)">
+        <div class="phase-head">
+          <div class="phase-star">✦</div>
+          <h3>追求目标<small>一条命令，授权有边界。</small></h3>
+        </div>
+        <div class="skills">
+          <div class="skill"><code>story-auto &lt;目标&gt;</code><p>它不是 skill，而是你输入的命令：先运行 <em>story-flow-status</em>，再朝目标依次启动交接点名的 skill，每次只做一个单元的工作。它绝不启动六个仅限显式调用的 skill——接入、综合、提纲、反馈、答辩、归档——遇到时停下并给出对应命令；只有作者能回答的问题照样会问你。它绝不导入证据，不写 <em>degree/</em> 或收到的反馈，不宣布归档就绪，不提交也不推送；lint 通过从来不是它的目标。</p></div>
         </div>
       </div>
     </div>
@@ -1050,6 +1067,7 @@
       每个 skill 都同时供给 <code>Codex</code>、<code>Claude Code</code>、<code>Cursor</code>、
       <code>DeepSeek Harness</code>、<code>Kimi Code</code>、<code>Pi</code> 和 <code>Qwen Code</code>，
       出自 <code>.agents/skills/</code> 下的同一份共享源，可用中文或英文回复并撰写文档。
+      调用 skill 用 <code>/story-&lt;name&gt;</code>（Codex 中为 <code>$story-&lt;name&gt;</code>，DeepSeek Harness 和 Kimi Code 中为 <code>/skill:story-&lt;name&gt;</code>），目标推进用 <code>/story-auto</code>（Codex 中为 <code>$story-auto</code>）。
     </p>
 
     <figure class="workflow-map reveal">
@@ -1091,7 +1109,7 @@
 <span class="p">❯</span> <span class="cmd">bash execs/scpts/lint.sh</span>
 
 <span class="c"># 6 · 接入工作流——它会告诉你唯一的下一步</span>
-<span class="p">❯</span> <span class="cmd">$story-flow-status</span>
+<span class="p">❯</span> <span class="cmd">/story-flow-status</span>   <span class="c"># 在 agent 中输入；Codex 中为 $story-flow-status</span>
 <span class="p">❯</span> <span class="cursor-blink"></span></div>
     </div>
   </div>

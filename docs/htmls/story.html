@@ -906,6 +906,11 @@
         <h3>AI-agent native, STAR-and-STAGE paired</h3>
         <p>Sixteen skills ship for <strong>Codex</strong>, <strong>Claude Code</strong>, <strong>Cursor</strong>, <strong>DeepSeek Harness</strong>, <strong>Kimi Code</strong>, <strong>Pi</strong>, and <strong>Qwen Code</strong> from one shared skill source, and every run replies and writes in English or Chinese. Import evidence from any paired STAR or STAGE repository with one command, or work standalone with hand-registered drops.</p>
       </div>
+      <div class="card wide reveal" style="--card-glow: rgba(76,195,255,0.14); --card-c: #4cc3ff">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
+        <h3>Project memory, never evidence</h3>
+        <p>What a session learns that no repository file owns — a TeX package missing on this machine, a standing preference, an approach a mock examination rejected — goes into <code>.story/memory/</code>, one file per fact with a one-line <code>summary</code>. At every session start, in every harness, a hook builds the index from those files and hands it to the agent. Memory only helps the agent find its way: it never stands in for evidence and never overrides <code>degree/</code>, <code>mates/</code>, <code>notes/</code>, or <code>milestones/</code>. Facts true only of this machine stay in the git-ignored <code>.story/memory/local/</code>, and the agent records at most two memories a session, asking you first unless you set <code>INVOLVE=low</code>.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -948,6 +953,7 @@
 │   ├── <span class="file">run.sh</span>    <span class="cm"># ← the single build entrypoint</span>
 │   ├── <span class="file">update.sh</span> <span class="cm"># sync skills; --adopt installs the skeleton</span>
 │   └── <span class="dir">scpts/</span>   <span class="cm"># import.sh · lint.sh · fmt.sh</span>
+├── <span class="dir">.story/memory/</span> <span class="cm"># project memory, one fact per file</span>
 ├── <span class="file">.env</span>         <span class="cm"># machine-local config (never committed)</span>
 └── <span class="file">AGENTS.md</span>    <span class="cm"># shared human + agent instructions</span></div>
       </div>
@@ -959,6 +965,7 @@
         <div class="legend-row"><code>milestones/</code><span><strong>Milestones</strong> — one directory per examination event</span></div>
         <div class="legend-row"><code>tasks/</code><span><strong>Tasks</strong> — durable open work and feedback promises</span></div>
         <div class="legend-row"><code>wkdrs/</code><span><strong>Work directories</strong> — builds and ephemeral reports, never committed</span></div>
+        <div class="legend-row"><code>.story/memory/</code><span><strong>Project memory</strong> — what sessions learned, indexed by hooks; never evidence</span></div>
         <div class="legend-row"><code>scpts/</code><span><strong>Scripts</strong> — evidence import and deterministic checks</span></div>
       </div>
     </div>
@@ -982,8 +989,8 @@
           <h3>Set up<small>Wire the repo and bring in fingerprinted evidence.</small></h3>
         </div>
         <div class="skills">
-          <div class="skill"><code>$story-proj-adopt</code><p>Adopt an existing master's or doctoral thesis without disturbing it — survey, record, and keep every institutional fact author-confirmed.</p></div>
-          <div class="skill"><code>$story-evid-curator</code><p>Import from STAR or STAGE repositories, register manual drops, refresh fingerprints, and integrity-check <em>mates/</em>.</p></div>
+          <div class="skill"><code>story-proj-adopt</code><p>Adopt an existing master's or doctoral thesis without disturbing it — survey, record, and keep every institutional fact author-confirmed.</p></div>
+          <div class="skill"><code>story-evid-curator</code><p>Import from STAR or STAGE repositories, register manual drops, refresh fingerprints, and integrity-check <em>mates/</em>.</p></div>
         </div>
       </div>
 
@@ -993,9 +1000,9 @@
           <h3>Plan<small>Shape the thesis argument and the chapter architecture.</small></h3>
         </div>
         <div class="skills">
-          <div class="skill"><code>$story-syns-coach</code><p>Establish the research arc and degree contributions at the confirmed master's or doctoral level.</p></div>
-          <div class="skill"><code>$story-outl-planner</code><p>Turn the arc into a coherent chapter architecture, each chapter serving the thesis-wide argument.</p></div>
-          <div class="skill"><code>$story-refs-curator</code><p>Verified bibliography records and reading notes behind every literature assertion.</p></div>
+          <div class="skill"><code>story-syns-coach</code><p>Establish the research arc and degree contributions at the confirmed master's or doctoral level.</p></div>
+          <div class="skill"><code>story-outl-planner</code><p>Turn the arc into a coherent chapter architecture, each chapter serving the thesis-wide argument.</p></div>
+          <div class="skill"><code>story-refs-curator</code><p>Verified bibliography records and reading notes behind every literature assertion.</p></div>
         </div>
       </div>
 
@@ -1005,9 +1012,9 @@
           <h3>Write<small>Draft from evidence, never from memory.</small></h3>
         </div>
         <div class="skills">
-          <div class="skill"><code>$story-chap-drafter</code><p>One chapter or front/back-matter file per run, from its confirmed brief, the thesis story, and mapped evidence — missing numbers become <em>\todo{}</em>.</p></div>
-          <div class="skill"><code>$story-tabs-builder</code><p>Tables from <em>mates/</em> evidence only — a <em>% src:</em> fingerprint anchor on every quantitative or comparative row.</p></div>
-          <div class="skill"><code>$story-figs-designer</code><p>Each figure end to end: purpose, editable source, rendered PDF, evidence-mapped caption.</p></div>
+          <div class="skill"><code>story-chap-drafter</code><p>One chapter or front/back-matter file per run, from its confirmed brief, the thesis story, and mapped evidence — missing numbers become <em>\todo{}</em>.</p></div>
+          <div class="skill"><code>story-tabs-builder</code><p>Tables from <em>mates/</em> evidence only — a <em>% src:</em> fingerprint anchor on every quantitative or comparative row.</p></div>
+          <div class="skill"><code>story-figs-designer</code><p>Each figure end to end: purpose, editable source, rendered PDF, evidence-mapped caption.</p></div>
         </div>
       </div>
 
@@ -1017,9 +1024,9 @@
           <h3>Polish &amp; audit<small>Harmonize the prose. Trace every number.</small></h3>
         </div>
         <div class="skills">
-          <div class="skill"><code>$story-copy-editor</code><p>Clarity, voice, terminology, and cross-chapter flow — facts, numbers, and claim scope untouchable.</p></div>
-          <div class="skill"><code>$story-clms-auditor</code><p>Every number and comparison traced to a fingerprint: matched / mismatched / unsourced.</p></div>
-          <div class="skill"><code>$story-cite-auditor</code><p>Every <em>\cite</em> resolves; every literature assertion checkable against a reading note.</p></div>
+          <div class="skill"><code>story-copy-editor</code><p>Clarity, voice, terminology, and cross-chapter flow — facts, numbers, and claim scope untouchable.</p></div>
+          <div class="skill"><code>story-clms-auditor</code><p>Every number and comparison traced to a fingerprint: matched / mismatched / unsourced.</p></div>
+          <div class="skill"><code>story-cite-auditor</code><p>Every <em>\cite</em> resolves; every literature assertion checkable against a reading note.</p></div>
         </div>
       </div>
 
@@ -1029,10 +1036,10 @@
           <h3>Examination<small>Review, respond, defend, deposit.</small></h3>
         </div>
         <div class="skills">
-          <div class="skill"><code>$story-exam-reviewer</code><p>A level-appropriate examiner pass over the built thesis — contribution scope, coherence, evidence, defense readiness.</p></div>
-          <div class="skill"><code>$story-revs-resolver</code><p>Track and resolve committee feedback point by point — received comments are never edited in place.</p></div>
-          <div class="skill"><code>$story-defn-builder</code><p>Prepare and check an applicable defense deck against the thesis it presents.</p></div>
-          <div class="skill"><code>$story-depo-packer</code><p>Preflight the deposit package against <em>degree/</em> requirements and freeze the final record.</p></div>
+          <div class="skill"><code>story-exam-reviewer</code><p>A level-appropriate examiner pass over the built thesis — contribution scope, coherence, evidence, defense readiness.</p></div>
+          <div class="skill"><code>story-revs-resolver</code><p>Track and resolve committee feedback point by point — received comments are never edited in place.</p></div>
+          <div class="skill"><code>story-defn-builder</code><p>Prepare and check an applicable defense deck against the thesis it presents.</p></div>
+          <div class="skill"><code>story-depo-packer</code><p>Preflight the deposit package against <em>degree/</em> requirements and freeze the final record.</p></div>
         </div>
       </div>
 
@@ -1042,7 +1049,17 @@
           <h3>Read across<small>Report the whole flow, name the next action.</small></h3>
         </div>
         <div class="skills">
-          <div class="skill"><code>$story-flow-status</code><p>Read-only map of chapters, claims, evidence, and milestone gates — and the single next action with its exact command. Never writes.</p></div>
+          <div class="skill"><code>story-flow-status</code><p>Read-only map of chapters, claims, evidence, and milestone gates — and the single next action with its exact command. Never writes.</p></div>
+        </div>
+      </div>
+
+      <div class="phase reveal" style="--phase-c: var(--gold-deep); --phase-glow: rgba(245,166,35,0.45)">
+        <div class="phase-head">
+          <div class="phase-star">✦</div>
+          <h3>Pursue a goal<small>One typed command, bounded authority.</small></h3>
+        </div>
+        <div class="skills">
+          <div class="skill"><code>story-auto &lt;goal&gt;</code><p>A command you type, not a skill: it runs <em>story-flow-status</em>, then each skill the handoff names toward your goal, one unit of work at a time. It never starts the six explicit-only skills — adoption, synthesis, outline, feedback, defense, deposit — and stops to name the command instead; every question only the author can answer is still asked. It never imports evidence, writes <em>degree/</em> or received feedback, declares a deposit ready, commits, or pushes, and green lint is never its goal.</p></div>
         </div>
       </div>
     </div>
@@ -1051,6 +1068,7 @@
       Every skill ships for <code>Codex</code>, <code>Claude Code</code>, <code>Cursor</code>,
       <code>DeepSeek Harness</code>, <code>Kimi Code</code>, <code>Pi</code>, and <code>Qwen Code</code>
       from one shared source under <code>.agents/skills/</code>, and every run replies and writes in English or Chinese.
+      Invoke a skill as <code>/story-&lt;name&gt;</code> — <code>$story-&lt;name&gt;</code> in Codex, <code>/skill:story-&lt;name&gt;</code> in DeepSeek Harness and Kimi Code — and a goal run as <code>/story-auto</code> (<code>$story-auto</code> in Codex).
     </p>
 
     <figure class="workflow-map reveal">
@@ -1093,7 +1111,7 @@
 <span class="p">❯</span> <span class="cmd">bash execs/scpts/lint.sh</span>
 
 <span class="c"># 6 · Pick up the workflow — it names the single next action for you</span>
-<span class="p">❯</span> <span class="cmd">$story-flow-status</span>
+<span class="p">❯</span> <span class="cmd">/story-flow-status</span>   <span class="c"># typed in your agent; $story-flow-status in Codex</span>
 <span class="p">❯</span> <span class="cursor-blink"></span></div>
     </div>
   </div>
