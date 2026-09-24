@@ -1,6 +1,6 @@
 ---
 name: story-cite-auditor
-description: Use to audit what a thesis already cites: citation keys, bibliography hygiene, literature assertions, missing citations, and cross-chapter consistency, checked against verified records and reading notes. Reports failures and never silently repairs prose. For adding or verifying a source record, use story-refs-curator.
+description: Use to audit what a thesis already cites — citation keys, bibliography hygiene, literature assertions, missing citations, and cross-chapter consistency, checked against verified records and reading notes. Reports failures and never repairs prose. For adding or verifying a source record, use story-refs-curator.
 ---
 
 # Audit citations and literature assertions

@@ -119,9 +119,9 @@ self=".dsh/hooks/story_model_id.sh"
 printf -v transcript_arg '%q' "${transcript:-}"
 
 if [ -n "${transcript:-}" ]; then
-    ctx="STORY provenance: read this session's model id when you record it, not from memory — DSH states no model at session start, and the route can change afterwards without saying so. Before you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), run: bash ${self} --resolve ${transcript_arg} — then copy what it prints verbatim. Write 'unrecorded' only if it prints nothing, and do not guess."
+    ctx="STORY provenance: read this session's model id when you record it, not from memory — DSH states no model at session start, and the route can change afterwards without saying so. Before you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), run: bash ${self} --resolve ${transcript_arg} — then copy what it prints verbatim. If it prints nothing, copy the model id this session's own context states outright; write 'unrecorded' only when none is stated, and do not guess."
 else
-    ctx="STORY provenance: DSH named no session log for this session, so the model id cannot be recovered from it. Before you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), try: bash ${self} --resolve — with no argument it reads DSH_SESSION_JSONL from the shell environment. Write 'unrecorded' if it prints nothing, and do not guess."
+    ctx="STORY provenance: DSH named no session log for this session, so the model id cannot be recovered from it. Before you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), try: bash ${self} --resolve — with no argument it reads DSH_SESSION_JSONL from the shell environment. If it prints nothing, copy the model id this session's own context states outright; write 'unrecorded' only when none is stated, and do not guess."
 fi
 
 # ctx embeds a filesystem path and the backslashes that quote a command's

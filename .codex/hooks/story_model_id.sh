@@ -161,7 +161,7 @@ transcript=$(payload_field transcript_path)
 self=".codex/hooks/story_model_id.sh"
 printf -v transcript_arg '%q' "${transcript:-}"
 printf -v model_arg '%q' "${model:-}"
-ctx="STORY provenance: session_model_id = ${model:-unrecorded}. This is the exact id SessionStart reported, stated directly even when a rollout exists. Before you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), run: bash ${self} --resolve ${transcript_arg} ${model_arg}. Copy its output verbatim; if it prints nothing, use session_model_id, and use 'unrecorded' only when both are absent. Never infer an id from a family description such as 'GPT-5 family'. After writing each such file, run: bash ${self} --check <artifact> ${transcript_arg} ${model_arg}, replacing <artifact> with its path. A nonzero result blocks reporting completion or committing."
+ctx="STORY provenance: session_model_id = ${model:-unrecorded}. This is the exact id SessionStart reported. Before you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), run: bash ${self} --resolve ${transcript_arg} ${model_arg}. Copy its output verbatim; if it prints nothing, use session_model_id, and use 'unrecorded' only when both are absent. Never infer an id from a family description such as 'GPT-5 family'. After writing each such file, run: bash ${self} --check <artifact> ${transcript_arg} ${model_arg}, replacing <artifact> with its path. A nonzero result blocks reporting completion or committing."
 
 # ctx embeds a filesystem path and the backslashes that quote a command's
 # arguments for the shell, so encode it as JSON rather than assuming it is

@@ -1,6 +1,6 @@
 ---
 name: story-depo-packer
-description: Use only for a named deposit milestone of a finished thesis. Preflights every deposit gate against confirmed institutional requirements, packages the final PDF with a checksummed inventory, and writes the freeze record; never uploads, submits, pushes, commits, or silently changes the manuscript. For a read-only progress report, use story-flow-status.
+description: Use only for a named deposit milestone of a finished thesis. Preflights every deposit gate against confirmed institutional requirements, packages the final PDF with a checksummed inventory, and writes the freeze record; never uploads, submits, pushes, commits, or changes the manuscript. For a read-only progress report, use story-flow-status.
 ---
 
 # Package the thesis deposit

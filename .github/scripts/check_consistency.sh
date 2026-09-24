@@ -219,6 +219,31 @@ if [[ "${rule_slash_only}" != "$(printf '%s\n' "${SLASH_ONLY}" | sort)" ]]; then
 fi
 (( policy_errors == 0 )) && ok "conventions, skills guide (en/zh) and shared /story router (en/zh) list all $(printf '%s\n' "${BASE}" | wc -l | tr -d ' ') skills; $(printf '%s\n' "${SLASH_ONLY}" | wc -l | tr -d ' ') explicit-only skills carry their guard in Codex's manifests and every named tree's frontmatter, and Cursor's always-apply skill-roots rule names the same set for the unguarded .agents copies; every manifest names .env, STORY_LANG, INVOLVE and STORY_MAIN; Claude-only frontmatter matches port.sh claude_frontmatter and sits in .claude/skills alone"
 
+# A plain (unquoted) YAML scalar cannot hold ': ' or end in ':', which makes a
+# strict parser reject the whole block, so a harness that parses strictly drops
+# the skill's name and routing description; ' #' starts a comment, which
+# silently truncates the value. Write an em dash for the colon, or quote the
+# value. The closing line and CRLF endings are read as frontmatter_has_line reads
+# them.
+yaml_errors=0
+while IFS= read -r file; do
+    while IFS= read -r bad; do
+        fail "${file}: frontmatter value is not a valid plain YAML scalar: ${bad}"
+        yaml_errors=1
+    done < <(awk '
+        { sub(/\r$/, "") }
+        NR == 1 { if ($0 !~ /^---[[:space:]]*$/) exit; next }
+        /^---[[:space:]]*$/ { exit }
+        /^[A-Za-z_-]+: / {
+            value = $0; sub(/^[A-Za-z_-]+: /, "", value)
+            if (value ~ /^["'\''|>]/) next
+            if (index(value, ": ") || index(value, " #") || value ~ /:$/) print NR ": " $0
+        }' "${file}")
+done < <(find .agents .claude .codex .cursor .dsh .kimi-code .pi .qwen \
+    \( -name SKILL.md -o -path '*/commands/*.md' -o -path '.pi/prompts/*.md' -o -name '*.mdc' \) \
+    -not -path '*/node_modules/*' 2>/dev/null | sort)
+(( yaml_errors == 0 )) && ok "no plain (unquoted) skill, command, prompt, or rule frontmatter value holds ': ' or ' #' or ends in ':'"
+
 # Skills and hooks cite the conventions by section number (every provenance hook
 # cites "section 7", every memory hook "section 10"), so the numbered headings
 # are pinned: renumbering one means re-auditing each §n and "section n" citation

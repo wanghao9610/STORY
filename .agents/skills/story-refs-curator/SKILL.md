@@ -1,6 +1,6 @@
 ---
 name: story-refs-curator
-description: Use when a thesis needs a trustworthy source record: add, verify, deduplicate, or re-check bibliography entries, write reading notes, or find candidates for a chapter's unsupported literature assertions, verifying only from records fetched in the run. For auditing what the manuscript already cites, use story-cite-auditor.
+description: Use when a thesis needs a trustworthy source record — add, verify, deduplicate, or re-check bibliography entries, write reading notes, or find candidates for a chapter's unsupported literature assertions, verifying only from records fetched in the run. For auditing what the manuscript already cites, use story-cite-auditor.
 ---
 
 # Curate references and reading notes

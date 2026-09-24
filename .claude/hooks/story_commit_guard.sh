@@ -335,17 +335,17 @@ while IFS= read -r segment; do
                 esac
                 case "${arg}" in
                     -f|--force|--force-with-lease|--force-with-lease=*|--force-if-includes|--mirror)
-                        deny "STORY git safety: a forced push rewrites the remote, and the remote's history is the user's too — a freeze tag must keep pointing at what was deposited. Push a new commit instead." ;;
+                        deny "STORY git safety: a forced push rewrites the remote, and the remote's history is the user's too — a freeze tag must keep pointing at what was deposited. Leave the push to the user." ;;
                     -d|--delete|--prune)
                         deny "STORY git safety: this push deletes a branch or a tag on the remote, and the remote is the user's — a freeze tag must keep pointing at what was deposited. Leave remote refs to the user." ;;
                     --*) ;;
                     -*[fd]*)
-                        deny "STORY git safety: this flag cluster carries a forced push or a remote delete, which rewrites the remote the user owns. Push a new commit instead." ;;
+                        deny "STORY git safety: this flag cluster carries a forced push or a remote delete, which rewrites the remote the user owns. Leave the push to the user." ;;
                     # A refspec is src:dst. A leading + forces that one update, and
                     # an empty src deletes dst; a bare : is the matching push and
                     # passes.
                     +*)
-                        deny "STORY git safety: a +refspec forces that update, which rewrites the remote the user owns. Push a new commit instead." ;;
+                        deny "STORY git safety: a +refspec forces that update, which rewrites the remote the user owns. Leave the push to the user." ;;
                     :?*)
                         deny "STORY git safety: a refspec with an empty source deletes that branch or tag on the remote, and the remote is the user's. Leave remote refs to the user." ;;
                 esac

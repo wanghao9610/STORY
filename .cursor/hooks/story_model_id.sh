@@ -4,8 +4,10 @@
 #
 # Cursor puts `model_id` (structured id) and `model` on the sessionStart payload,
 # and injects the returned `additional_context` string into the conversation.
-# When neither is present the honest value per workflow provenance rule is
-# "unrecorded". Registered under hooks.sessionStart in .cursor/hooks.json.
+# When neither is present, the injected line has the writer copy an id the
+# session's own context states outright, else write "unrecorded"
+# (writing-workflow-conventions section 7). Registered under
+# hooks.sessionStart in .cursor/hooks.json.
 
 input=$(cat)
 
@@ -26,7 +28,7 @@ fi
 if [ -n "${model:-}" ]; then
   ctx="STORY provenance: this session's runtime-reported model id is ${model}. When you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), copy this exact string verbatim; do not write 'unrecorded'."
 else
-  ctx="STORY provenance: the runtime stated no model id for this session. When you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), write 'unrecorded' and do not guess."
+  ctx="STORY provenance: the sessionStart payload carried no model id for this session. When you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), copy the model id this session's own context states outright, if it states one; otherwise write 'unrecorded'. Do not guess."
 fi
 
 # ctx is controlled text with no double quotes or backslashes, so this is valid JSON.

@@ -60,7 +60,7 @@ fi
 if [ -n "${model:-}" ]; then
   ctx="STORY provenance: this Kimi session's configured default model id is ${model}, read from config.toml. When you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), copy this exact string verbatim; do not write 'unrecorded'. If the model was overridden with kimi -m or /model, this string is the configured default, not the one writing."
 else
-  ctx="STORY provenance: no Kimi default model could be read from config.toml. When you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), write 'unrecorded' and do not guess."
+  ctx="STORY provenance: no Kimi default model could be read from config.toml. When you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), copy the model id this session's own context states outright, if it states one; otherwise write 'unrecorded'. Do not guess."
 fi
 
 printf '%s\n' "$ctx"

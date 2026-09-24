@@ -261,7 +261,7 @@ harness_rels() {
 
 # A kept registration config that does not name one of the hooks: the script is
 # installed, nothing errors, and either no memory reaches a session, or every
-# artifact it writes records "unrecorded", or a git command the STORY git safety
+# artifact it writes loses the hook's model id, or a git command the STORY git safety
 # policy forbids (see story_commit_guard.sh's header) meets no floor. Reported, not repaired — merging into a file the project may have
 # extended is the user's.
 report_unregistered_hooks() {
@@ -297,11 +297,11 @@ report_unregistered_hooks() {
         # A kept Claude config can register every hook and still lack the allow
         # rule for the read-only command the provenance line hands a skill. The
         # main session then asks before each provenance read, and a delegate,
-        # which cannot answer a prompt, is denied it and records "unrecorded". A
+        # which cannot answer a prompt, is denied it and loses the resolver's model id. A
         # missing permission is not a missing hook, so it gets a note of its own.
         if [[ "${cfg}" == ".claude/settings.json" ]] && \
            ! grep -q 'story_model_id\.sh --resolve' "${ROOT_DIR}/${cfg}" 2>/dev/null; then
-            log "NOTE: ${cfg} was kept and does not allow the read-only model-id resolver, so each provenance read asks first and a delegate's model_id reads unrecorded."
+            log "NOTE: ${cfg} was kept and does not allow the read-only model-id resolver, so each provenance read asks first and a delegate, which cannot answer the prompt, loses the resolver's model id."
             log "      Copy \"Bash(bash .claude/hooks/story_model_id.sh --resolve:*)\" from upstream ${cfg} into its permissions.allow."
         fi
         if [[ -z "${missing}" && "${cfg}" == ".codex/hooks.json" ]]; then
@@ -309,7 +309,7 @@ report_unregistered_hooks() {
             # once the project is trusted and the hook itself approved, and a
             # changed hook needs approving again. Nothing reports the gap — the
             # hooks simply do not fire, no memory reaches the session, and every
-            # artifact the session writes records "unrecorded".
+            # artifact the session writes loses the hook's model id.
             log "NOTE: ${cfg} is registered, but Codex runs a project hook only after you approve it."
             log "      Run /hooks in the Codex CLI and approve it — re-approve whenever it changes."
         fi

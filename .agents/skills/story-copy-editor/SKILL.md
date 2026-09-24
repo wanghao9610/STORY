@@ -1,6 +1,6 @@
 ---
 name: story-copy-editor
-description: Use when thesis prose sounds formulaic or AI-generated or needs clearer voice, terminology, transitions, or notation consistency — polish one chapter, one front- or back-matter file, or the whole thesis without changing facts, numbers, citations, claims, or attribution. To change what the thesis claims or cites, use story-chap-drafter.
+description: Use when thesis prose sounds formulaic or AI-generated or needs clearer voice, terminology, transitions, or notation consistency — polish one chapter, one front- or back-matter file, or the whole thesis without changing facts, numbers, citations, claims, or attribution. The `style` target creates or updates the author's style profile in notes/style.md without editing prose. To change what the thesis claims or cites, use story-chap-drafter.
 ---
 
 # Copy-edit the thesis

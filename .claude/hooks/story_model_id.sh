@@ -167,18 +167,19 @@ transcript=$(payload_field transcript_path)
 self=".claude/hooks/story_model_id.sh"
 # The arguments go through the shell the agent runs the command in, which is
 # often zsh: a bare `claude-opus-5[1m]` is a glob there, and an unmatched glob
-# fails the whole command before the resolver runs, leaving nothing printed and
-# "unrecorded" recorded. So each is quoted for the shell; the allow rule matches
+# fails the whole command before the resolver runs, leaving nothing printed, so
+# the writer falls back to an id its context states, which /model may have
+# staled, or to "unrecorded". So each is quoted for the shell; the allow rule matches
 # the command's prefix, which the quoting leaves alone.
 printf -v transcript_arg '%q' "${transcript:-}"
 printf -v model_arg '%q' "${model:-}"
 
 if [ -n "${transcript:-}" ]; then
-    ctx="STORY provenance: read this session's model id when you record it, not from memory — the runtime states it at session start only, and /model changes it afterwards without saying so. Before you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), run: bash ${self} --resolve ${transcript_arg}${model:+ ${model_arg}} — then copy what it prints verbatim. Write 'unrecorded' only if it prints nothing, and do not guess."
+    ctx="STORY provenance: read this session's model id when you record it, not from memory — the runtime states it at session start only, and /model changes it afterwards without saying so. Before you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), run: bash ${self} --resolve ${transcript_arg}${model:+ ${model_arg}} — then copy what it prints verbatim. If it prints nothing, copy the model id this session's own context states outright (Claude Code's system prompt names one); write 'unrecorded' only when none is stated, and do not guess."
 elif [ -n "${model:-}" ]; then
     ctx="STORY provenance: this session's runtime-reported model id is ${model}, and the runtime named no transcript to check it against later. When you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), copy this exact string verbatim; do not write 'unrecorded'. If you switch models mid-session, this string is the one you started with, not the one writing."
 else
-    ctx="STORY provenance: the runtime stated no model id for this session and named no transcript to recover it from. When you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), write 'unrecorded' and do not guess."
+    ctx="STORY provenance: the SessionStart payload carried no model id for this session and named no transcript to recover it from. When you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), copy the model id this session's own context states outright (Claude Code's system prompt names one); write 'unrecorded' only when none is stated, and do not guess."
 fi
 
 emit_context "${ctx}"
