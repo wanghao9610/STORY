@@ -27,7 +27,7 @@ flowchart LR
   B --> Z
 ```
 
-![STORY 学位论文工作流：十六个 skill 分成五条阶段带——建仓、规划、写作、润色与审计、评审与归档——各自写出什么，以及起草循环与修改回流如何闭合](../../srcs/story-writing-workflow.png)
+![STORY 学位论文工作流：十五个 skill 的调用顺序与一个横向通读的 skill、各自写出什么，以及起草循环与修改回流如何闭合](../../srcs/story-writing-workflow.png)
 
 | Skill | 使用时机 | 主要产物 |
 | --- | --- | --- |

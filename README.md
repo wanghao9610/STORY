@@ -309,7 +309,7 @@ The sixteen skills form a pipeline, not a rigid sequence. Use the smallest skill
 After every skill finishes, its report closes with exactly one `Next action:` handoff: the owning skill and concrete target or command for the earliest remaining gate in the pipeline order of [§8 of the conventions (Completion handoff)](docs/mds/story-workflow/writing-workflow-conventions.md#completion-handoff), an author action when only the author can clear it, or `Next action: none — the requested workflow is complete.` The handoff recommends what to do next; it does not silently start another skill.
 
 <div align="center">
-  <img src="docs/srcs/story-writing-workflow.png" alt="STORY thesis workflow: sixteen skills in five phase bands — set up, plan, write, polish and audit, examination and deposit — what each one writes, and how the drafting loop and the correction loop close" width="100%">
+  <img src="docs/srcs/story-writing-workflow.png" alt="STORY thesis workflow: fifteen skills in the order they run in plus one that reads across them, what each one writes, and how the drafting loop and the correction loop close" width="100%">
 </div>
 
 | Skill | Use it when | Primary output |

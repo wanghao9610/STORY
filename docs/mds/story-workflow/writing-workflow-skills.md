@@ -27,7 +27,7 @@ flowchart LR
   B --> Z
 ```
 
-![STORY thesis workflow: sixteen skills in five phase bands — set up, plan, write, polish and audit, examination and deposit — what each one writes, and how the drafting loop and the correction loop close](../../srcs/story-writing-workflow.png)
+![STORY thesis workflow: fifteen skills in the order they run in plus one that reads across them, what each one writes, and how the drafting loop and the correction loop close](../../srcs/story-writing-workflow.png)
 
 | Skill | Use it when | Primary output |
 | --- | --- | --- |

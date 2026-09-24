@@ -309,7 +309,7 @@ bash execs/scpts/fmt.sh --check
 每个 skill 完成后，报告都以唯一一行 `下一步：` 交接结束：按[规约 §8（Completion handoff）](docs/mds/story-workflow/writing-workflow-conventions.md#completion-handoff)（英文）的流水线顺序，指出负责最早剩余关口的 skill 及具体目标或命令；若只能由作者解除关口，则写明作者行动；若请求的工作流已经完成，则写 `下一步：无——请求的工作流已完成。`该交接只建议接下来如何做，不会静默启动另一个 skill。
 
 <div align="center">
-  <img src="docs/srcs/story-writing-workflow.png" alt="STORY 学位论文工作流：十六个 skill 分成五条阶段带——建仓、规划、写作、润色与审计、评审与归档——各自写出什么，以及起草循环与修改回流如何闭合" width="100%">
+  <img src="docs/srcs/story-writing-workflow.png" alt="STORY 学位论文工作流：十五个 skill 的调用顺序与一个横向通读的 skill、各自写出什么，以及起草循环与修改回流如何闭合" width="100%">
 </div>
 
 | Skill | 适用情形 | 主要产物 |
