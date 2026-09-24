@@ -32,5 +32,9 @@ indent.log
 *.out
 *.synctex.gz
 *.toc
+# ...but never evidence. MANIFEST.md fingerprints every file under mates/,
+# whatever its extension, so a registered train.log or SLURM *.out has to stay
+# trackable. Keep this above .DS_Store, which stays ignored there too.
+!/mates/**
 
 .DS_Store

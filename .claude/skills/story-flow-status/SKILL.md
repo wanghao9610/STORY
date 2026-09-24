@@ -11,7 +11,7 @@ argument-hint: "[DESCRIPTION] [involve=LEVEL]"
 
 Strictly read-only. From the repository root, run `scripts/scan.sh` in this skill's own directory, then summarize from these scan lines:
 
-- from `Degree`: degree level, thesis type, and dissertation language (an empty value is unconfirmed, never a fact), and `unresolved requirement rows:`, which counts unchecked boxes only;
+- from `Degree`: degree level, thesis type, and dissertation language (an empty value is unconfirmed and an off-list one invalid, never a fact), and `unresolved requirement rows:`, which counts unchecked boxes only;
 - the thesis story status and contribution-map readiness under the confirmed level, flagging a `discovery` story beside an existing outline (conventions §3, Who sets each status);
 - from `Status counts`: outline, claim, contribution, publication (open means `candidate` or `in-scope`), and reference statuses;
 - `integrity:` (`ok`, `tampered`, `missing`, `unregistered`; conventions §3); the scan does not check upstream `stale`, so route it to `story-evid-curator check`;

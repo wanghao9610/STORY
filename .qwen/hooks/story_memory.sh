@@ -54,12 +54,14 @@ entries() { # $1 = store directory -> one index line per memory file, newest fir
         infm == 1 && match($0, /^[a-z_]+: */) { f[substr($0, 1, index($0, ":") - 1)] = substr($0, RLENGTH + 1) }
         pending && infm == 2 && NF { f["summary"] = $0; emit(); pending = 0 }
         END { if (pending) emit() }
-        function emit(    slug, line) {
+        function emit(    slug, line, d) {
             slug = cur; sub(/.*\//, "", slug); sub(/\.md$/, "", slug)
             line = "- " f["type"] " · " f["scope"] " · " f["verified"] " · [" slug "](" slug ".md) — " f["summary"]
-            if (f["type"] == "env" && cutoff != "" && f["verified"] < cutoff)
+            # A quoted date ages and sorts as the date it quotes; the line shows it as written.
+            d = f["verified"]; gsub(/^["\047]|["\047]$/, "", d)
+            if (f["type"] == "env" && cutoff != "" && d < cutoff)
                 line = line "  [stale: verify before relying on it]"
-            print f["verified"] "\t" line
+            print d "\t" line
         }
     ' "$@" | LC_ALL=C sort -r | cut -f2-
 }

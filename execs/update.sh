@@ -131,7 +131,9 @@ AGENT_RULES_TREE=".cursor/rules"
 # SKILL_zh.md beside any SKILL.md upstream ships and a .pi/prompts/<name>.zh-CN.md
 # beside any prompt upstream ships (retired_files below). Every entry was
 # STORY's: AGENTS.zh-CN.md and CLAUDE.zh-CN.md were overwritten on every update
-# like AGENTS.md, so no project ever owned its own copy. The three English specs
+# like AGENTS.md, so no project ever owned its own copy. So was the Chinese
+# router twin .agents/commands/story.zh-CN.md, which the synced .agents/commands
+# tree shipped until the Codex and Kimi routers stopped reading it. The three English specs
 # beside the conventions (the human-writing guide, the memory spec, and the
 # model-id fallbacks) were folded into writing-workflow-conventions.md, which
 # ships in the same synced directory. The two index files an earlier release
@@ -144,6 +146,7 @@ AGENT_RULES_TREE=".cursor/rules"
 # under .github/ is synced (it is the template's maintainer CI, which a thesis
 # removes), so an update never shipped it and does not own a thesis's copy.
 RETIRED_FILES=(
+    ".agents/commands/story.zh-CN.md"
     "AGENTS.zh-CN.md"
     "CLAUDE.zh-CN.md"
     ".claude/commands/story.zh-CN.md"
@@ -390,6 +393,22 @@ report_legacy_memory_index() {
         log "NOTE: the session hooks list a memory's Chinese twin as a second memory beside its English file: ${twins}."
         log "      Memory files take no Chinese twin any more: fold what a twin adds into its English file, then delete the twin."
     fi
+}
+
+# fmt.sh is synced but .latexindent.yaml is the thesis's: a kept config without
+# the rules that hold a closing brace or bracket on its sentence's line makes
+# fmt.sh refuse every file in which a sentence ends a group. Reported, not
+# merged — the config may carry the author's own rules.
+report_latexindent_closers() {
+    local cfg="${ROOT_DIR}/.latexindent.yaml"
+    [[ -f "${cfg}" ]] || return 0
+    grep -q 'RCuBStartsOnOwnLine:[[:space:]]*-1' "${SOURCE_DIR}/.latexindent.yaml" 2>/dev/null || return 0
+    if grep -q 'RCuBStartsOnOwnLine:[[:space:]]*-1' "${cfg}" && \
+       grep -q 'RSqBStartsOnOwnLine:[[:space:]]*-1' "${cfg}"; then
+        return 0
+    fi
+    log "NOTE: your .latexindent.yaml was kept and does not keep a closing } or ] on its sentence's line, so fmt.sh refuses every file in which a sentence ends a group."
+    log "      Copy the mandatoryArguments and optionalArguments rules under modifyLineBreaks from ${STORY_REPOSITORY} .latexindent.yaml."
 }
 
 # The retired STORY files this run deletes, one project-relative path per line:
@@ -689,11 +708,15 @@ if [[ "${ADOPT}" == true ]]; then
         "execs/scpts/import.sh"
         "execs/scpts/lint.sh"
         "execs/scpts/fmt.sh"
+        # Both entry points: main-zh.tex is the one .env.example and AGENTS.md
+        # name for a Chinese thesis, and the only one that inputs the -zh front
+        # and back matter the trees above install.
         "manus/main.tex"
-        # The three template-layer files main.tex loads by path or by name: the
-        # generic thesis class, the authoring package, and the bibliography style its
-        # \bibliographystyle line names. A thesis that already has any of them
-        # keeps its own, like every file here.
+        "manus/main-zh.tex"
+        # The three template-layer files both entry points load by path or by
+        # name: the generic thesis class, the authoring package, and the
+        # bibliography style their \bibliographystyle line names. A thesis that
+        # already has any of them keeps its own, like every file here.
         "manus/stys/story.cls"
         "manus/stys/story.sty"
         "manus/stys/story.bst"
@@ -753,8 +776,8 @@ elif [[ -n "${SKILL_NAME}" ]]; then
 else
     # SYNC_PATHS is what gets diffed, dirty-checked, archived, and extracted —
     # directories and single files alike. SPARSE_PATHS is what the sparse
-    # checkout creates files, and it holds directories only: `sparse-checkout
-    # set` is cone-mode by default, where every argument is read as a directory,
+    # checkout creates files, and it holds directories only: the checkout runs
+    # in cone mode (forced below), where every argument is read as a directory,
     # so naming a file there would match nothing. A file's parent directory goes
     # in instead; fetching a few siblings we do not copy is cheaper than getting
     # this subtly wrong.
@@ -834,7 +857,11 @@ if [[ "${ADOPT}" == false ]]; then
     # SPARSE_PATHS is directories only (see above); the existence check below
     # then runs over SYNC_PATHS, which is the exact list the tar copies — so a
     # file that the sparse checkout failed to create stops the run here
-    # instead of being silently skipped.
+    # instead of being silently skipped. Cone mode is set explicitly: before
+    # git 2.37, `clone --sparse` starts in non-cone mode, where these names are
+    # literal patterns and root files such as AGENTS.md are never checked out.
+    # `init --cone` exists from 2.25; `set --cone` would need 2.35.
+    git -C "${SOURCE_DIR}" sparse-checkout init --cone
     git -C "${SOURCE_DIR}" sparse-checkout set "${SPARSE_PATHS[@]}"
 
     # SYNCED is SYNC_PATHS minus what the fetched ref does not carry, and it is
@@ -1054,6 +1081,7 @@ if [[ "${ADOPT}" == false ]]; then
         fi
         report_unregistered_hooks
         report_legacy_memory_index
+        report_latexindent_closers
     fi
 
     log "Updated: ${SYNCED[*]}"
@@ -1146,21 +1174,30 @@ if [[ -e "${ROOT_DIR}/AGENTS.md" ]] && \
     log "      Compare against ${STORY_REPOSITORY} AGENTS.md and merge what you want."
     log "      Adopt keeps it, but a later 'bash execs/update.sh' overwrites it."
 fi
-if [[ -e "${ROOT_DIR}/.gitignore" ]]; then
-    # Checked per path, and tolerant of the glob forms a rule may take. One
-    # combined grep would let a .gitignore naming only wkdrs/ silence the
-    # warning about the machine-local memory store too.
+if [[ -e "${ROOT_DIR}/.gitignore" ]] && \
+   ! cmp -s "${SOURCE_DIR}/.gitignore" "${ROOT_DIR}/.gitignore"; then
+    # Git's own verdict, asked per path with a probe name that need not exist,
+    # so every rule form counts (.env*, /wkdrs/, .story/memory/local/**) and a
+    # directory-only rule such as .env/ does not pass for the .env file.
     unignored=()
-    for tree in "wkdrs" "\.story/memory/local"; do
-        grep -qE "^/?${tree}(/|/\*|/\*\*)?$" "${ROOT_DIR}/.gitignore" 2>/dev/null || \
-            unignored+=("${tree//\\/}/")
+    for probe in ".env" "wkdrs/probe" ".story/memory/local/probe"; do
+        git -C "${ROOT_DIR}" check-ignore -q --no-index -- "${probe}" || \
+            unignored+=("${probe%probe}")
     done
     if (( ${#unignored[@]} > 0 )); then
         log "NOTE: your .gitignore was kept and does not ignore ${unignored[*]}."
-        log "      Add them before committing, or builds, reports, or one machine's own notes enter history."
+        log "      Add them before committing, or machine-local config, builds, reports, or one machine's own notes enter history."
+    fi
+    # The reverse mistake: an unanchored LaTeX-junk glob such as *.log or *.out
+    # also matches evidence, which git then leaves untracked while MANIFEST.md
+    # fingerprints it.
+    if git -C "${ROOT_DIR}" check-ignore -q --no-index -- "mates/manual/probe.log"; then
+        log "NOTE: your .gitignore was kept and ignores evidence under mates/ (mates/manual/probe.log matches)."
+        log "      Add '!/mates/**' after its LaTeX build-file rules and before any .DS_Store rule, or a registered log or output file never enters history."
     fi
 fi
 report_unregistered_hooks
+report_latexindent_closers
 
 log "Next: confirm degree_level in degree/profile.tex, copy .env.example to .env, then run story-proj-adopt in your agent to wire the thesis up."
 if is_selected codex; then

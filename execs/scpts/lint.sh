@@ -221,6 +221,9 @@ if [[ "${BUILD_USABLE}" == true && -f "${LOG_FILE}" ]]; then
     fi
     OVERFULL="$(grep -Ec 'Overfull \\hbox' "${LOG_FILE}" || true)"
     (( OVERFULL == 0 )) || warn "${OVERFULL} overfull hbox warning(s)."
+    # A glyph the fonts lack is dropped from the PDF, yet the build still succeeds.
+    MISSING_CHARS="$(grep -c 'Missing character: There is no' "${LOG_FILE}" || true)"
+    (( MISSING_CHARS == 0 )) || warn "the build log reports ${MISSING_CHARS} missing character(s): text in a script the fonts cannot typeset, such as Chinese without the cjk class option."
 fi
 
 TODO_COUNT="$({
@@ -260,18 +263,20 @@ case "${DEGREE_LEVEL}" in
         ;;
 esac
 
-PROFILE_DISPLAY="$(grep -E '^[[:space:]]*\\(title|degree)\{' degree/profile.tex 2>/dev/null || true)"
-if [[ "${DEGREE_LEVEL}" == master ]] && grep -Eqi 'Doctor(al)?|博士' <<< "${PROFILE_DISPLAY}"; then
-    hard 'master degree_level conflicts with doctoral wording in the title or degree field.'
-elif [[ "${DEGREE_LEVEL}" == doctoral ]] && grep -Eqi 'Master([^a-z]|$)|硕士' <<< "${PROFILE_DISPLAY}"; then
-    hard 'doctoral degree_level conflicts with master wording in the title or degree field.'
+# Only the degree field names the level: a title may use "Doctor" or "Master" as
+# a subject word, and the run may not change an approved title.
+DEGREE_FIELD="$(grep -E '^[[:space:]]*\\degree\{' degree/profile.tex 2>/dev/null || true)"
+if [[ "${DEGREE_LEVEL}" == master ]] && grep -Eqi 'Doctor(al)?|博士' <<< "${DEGREE_FIELD}"; then
+    hard 'master degree_level conflicts with doctoral wording in the degree field.'
+elif [[ "${DEGREE_LEVEL}" == doctoral ]] && grep -Eqi 'Master([^a-z]|$)|硕士' <<< "${DEGREE_FIELD}"; then
+    hard 'doctoral degree_level conflicts with master wording in the degree field.'
 fi
 
 # Placeholders are read from compiled lines only: the profile's own comments name
 # the fields they describe, and matching those would warn on every profile.
 if [[ -s degree/profile.tex ]]; then
     PLACEHOLDERS="$(awk '
-        BEGIN { n = split("Untitled Thesis|未命名学位论文|Author Name|作者姓名|University Name|学校名称|Department or Program|院系或培养单位|Degree Name|学位名称|Advisor Name|导师姓名|Graduation Date|完成日期", p, "|") }
+        BEGIN { n = split("Untitled Thesis|未命名学位论文|Author Name|作者姓名|University Name|学校名称|Department or Program|院系或培养单位|Submission Statement|提交说明|Degree Name|学位名称|Advisor Name|导师姓名|Graduation Date|完成日期", p, "|") }
         /^[[:space:]]*%/ { next }
         { for (i = 1; i <= n; i++) if (index($0, p[i])) seen[i] = 1 }
         END { for (i = 1; i <= n; i++) if (i in seen) printf "%s%s", (c++ ? ", " : ""), p[i] }
@@ -279,16 +284,63 @@ if [[ -s degree/profile.tex ]]; then
     if [[ -n "${PLACEHOLDERS}" ]]; then
         warn "title-page placeholders remain in degree/profile.tex: ${PLACEHOLDERS}."
     fi
+    # A profile from before the field existed has no line to replace, so the
+    # class's own placeholder would reach the title page unnoticed.
+    if ! grep -Eq '^[[:space:]]*\\submissionstatement[[:space:]]*\{' degree/profile.tex; then
+        warn 'title-page placeholder: degree/profile.tex sets no \submissionstatement, so the title page prints the class placeholder.'
+    fi
 
     # Manuscript language and entry point must agree: a zh profile built by an
-    # English entry point (or the reverse) typesets the wrong title page.
-    DISSERTATION_LANG="$(awk '/^[[:space:]]*%[[:space:]]*dissertation_language:/ { sub(/.*dissertation_language:/, ""); gsub(/[[:space:]]/, ""); print; exit }' degree/profile.tex)"
-    CLASS_OPTIONS="$(awk '{ line = $0; sub(/(^|[^\\])%.*/, "", line) } line ~ /\\documentclass/ { if (match(line, /\[[^]]*\]/)) print substr(line, RSTART, RLENGTH); exit }' "${MAIN_TEX}")"
+    # English entry point (or the reverse) typesets the wrong title page. Only
+    # STORY's class takes the zh option, so an institutional class is named but
+    # not checked. An option list may span lines: it is joined, comments
+    # stripped, before it is read.
+    DISSERTATION_LANG="$(sed -nE 's/^[[:space:]]*%[[:space:]]*dissertation_language:[[:space:]]*([^[:space:]]+)[[:space:]]*$/\1/p' degree/profile.tex | tail -1)"
     case "${DISSERTATION_LANG}" in
-        zh) [[ "${CLASS_OPTIONS}" =~ (^|[^a-z])(zh|chinese)([^a-z]|$) ]] || \
-                warn "dissertation_language is zh but ${MAIN_TEX#"${ROOT_DIR}"/} does not load the class with the zh option." ;;
-        en) [[ ! "${CLASS_OPTIONS}" =~ (^|[^a-z])(zh|chinese)([^a-z]|$) ]] || \
-                warn "dissertation_language is en but ${MAIN_TEX#"${ROOT_DIR}"/} loads the class with the zh option." ;;
+        en|zh)
+            CLASS_INFO="$(awk '
+                function strip_comment(text, start) {
+                    start = match(text, /(^|[^\\])%/)
+                    if (!start) return text
+                    if (substr(text, start, 1) == "%") return substr(text, 1, start - 1)
+                    return substr(text, 1, start)
+                }
+                { line = strip_comment($0) }
+                !joining && (start = index(line, "\\documentclass")) { joining = 1; line = substr(line, start) }
+                joining {
+                    text = text " " line
+                    if (match(text, /\\documentclass[[:space:]]*(\[[^]]*\])?[[:space:]]*\{[^}]*\}/)) {
+                        text = substr(text, RSTART, RLENGTH)
+                        options = ""
+                        if (match(text, /\[[^]]*\]/)) options = substr(text, RSTART + 1, RLENGTH - 2)
+                        match(text, /\{[^}]*\}$/)
+                        name = substr(text, RSTART + 1, RLENGTH - 2)
+                        gsub(/[[:space:]]/, "", name)
+                        printf "%s\t%s\n", name, options
+                        exit
+                    }
+                    if (++joined > 40) exit
+                }
+            ' "${MAIN_TEX}")"
+            CLASS_NAME="${CLASS_INFO%%$'\t'*}"
+            CLASS_OPTIONS="${CLASS_INFO#*$'\t'}"
+            ZH_OPTION='(^|[^a-z])(zh|chinese)([^a-z]|$)'
+            if [[ -z "${CLASS_NAME}" ]]; then
+                log "${MAIN_TEX#"${ROOT_DIR}"/} has no \\documentclass lint can read; its language option is not checked."
+            elif [[ "${CLASS_NAME##*/}" != story ]]; then
+                log "${MAIN_TEX#"${ROOT_DIR}"/} loads the class ${CLASS_NAME}, not STORY's; its language option is not checked."
+            elif [[ "${DISSERTATION_LANG}" == zh && ! "${CLASS_OPTIONS}" =~ ${ZH_OPTION} ]]; then
+                warn "dissertation_language is zh but ${MAIN_TEX#"${ROOT_DIR}"/} does not load the class with the zh option."
+            elif [[ "${DISSERTATION_LANG}" == en && "${CLASS_OPTIONS}" =~ ${ZH_OPTION} ]]; then
+                warn "dissertation_language is en but ${MAIN_TEX#"${ROOT_DIR}"/} loads the class with the zh option."
+            fi
+            ;;
+        "")
+            warn 'dissertation_language is unset in degree/profile.tex; confirm en or zh.'
+            ;;
+        *)
+            hard "invalid dissertation_language '${DISSERTATION_LANG}' in degree/profile.tex; expected en or zh."
+            ;;
     esac
 fi
 
@@ -380,13 +432,37 @@ fi
 if [[ -z "${limit}" && -s degree/profile.tex ]]; then
     take_limit degree/profile.tex || true
 fi
-if [[ "${BUILD_USABLE}" == true && -n "${limit}" && -f "${PDF_FILE}" ]] && command -v pdfinfo >/dev/null 2>&1; then
-    # An unreadable PDF must not end lint under pipefail before its Result line.
-    pages="$(pdfinfo "${PDF_FILE}" 2>/dev/null | awk '/^Pages:/ {print $2}' || true)"
-    if [[ -n "${pages}" ]] && (( pages > limit )); then
+if [[ "${BUILD_USABLE}" == true && -n "${limit}" && -f "${PDF_FILE}" ]]; then
+    pages=''
+    if command -v pdfinfo >/dev/null 2>&1; then
+        # An unreadable PDF must not end lint under pipefail before its Result line.
+        pages="$(pdfinfo "${PDF_FILE}" 2>/dev/null | awk '/^Pages:/ {print $2}' || true)"
+    fi
+    # Without pdfinfo, the engine's "Output written on ... (N pages" line is the
+    # fallback; TeX wraps long log lines, so the path may push the count onto
+    # the next line or two.
+    if [[ ! "${pages}" =~ ^[0-9]+$ && -f "${LOG_FILE}" ]]; then
+        pages="$(awk '
+            /^Output written on / { text = ""; joining = 1; joined = 0 }
+            joining {
+                text = text $0
+                if (match(text, /\([0-9]+ pages?[,)]/)) {
+                    count = substr(text, RSTART + 1)
+                    sub(/ .*/, "", count)
+                    joining = 0
+                } else if (++joined > 3) {
+                    joining = 0
+                }
+            }
+            END { print count }
+        ' "${LOG_FILE}" || true)"
+    fi
+    if [[ ! "${pages}" =~ ^[0-9]+$ ]]; then
+        warn "page limit ${limit} (${limit_source}) not checked: the page count could not be read (install pdfinfo)."
+    elif (( pages > limit )); then
         hard "${pages} pages exceeds the confirmed limit ${limit} (${limit_source}); it counts every PDF page, so a limit with exclusions belongs in degree/requirements.md instead."
     else
-        log "Page limit: ${pages:-?}/${limit} (${limit_source})."
+        log "Page limit: ${pages}/${limit} (${limit_source})."
     fi
 fi
 

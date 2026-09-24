@@ -24,15 +24,16 @@ show_file() {
 
 # One line per Markdown table that has the named column, labeled by the heading
 # above it, counting each value in first-seen order. Counts come from the whole
-# file, so they stay right when show_file truncates it.
+# file, so they stay right when show_file truncates it. A GFM-escaped \| stays
+# inside its cell, so a pipe in free text never shifts the counted column.
 column_counts() {
     local file="$1" column="$2"
     if [[ ! -f "${file}" ]]; then
         printf '%s: (absent)\n' "${file}"
         return 0
     fi
-    awk -F'|' -v want="${column}" -v file="${file}" '
-        function trim(s) { gsub(/`/, "", s); gsub(/^[[:space:]]+|[[:space:]]+$/, "", s); return s }
+    awk -v want="${column}" -v file="${file}" '
+        function trim(s) { gsub(/`/, "", s); gsub(/\001/, "|", s); gsub(/^[[:space:]]+|[[:space:]]+$/, "", s); return s }
         function flush(   i, where) {
             if (col) {
                 where = file (label != "" ? " [" label "]" : "")
@@ -49,14 +50,17 @@ column_counts() {
             nk = 0; rows = 0; col = 0; header = 0
         }
         /^[[:space:]]*\|/ {
+            line = $0
+            gsub(/\\[|]/, "\001", line)
+            n = split(line, c, "|")
             if (!header) {
                 header = 1
-                for (i = 2; i < NF; i++) if (trim($i) == want) col = i
+                for (i = 2; i < n; i++) if (trim(c[i]) == want) col = i
                 next
             }
             if ($0 ~ /^[[:space:]]*\|[-:| [:space:]]+\|[[:space:]]*$/) next
             if (!col) next
-            v = trim($col)
+            v = trim(c[col])
             if (v == "") v = "(empty)"
             if (!(v in count)) keys[++nk] = v
             count[v]++
@@ -113,8 +117,13 @@ case "${degree_level}" in
 esac
 thesis_type="$(profile_value thesis_type)"
 printf 'thesis-type: %s\n' "${thesis_type:-unknown (unconfirmed)}"
-dissertation_language="$(profile_value dissertation_language)"
-printf 'dissertation-language: %s\n' "${dissertation_language:-unknown}"
+# Read the way degree_level is read here and in lint: the last one-word value.
+dissertation_language="$(sed -nE 's/^[[:space:]]*%[[:space:]]*dissertation_language:[[:space:]]*([^[:space:]]+)[[:space:]]*$/\1/p' degree/profile.tex 2>/dev/null | tail -1)"
+case "${dissertation_language}" in
+    en|zh) printf 'dissertation-language: %s\n' "${dissertation_language}" ;;
+    "") printf 'dissertation-language: unknown (unconfirmed)\n' ;;
+    *) printf 'dissertation-language: invalid (%s; expected en or zh)\n' "${dissertation_language}" ;;
+esac
 if [[ -f degree/requirements.md ]]; then
     printf 'unresolved requirement rows: %s\n' "$(grep -cE '^[[:space:]]*- \[ \]' degree/requirements.md 2>/dev/null)"
 fi
@@ -222,9 +231,9 @@ esac
 find milestones -maxdepth 3 -type f -not -name '.*' 2>/dev/null | sort || true
 
 heading 'Open tasks'
-# Received feedback is kept verbatim and may contain its own checkboxes; those
-# are the committee's text, not open promises.
-grep -RnE --exclude-dir=feedback --exclude-dir=simulations '^[[:space:]]*- \[ \]' tasks milestones 2>/dev/null || printf '(none)\n'
+# Open work and feedback promises live only in tasks/; boxes in milestone
+# feedback, templates, materials, or a frozen RECORD are never open work.
+grep -RnE '^[[:space:]]*- \[ \]' tasks 2>/dev/null || printf '(none)\n'
 
 heading 'Latest build'
 # The same entry-point and output-directory resolution run.sh uses: STORY_MAIN
@@ -264,6 +273,11 @@ if [[ -f "${pdf}" ]]; then
     if (( ${newer:-0} > 0 )); then
         printf 'build: stale (%s source file(s) newer than the PDF)\n' "${newer}"
         printf 'lint: not run (the build is stale; run bash execs/scpts/lint.sh)\n'
+    elif [[ ! -f "${build_dir}/${scan_base}.log" ]]; then
+        # lint --no-build reads the log, so a PDF whose log an editor clean
+        # removed cannot be checked as it stands.
+        printf 'build: stale (no build log beside the PDF)\n'
+        printf 'lint: not run (the build log is missing; run bash execs/scpts/lint.sh)\n'
     else
         printf 'build: current\n'
         # --no-build reads the existing log and PDF and writes nothing.

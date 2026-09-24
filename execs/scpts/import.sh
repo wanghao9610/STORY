@@ -20,9 +20,13 @@ usage() {
         'generic research repository into mates/<slug>/ and fingerprints it.' \
         'A re-import keeps a curated covers: line; the other fields are rewritten.' \
         '' \
-        '--diff compares the snapshot with the source and writes nothing. It exits' \
-        '0 when they match, 2 when an upstream artifact is new or changed, and 1' \
-        'when the check itself cannot run.'
+        '--diff compares the snapshot with the source and writes nothing. It prints' \
+        'one line per differing file: stale (the source changed a snapshotted file),' \
+        'new upstream (the source has a file not yet imported), or removed upstream' \
+        '(a manifest entry for the slug whose source file no longer exists; the' \
+        'snapshot stays, and this line alone does not change the exit code). It exits' \
+        '2 when it prints a stale or new upstream line, 0 otherwise, and 1 when the' \
+        'check itself cannot run.'
 }
 
 while (( $# > 0 )); do
@@ -114,18 +118,30 @@ sort -u "${LIST_FILE}" -o "${LIST_FILE}"
 DEST_DIR="${ROOT_DIR}/mates/${SLUG}"
 if [[ "${DIFF}" == true ]]; then
     drift=0
+    removed=0
     while IFS= read -r rel; do
         if [[ ! -f "${DEST_DIR}/${rel}" ]]; then
-            printf 'new upstream  %s\n' "${rel}"; drift=$((drift + 1))
+            printf 'new upstream      %s\n' "${rel}"; drift=$((drift + 1))
         elif ! cmp -s "${SOURCE_DIR}/${rel}" "${DEST_DIR}/${rel}"; then
-            printf 'stale         %s\n' "${rel}"; drift=$((drift + 1))
+            printf 'stale             %s\n' "${rel}"; drift=$((drift + 1))
         fi
     done < "${LIST_FILE}"
+    # A re-import never deletes a snapshot or its entry, so a file the source
+    # dropped is reported, not counted as drift: exit 2 could never clear.
+    if [[ -f "${MANIFEST}" ]]; then
+        awk -v p="## ${SLUG}/" '{ sub(/\r$/, "") } index($0, p) == 1 { print substr($0, length(p) + 1) }' \
+            "${MANIFEST}" | sort -u > "${TEMP_DIR}/entries"
+        while IFS= read -r rel; do
+            if [[ ! -f "${SOURCE_DIR}/${rel}" ]]; then
+                printf 'removed upstream  %s\n' "${rel}"; removed=$((removed + 1))
+            fi
+        done < "${TEMP_DIR}/entries"
+    fi
     # 2, not 1: fail() uses 1 for every hard error, so a caller could not
     # otherwise distinguish "the snapshot is stale" from "the check itself
     # broke" — the same contract update.sh --diff keeps.
     (( drift == 0 )) || exit 2
-    log "mates/${SLUG}/ matches ${SOURCE_DIR}."
+    (( removed > 0 )) || log "mates/${SLUG}/ matches ${SOURCE_DIR}."
     exit 0
 fi
 
@@ -175,10 +191,16 @@ existing_covers() {
     ' "${MANIFEST}"
 }
 count=0
+ignored=()
 while IFS= read -r rel; do
     dst="${DEST_DIR}/${rel}"
     mkdir -p "$(dirname -- "${dst}")"
     cp -p "${SOURCE_DIR}/${rel}" "${dst}"
+    # An ignore rule that matches evidence leaves it untracked while the
+    # manifest fingerprints it; name it, since git drops it silently.
+    if git -C "${ROOT_DIR}" check-ignore -q -- "mates/${SLUG}/${rel}" 2>/dev/null; then
+        ignored+=("mates/${SLUG}/${rel}")
+    fi
     key="${SLUG}/${rel}"
     block="${TEMP_DIR}/block"
     covers="$(existing_covers "${key}")"
@@ -212,3 +234,7 @@ for bib in metds/refs/reference.bib manus/bibs/reference.bib; do
 done
 
 log "Imported ${count} ${SOURCE_TYPE} artifact(s) into mates/${SLUG}/ from commit ${SOURCE_COMMIT}."
+if (( ${#ignored[@]} > 0 )); then
+    log "WARN: .gitignore ignores ${#ignored[@]} imported file(s), so git will not track them: ${ignored[*]}."
+    log "      Add '!/mates/**' after its LaTeX build-file rules and before any .DS_Store rule."
+fi

@@ -49,8 +49,9 @@
     // and an empty string with no folder open (outDir would become /wkdrs).
     "latex-workshop.latex.outDir": "../wkdrs/builds",
     "latex-workshop.mathpreviewpanel.cursor.enabled": true,
-    // A failed build must be visible: manus/stys/arxiv.cls requires pdftex, so a
-    // wrong engine dies with no PDF, and a suppressed popup leaves only a log
+    // A failed build must be visible: main-zh.tex's ctexbook fonts load only
+    // under XeLaTeX or LuaLaTeX (its magic lines select XeLaTeX), so a wrong
+    // engine dies with no PDF, and a suppressed popup leaves only a log
     // fragment to go on. Warnings stay quiet — undefined refs to floats that are
     // still planned are the normal mid-draft state here.
     "latex-workshop.message.error.show": true,
@@ -63,8 +64,9 @@
     // Never: onBuilt deletes the aux after every compile, then the next latexmk
     // fabricates an empty stub and runs bibtex on it first — "I found no
     // \citation / \bibdata / \bibstyle commands" — and never reaches pdflatex.
-    // Aux files live in gitignored wkdrs/builds/; latexmk needs them to rebuild.
-    "latex-workshop.latex.autoClean.run": "onBuilt",
+    // Aux files live in gitignored wkdrs/builds/; latexmk needs them to rebuild,
+    // and lint --no-build and the status scan read the log beside them.
+    "latex-workshop.latex.autoClean.run": "never",
     "latex-workshop.formatting.latex": "latexindent",
     "latex-workshop.formatting.latexindent.path": "latexindent",
     // indent.log goes to the extension's tmp dir, not %OUTDIR%: wkdrs/builds is
@@ -80,8 +82,9 @@
         "-y=defaultIndent: '%INDENT%'"
     ],
     // PdfLaTeX first, because "first" is the recipe LaTeX Workshop builds with
-    // when latex-workshop.latex.recipe.default is unset — which matches .env's
-    // LATEX_ENGINE=pdflatex and execs/run.sh for manus/main.tex.
+    // when latex-workshop.latex.recipe.default is unset — which matches
+    // main.tex's % !TeX program = pdflatex line and execs/run.sh, which follows
+    // that line when .env leaves LATEX_ENGINE empty and falls back to pdflatex.
     // main-zh.tex selects XeLaTeX via % !LW recipe / % !TeX program. Magic
     // comments otherwise spawn xelatex with no -output-directory, so logs land
     // in manus/ instead of wkdrs/builds. magic.args and the XeLaTeX recipe both

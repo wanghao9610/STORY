@@ -187,13 +187,12 @@ for guide in docs/mds/story-workflow/writing-workflow-skills.md docs/mds/story-w
 done
 
 ROUTER=".agents/commands/story.md"
-ROUTER_ZH=".agents/commands/story.zh-CN.md"
 ROUTER_DAGGER='s/^\| `(story-[a-z-]+)` \| † \|.*/\1/p'
 ROUTER_ANY='s/^\| `(story-[a-z-]+)` \|.*$/\1/p'
 router_rows() {
     sed -nE "$2" "$1" | sort
 }
-for router in "${ROUTER}" "${ROUTER_ZH}"; do
+for router in "${ROUTER}"; do
     if [[ ! -f "${router}" ]]; then
         fail "${router} is missing"
         policy_errors=1
@@ -208,7 +207,17 @@ for router in "${ROUTER}" "${ROUTER_ZH}"; do
         policy_errors=1
     fi
 done
-(( policy_errors == 0 )) && ok "conventions, skills guide (en/zh) and shared /story router (en/zh) list all $(printf '%s\n' "${BASE}" | wc -l | tr -d ' ') skills; $(printf '%s\n' "${SLASH_ONLY}" | wc -l | tr -d ' ') explicit-only skills are guarded in every harness; every manifest names .env, STORY_LANG, INVOLVE and STORY_MAIN; Claude-only frontmatter matches port.sh claude_frontmatter and sits in .claude/skills alone"
+# Cursor also discovers .agents/skills, whose copies cannot carry the frontmatter
+# guard (Codex's validator rejects it), so in Cursor the always-apply rule is what
+# keeps the explicit-only skills explicit: it has to name exactly that set.
+SKILL_ROOTS_RULE=".cursor/rules/skill-roots.mdc"
+rule_slash_only="$(grep -F 'explicit-only' "${SKILL_ROOTS_RULE}" 2>/dev/null | grep -oE '`story-[a-z-]+`' | tr -d '`' | sort -u)"
+if [[ "${rule_slash_only}" != "$(printf '%s\n' "${SLASH_ONLY}" | sort)" ]]; then
+    fail "${SKILL_ROOTS_RULE}: explicit-only list differs from the harness policy:"
+    diff <(printf '%s\n' "${SLASH_ONLY}" | sort) <(printf '%s\n' "${rule_slash_only}") | sed 's/^/      /'
+    policy_errors=1
+fi
+(( policy_errors == 0 )) && ok "conventions, skills guide (en/zh) and shared /story router (en/zh) list all $(printf '%s\n' "${BASE}" | wc -l | tr -d ' ') skills; $(printf '%s\n' "${SLASH_ONLY}" | wc -l | tr -d ' ') explicit-only skills carry their guard in Codex's manifests and every named tree's frontmatter, and Cursor's always-apply skill-roots rule names the same set for the unguarded .agents copies; every manifest names .env, STORY_LANG, INVOLVE and STORY_MAIN; Claude-only frontmatter matches port.sh claude_frontmatter and sits in .claude/skills alone"
 
 # Skills and hooks cite the conventions by section number (every provenance hook
 # cites "section 7", every memory hook "section 10"), so the numbered headings
@@ -389,7 +398,6 @@ if ! grep -qF '`story-auto <goal>`' AGENTS.md || grep -qF '/story-auto' AGENTS.m
     auto_errors=1
 fi
 grep -qF '`/story-auto <goal>`' .agents/commands/story.md || { fail '.agents/commands/story.md does not name /story-auto as the one standing authorization'; auto_errors=1; }
-grep -qF '`/story-auto <目标>`' .agents/commands/story.zh-CN.md || { fail '.agents/commands/story.zh-CN.md does not hand goal pursuit to /story-auto'; auto_errors=1; }
 (( auto_errors == 0 )) && ok "/story-auto is bounded: it never starts the $(printf '%s\n' "${SLASH_ONLY}" | wc -l | tr -d ' ') explicit-only skills, keeps evidence, degree facts, feedback, deposit and git out of reach, and carries no STAR grant machinery"
 
 # Codex gets the generic router through one plugin owned entirely by .codex.
@@ -421,11 +429,6 @@ for skill_file in "${PLUGIN_ROOT}/skills/story/SKILL.md"; do
         fail "${skill_file} is not a wrapper around the shared router"
         plugin_errors=1
     fi
-    if ! grep -qF 'STORY_LANG=zh' "${skill_file}" || \
-       ! grep -qF '.agents/commands/story.zh-CN.md' "${skill_file}"; then
-        fail "${skill_file} does not apply STORY's Chinese router wording"
-        plugin_errors=1
-    fi
 done
 if [[ ! -s "${PLUGIN_ROOT}/assets/icon.png" ]] || \
    ! grep -qF 'allow_implicit_invocation: false' "${PLUGIN_ROOT}/skills/story/agents/openai.yaml"; then
@@ -433,8 +436,7 @@ if [[ ! -s "${PLUGIN_ROOT}/assets/icon.png" ]] || \
     plugin_errors=1
 fi
 # $story-auto rides the same plugin: an explicit-only skill wrapping the shared
-# .agents/commands/story-auto.md procedure. It is English only, so unlike the
-# router it reads no Chinese twin.
+# .agents/commands/story-auto.md procedure. It is English only, like the router.
 AUTO_SKILL="${PLUGIN_ROOT}/skills/story-auto/SKILL.md"
 if [[ ! -f "${AUTO_SKILL}" ]] || \
    ! frontmatter_has_line "${AUTO_SKILL}" 'name: story-auto' || \
@@ -464,11 +466,6 @@ for skill_file in "${KIMI_PLUGIN_ROOT}/skills/story/SKILL.md"; do
        ! frontmatter_has_line "${skill_file}" 'disableModelInvocation: true' || \
        ! grep -qF '.agents/commands/story.md' "${skill_file}"; then
         fail "${skill_file} is not an explicit-only wrapper around the shared router"
-        router_entry_errors=1
-    fi
-    if ! grep -qF 'STORY_LANG=zh' "${skill_file}" || \
-       ! grep -qF '.agents/commands/story.zh-CN.md' "${skill_file}"; then
-        fail "${skill_file} does not apply STORY's Chinese router wording"
         router_entry_errors=1
     fi
 done
@@ -595,7 +592,6 @@ section 'Harness entry points, hooks, and configuration'
 harness_errors=0
 for path in \
     .agents/commands/story.md \
-    .agents/commands/story.zh-CN.md \
     .agents/commands/story-auto.md \
     .claude/commands/story.md \
     .cursor/commands/story.md \
@@ -745,11 +741,12 @@ fi
 # the aging rule (both date spellings of the 180-day cutoff, gated on the type
 # `env`). What the awk does is shown, not read: every copy runs at its own depth
 # against one fixture store (an aged `env`, an `insight` of the same date, a
-# newer `deadend` that has to lead the shared block, a git-ignored legacy file
-# with no `summary:`, and a hand-kept MEMORY.md from an earlier release, which no
-# hook reads) and has to print the same index as the .claude copy, four lines
-# with one stale mark, newest first. Each copy then runs as its runtime calls it,
-# against the versioned store alone, and has to exit 0 with the index in the
+# newer `deadend`, an `env` verified today whose date is quoted, which has to
+# lead the shared block unmarked, a git-ignored legacy file with no `summary:`,
+# and a hand-kept MEMORY.md from an earlier release, which no hook reads) and has
+# to print the same index as the .claude copy, five lines with one stale mark,
+# newest first. Each copy then runs as its runtime calls it, against the
+# versioned store alone, and has to exit 0 with the index in the
 # shape its runtime reads: hookSpecificOutput.additionalContext for Claude Code,
 # Codex, DSH and Qwen Code, additional_context for Cursor, and plain text for
 # Kimi Code and Pi, whose extension also discards the output of a non-zero exit.
@@ -781,6 +778,7 @@ mkdir -p "${memory_fixture}/.story/memory/local"
 printf -- '---\ntype: env\nscope: machine:box\nsummary: biber is missing here\nverified: 2025-01-01\n---\nbody\n' > "${memory_fixture}/.story/memory/old-biber.md"
 printf -- '---\ntype: insight\nscope: milestone:proposal\nsummary: table IDs outlast row numbers\nverified: 2025-01-01\n---\nbody\n' > "${memory_fixture}/.story/memory/table-ids.md"
 printf -- '---\ntype: deadend\nscope: global\nsummary: a per-paper chapter order failed the mock examination\nverified: 2026-03-01\n---\nbody\n' > "${memory_fixture}/.story/memory/paper-order.md"
+printf -- '---\ntype: env\nscope: global\nsummary: latexmk runs xelatex here\nverified: "%s"\n---\nbody\n' "$(date +%Y-%m-%d)" > "${memory_fixture}/.story/memory/quoted-date.md"
 printf -- '---\ntype: pref\nscope: global\nverified: 2026-09-01\n---\n\nThe first body line stands in.\n' > "${memory_fixture}/.story/memory/local/legacy.md"
 printf -- '# Project Memory — index\n\n- env · global · 2020-01-01 · [gone](gone.md) — a hand-kept line\n' > "${memory_fixture}/.story/memory/MEMORY.md"
 memory_reference=""
@@ -789,10 +787,10 @@ for f in "${MEMORY_HOOKS[@]}"; do
     cp "${f}" "${memory_fixture}/${f}"
     listed="$(bash "${memory_fixture}/${f}" --list </dev/null 2>/dev/null)"
     newest="$(sed -n '/^Shared (\.story\/memory\/):$/{n;p;q;}' <<< "${listed}")"
-    if [[ "$(grep -c '^- ' <<< "${listed}")" != 4 || "$(grep -c '\[stale:' <<< "${listed}")" != 1 || \
-          "${newest}" != *"[paper-order](paper-order.md)"* || \
+    if [[ "$(grep -c '^- ' <<< "${listed}")" != 5 || "$(grep -c '\[stale:' <<< "${listed}")" != 1 || \
+          "${newest}" != *"[quoted-date](quoted-date.md)"* || "${newest}" == *"[stale:"* || \
           "${listed}" != *"— The first body line stands in."* || "${listed}" == *"a hand-kept line"* ]]; then
-        fail "${f} --list does not index the fixture store (4 lines, 1 stale mark, newest shared first, legacy summary from the body, no MEMORY.md line):"
+        fail "${f} --list does not index the fixture store (5 lines, 1 stale mark, newest shared first with a quoted date read as a date, legacy summary from the body, no MEMORY.md line):"
         printf '%s\n' "${listed:-<nothing>}" | sed 's/^/      /'
         memory_errors=1
     elif [[ -z "${memory_reference}" ]]; then
@@ -884,7 +882,6 @@ markdown_errors=0
 ZH_PAIRS=(
     "README.md|README.zh-CN.md"
     "docs/mds/story-workflow/writing-workflow-skills.md|docs/mds/story-workflow/writing-workflow-skills.zh-CN.md"
-    ".agents/commands/story.md|.agents/commands/story.zh-CN.md"
     "degree/committee.md|degree/committee.zh-CN.md"
     "degree/requirements.md|degree/requirements.zh-CN.md"
 )
@@ -956,10 +953,33 @@ done
 if ! bash .github/scripts/test_degree_levels.sh; then
     fail 'degree-level lint cases failed'
 fi
+# Whether fmt.sh leaves the typeset text unchanged is behavior, so it runs
+# against fixture sources.
+if ! bash .github/scripts/test_fmt.sh; then
+    fail 'fmt.sh no longer keeps the typeset text unchanged'
+fi
+# The status scan's ledger counts are behavior too: a GFM-escaped \| in a free
+# text cell must not shift the counted Status column.
+scan_fixture="$(mktemp -d)"
+mkdir -p "${scan_fixture}/degree" "${scan_fixture}/notes" "${scan_fixture}/manus"
+printf '%s\n' '# Claims' '' '## Ledger' '' \
+    '| ID | Claim | Contribution | Source | Status |' \
+    '|---|---|---|---|---|' \
+    '| C001 | Accuracy improves by 2 points | K1 | `mates/a.csv` | verified |' \
+    '| C002 | The error \|e\| stays below 0.1 | K1 | manus/chaps/3_results.tex | drafted |' \
+    '| C003 | `P(A \| B)` exceeds 0.5 | K2 | | unsourced |' \
+    '| C004 | Plain claim | K2 | x | `unsourced` |' > "${scan_fixture}/notes/claims.md"
+scan_counts="$(cd "${scan_fixture}" && bash "${ROOT_DIR}/.agents/skills/story-flow-status/scripts/scan.sh" 2>/dev/null | grep -F 'notes/claims.md [Ledger] Status:')"
+rm -rf "${scan_fixture}"
+if [[ "${scan_counts}" == 'notes/claims.md [Ledger] Status: verified=1 drafted=1 unsourced=2 (4 rows)' ]]; then
+    ok 'the status scan counts ledger statuses past an escaped \| in a cell'
+else
+    fail "the status scan miscounts a ledger with an escaped \\| in a cell: ${scan_counts:-no Status line}"
+fi
 
 grep -q 'Systematic Toolchain for Organizing Research over Years' README.md || fail 'README.md lacks the official expansion'
 grep -q 'A STAR takes the STAGE to tell a STORY' README.md || fail 'README.md lacks the official tagline'
-for path in degree/profile.tex degree/requirements.md notes/.gitkeep notes/refs/.gitkeep mates/MANIFEST.md manus/main.tex manus/stys/story.cls manus/stys/story.sty milestones/.gitkeep tasks/.gitkeep .story/memory/.gitkeep; do
+for path in degree/profile.tex degree/requirements.md notes/.gitkeep notes/refs/.gitkeep mates/MANIFEST.md manus/main.tex manus/main-zh.tex manus/stys/story.cls manus/stys/story.sty milestones/.gitkeep tasks/.gitkeep .story/memory/.gitkeep; do
     [[ -f "${path}" ]] || fail "missing core path: ${path}"
 done
 for path in notes notes/refs; do

@@ -40,7 +40,10 @@ if [ "${1:-}" = "--resolve" ]; then
     resolved=""
     if [ -n "${transcript}" ] && [ -r "${transcript}" ]; then
         if command -v jq >/dev/null 2>&1; then
-            resolved=$(jq -r 'select(.type == "assistant") | .model // empty' \
+            # Lines are read raw and a malformed one is skipped, as the python3
+            # reader skips it: jq would otherwise stop at it and lose every turn
+            # after it.
+            resolved=$(jq -rR 'fromjson? | select(.type == "assistant") | .model // empty' \
                 "${transcript}" 2>/dev/null | tail -1)
         elif command -v python3 >/dev/null 2>&1; then
             resolved=$(python3 - "${transcript}" <<'PY' 2>/dev/null

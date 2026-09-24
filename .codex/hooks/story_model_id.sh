@@ -69,9 +69,10 @@ PY
 fi
 
 # --check <artifact> <transcript_path> <session_model>: verify that the
-# artifact's model_id matches the rollout's last recorded model, falling back to
-# SessionStart's exact id and finally to "unrecorded". A mismatch is a hard
-# failure: producer skills must not report completion or commit the artifact.
+# artifact's model_id matches what `--resolve <transcript_path> <session_model>`
+# prints — the value the injected line tells the skill to copy — or "unrecorded"
+# when that prints nothing. A mismatch is a hard failure: producer skills must
+# not report completion or commit the artifact.
 if [ "${1:-}" = "--check" ]; then
   if [ "$#" -ne 4 ]; then
     printf '%s\n' \
@@ -87,8 +88,7 @@ if [ "${1:-}" = "--check" ]; then
     exit 1
   fi
 
-  expected=$(bash "$0" --resolve "${transcript}")
-  [ -n "${expected}" ] || expected="${session_model}"
+  expected=$(bash "$0" --resolve "${transcript}" "${session_model}")
   [ -n "${expected}" ] || expected="unrecorded"
 
   # STORY records model_id as a YAML frontmatter key — a .story/memory/ entry

@@ -4,17 +4,16 @@
 # "unrecorded".
 #
 # Why UserPromptSubmit and not SessionStart: in Kimi, SessionStart is
-# observation-only (fire-and-forget) and cannot inject context, and its payload
-# carries no model id. UserPromptSubmit is the only context-injecting event —
-# on exit 0 its stdout is appended to context. We fire once per session by
-# keying a marker file on the payload's session_id, so it does not repeat every
-# turn.
+# observation-only (fire-and-forget) and cannot inject context. UserPromptSubmit
+# is the only context-injecting event — on exit 0 its stdout is appended to
+# context. We fire once per session by keying a marker file on the payload's
+# session_id, so it does not repeat every turn.
 #
-# Kimi does not expose the active model to hooks, so we read `default_model`
-# from config.toml — the CONFIGURED default, which can differ from the active
-# model if it was overridden with `kimi -m` or `/model`. Self-reported per
-# workflow provenance rule, so a mid-session switch can leave a stale
-# value.
+# The id stated here is `default_model` from config.toml — the CONFIGURED
+# default, which can differ from the active model if it was overridden with
+# `kimi -m` or `/model`. The skill copies it verbatim per the workflow
+# provenance rule (conventions section 7), so a mid-session switch can leave a
+# stale value.
 #
 # Registration: Kimi does not auto-load project config, so this hook cannot be
 # committed live the way the other harnesses' are. Add the [[hooks]] block from
@@ -59,9 +58,9 @@ if [ -f "$cfg" ]; then
 fi
 
 if [ -n "${model:-}" ]; then
-  ctx="STORY provenance: this Kimi session has configured default model ${model} (from config.toml; the active model may differ if it was overridden with kimi -m or /model). When you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), record the model actually answering — normally ${model} — verbatim; do not write 'unrecorded'."
+  ctx="STORY provenance: this Kimi session's configured default model id is ${model}, read from config.toml. When you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), copy this exact string verbatim; do not write 'unrecorded'. If the model was overridden with kimi -m or /model, this string is the configured default, not the one writing."
 else
-  ctx="STORY provenance: no Kimi default model could be read from config.toml. When you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), record the model you are running if known, otherwise write 'unrecorded'; do not guess."
+  ctx="STORY provenance: no Kimi default model could be read from config.toml. When you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), write 'unrecorded' and do not guess."
 fi
 
 printf '%s\n' "$ctx"

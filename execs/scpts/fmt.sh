@@ -6,9 +6,11 @@ set -euo pipefail
 # latexindent does the rewriting, configured by .latexindent.yaml at the
 # repository root. This script decides what it is allowed to touch and — the
 # part that matters — refuses any rewrite that would change the typeset text.
-# Line breaks are free in LaTeX, so a correct reformat leaves the PDF identical
-# byte for byte; a reformat that does not is a tool bug, and the manuscript is
-# left as it was rather than rebuilt to find out.
+# A line break is a space in LaTeX, so a break moved where the text already has
+# a space leaves the PDF identical byte for byte; one that lands beside a brace
+# or bracket adds or drops a space the PDF prints. A reformat that changes the
+# text is a tool bug, and the manuscript is left as it was rather than rebuilt
+# to find out.
 #
 # Exit codes:
 #   0  every file already reads one sentence per line (or was just made to)
@@ -49,12 +51,15 @@ institutional template under milestones/*/template/. Those are reusable or
 externally supplied files, and reformatting one is editing the template.
 
 Every rewrite is checked before it is kept. LaTeX collapses each whitespace run
-to a single space, so a reformat that only moves line breaks leaves the typeset
-text identical; the file is compared before and after under exactly that
-normalization, and a file that fails is reported and left untouched. It needs a
-hand fix — usually a sentence latexindent misread, such as a lowercase
-abbreviation ("std.", "et al.") that ends a line and is better written with a
-tie or an escaped space.
+to a single space, so a reformat that only moves line breaks between words
+leaves the typeset text identical, while a space gained or lost beside a brace
+or bracket shows in the PDF; the file is compared before and after under
+exactly that normalization, and a file that fails is reported and left
+untouched. It needs a hand fix — usually a sentence latexindent misread, such
+as a lowercase abbreviation ("std.", "et al.") that ends a line and is better
+written with a tie or an escaped space, or a closing } or ] alone on its line
+(an argument spelled over several lines), which belongs at the end of the line
+above.
 
 Options:
   --check       Report what would change; write nothing. Exit 1 on drift.
@@ -168,11 +173,12 @@ if [[ -z "${FILES}" ]]; then
 fi
 
 # ---- the guard --------------------------------------------------------------
-# Everything TeX collapses: any run of whitespace is one space, a blank line is
-# a paragraph break, and a space at a group edge is discarded. What survives
-# this normalization is what the PDF shows — so two files that normalize alike
-# typeset alike, whatever their line breaks, and two that do not are not the
-# same document.
+# Everything TeX collapses: any run of whitespace is one space, and a blank line
+# is a paragraph break. A space at a group edge is kept: `\emph{A.} B` and
+# `\emph{A.\n} B` typeset differently, so a newline latexindent puts before a
+# closing brace is a change, not layout. What survives this normalization is
+# what the PDF shows — so two files that normalize alike typeset alike, whatever
+# their line breaks, and two that do not are not the same document.
 normalized() {
     perl -0777 -ne '
         s/\r\n/\n/g;
@@ -181,8 +187,6 @@ normalized() {
             s/\s+/ /g;
             s/^ //;
             s/ $//;
-            s/ +([}\]])/$1/g;
-            s/([{\[]) +/$1/g;
         }
         print join("\n\n", @paragraphs);
     ' "$1"
@@ -256,6 +260,7 @@ if [[ -n "${UNSAFE}" ]]; then
     log "REFUSED: $(count "${UNSAFE}") file(s) whose reformat would have changed the typeset text — left untouched:"
     show "${UNSAFE}"
     log "      fix the sentence latexindent misread (a lowercase abbreviation before a capital is the usual one: write 'et al.\\ ' or 'Fig.~'), then run again."
+    log "      a closing } or ] alone on its line (an argument spelled over several lines, or a sentence and its '}' split by an earlier fmt.sh) goes at the end of the line above, by hand."
     STATUS=2
 fi
 

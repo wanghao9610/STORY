@@ -14,10 +14,12 @@ printf '%s\n' '\documentclass{book}' '\begin{document}' 'Test' '\end{document}' 
 : > "${WORK_DIR}/wkdrs/builds/main.pdf"
 
 write_profile() {
-    local level="$1" title="$2" degree="$3"
+    local level="$1" title="$2" degree="$3" language="${4-en}"
     {
         printf '%% degree_level: %s\n' "${level}"
+        printf '%% dissertation_language: %s\n' "${language}"
         printf '\\title{%s}\n' "${title}"
+        printf '\\submissionstatement{A thesis submitted for the degree of}\n'
         printf '\\degree{%s}\n' "${degree}"
         printf '\\author{Test Author}\n'
         printf '\\university{Test University}\n'
@@ -26,9 +28,12 @@ write_profile() {
     } > "${WORK_DIR}/degree/profile.tex"
 }
 
+# LINT_PATH, when set, replaces PATH for lint.sh, e.g. to hide or stub pdfinfo.
+LINT_PATH=''
+
 expect_pass() {
     local name="$1"
-    if ! (cd "${WORK_DIR}" && bash execs/scpts/lint.sh --no-build) > "${WORK_DIR}/${name}.log" 2>&1; then
+    if ! (cd "${WORK_DIR}" && PATH="${LINT_PATH:-${PATH}}" bash execs/scpts/lint.sh --no-build) > "${WORK_DIR}/${name}.log" 2>&1; then
         printf 'FAIL  degree-level case should pass: %s\n' "${name}" >&2
         sed -n '1,120p' "${WORK_DIR}/${name}.log" >&2
         exit 1
@@ -37,9 +42,27 @@ expect_pass() {
 
 expect_fail() {
     local name="$1"
-    if (cd "${WORK_DIR}" && bash execs/scpts/lint.sh --no-build) > "${WORK_DIR}/${name}.log" 2>&1; then
+    if (cd "${WORK_DIR}" && PATH="${LINT_PATH:-${PATH}}" bash execs/scpts/lint.sh --no-build) > "${WORK_DIR}/${name}.log" 2>&1; then
         printf 'FAIL  degree-level case should fail: %s\n' "${name}" >&2
         sed -n '1,120p' "${WORK_DIR}/${name}.log" >&2
+        exit 1
+    fi
+}
+
+expect_log() {
+    local name="$1" expected="$2"
+    grep -Fq -- "${expected}" "${WORK_DIR}/${name}.log" || {
+        printf 'FAIL  %s case omitted: %s\n' "${name}" "${expected}" >&2
+        sed -n '1,160p' "${WORK_DIR}/${name}.log" >&2
+        exit 1
+    }
+}
+
+refute_log() {
+    local name="$1" unexpected="$2"
+    if grep -Fq -- "${unexpected}" "${WORK_DIR}/${name}.log"; then
+        printf 'FAIL  %s case reported: %s\n' "${name}" "${unexpected}" >&2
+        sed -n '1,160p' "${WORK_DIR}/${name}.log" >&2
         exit 1
     fi
 }
@@ -55,6 +78,25 @@ expect_fail master_with_doctoral_title
 
 write_profile doctoral "A Master's Thesis" 'Master of Science'
 expect_fail doctoral_with_master_title
+
+# Only the degree field names the level: a subject word in an approved title, or
+# a commented-out degree line, is not a conflict, while a conflicting degree is.
+write_profile master 'Doctor--Patient Communication in Rural Clinics' 'Master of Science'
+expect_pass master_with_doctor_subject_title
+refute_log master_with_doctor_subject_title 'conflicts with'
+write_profile doctoral 'Master Equation Approaches to Open Quantum Systems' 'Doctor of Philosophy'
+printf '%s\n' '% \degree{Master of Science}' >> "${WORK_DIR}/degree/profile.tex"
+expect_pass doctoral_with_master_subject_title
+refute_log doctoral_with_master_subject_title 'conflicts with'
+write_profile doctoral '硕士研究生培养质量研究' '\storylocalized{Doctor of Education}{教育学博士}'
+expect_pass doctoral_with_chinese_master_subject_title
+refute_log doctoral_with_chinese_master_subject_title 'conflicts with'
+write_profile doctoral 'A Doctoral Dissertation' 'Master of Engineering'
+expect_fail doctoral_with_master_degree
+expect_log doctoral_with_master_degree 'doctoral degree_level conflicts with master wording in the degree field.'
+write_profile master "A Master's Thesis" '\storylocalized{Doctor of Philosophy}{哲学博士}'
+expect_fail master_with_doctoral_degree
+expect_log master_with_doctoral_degree 'master degree_level conflicts with doctoral wording in the degree field.'
 
 write_profile undergraduate 'A Thesis' 'Degree'
 expect_fail invalid_level
@@ -118,26 +160,11 @@ if grep -Fq 'WARN: manus/chaps/1_prose_test.tex' "${WORK_DIR}/prose_false_positi
     exit 1
 fi
 
-expect_log() {
-    local name="$1" expected="$2"
-    grep -Fq -- "${expected}" "${WORK_DIR}/${name}.log" || {
-        printf 'FAIL  %s case omitted: %s\n' "${name}" "${expected}" >&2
-        sed -n '1,160p' "${WORK_DIR}/${name}.log" >&2
-        exit 1
-    }
-}
-
-refute_log() {
-    local name="$1" unexpected="$2"
-    if grep -Fq -- "${unexpected}" "${WORK_DIR}/${name}.log"; then
-        printf 'FAIL  %s case reported: %s\n' "${name}" "${unexpected}" >&2
-        sed -n '1,160p' "${WORK_DIR}/${name}.log" >&2
-        exit 1
-    fi
-}
-
 # A chapter the entry point inputs is not reported as missing from the PDF.
-printf '%s\n' '\documentclass{book}' '\begin{document}' '\input{chaps/1_prose_test}' '\end{document}' > "${WORK_DIR}/manus/main.tex"
+write_main() {
+    printf '%s\n' "$@" '\begin{document}' '\input{chaps/1_prose_test}' '\end{document}' > "${WORK_DIR}/manus/main.tex"
+}
+write_main '\documentclass{book}'
 expect_pass chapter_wired
 refute_log chapter_wired 'does not \input'
 
@@ -151,11 +178,54 @@ printf '%s\n' '\department{\storylocalized{Department or Program}{院系或培�
 expect_pass placeholder_department
 expect_log placeholder_department 'title-page placeholders remain in degree/profile.tex: Department or Program, 院系或培养单位.'
 
-# The manuscript language and the entry point's class option must agree.
+# The submission statement is a title-page field too: its placeholder is
+# reported, and so is a profile that never sets it (a commented line does not
+# count), while an empty statement is a confirmed choice.
+write_profile master "A Master's Thesis" 'Master of Science'
+printf '%s\n' '\submissionstatement{\storylocalized{Submission Statement}{提交说明}}' >> "${WORK_DIR}/degree/profile.tex"
+expect_pass placeholder_statement
+expect_log placeholder_statement 'title-page placeholders remain in degree/profile.tex: Submission Statement, 提交说明.'
+refute_log placeholder_statement 'sets no \submissionstatement'
+grep -v '^\\submissionstatement' "${WORK_DIR}/degree/profile.tex" > "${WORK_DIR}/profile.tmp"
+mv "${WORK_DIR}/profile.tmp" "${WORK_DIR}/degree/profile.tex"
+printf '%s\n' '% \submissionstatement{A thesis submitted for the degree of}' >> "${WORK_DIR}/degree/profile.tex"
+expect_pass placeholder_statement_missing
+expect_log placeholder_statement_missing 'WARN: title-page placeholder: degree/profile.tex sets no \submissionstatement, so the title page prints the class placeholder.'
+refute_log placeholder_statement_missing 'title-page placeholders remain'
+printf '%s\n' '\submissionstatement{}' >> "${WORK_DIR}/degree/profile.tex"
+expect_pass placeholder_statement_empty
+refute_log placeholder_statement_empty 'title-page placeholder'
+
+# The manuscript language and the entry point's class option must agree. The
+# profile's last dissertation_language line counts; only STORY's class is
+# checked, and its option list may span lines with comments.
 write_profile master "A Master's Thesis" 'Master of Science'
 printf '%s\n' '% dissertation_language: zh' >> "${WORK_DIR}/degree/profile.tex"
+expect_pass language_other_class
+expect_log language_other_class "[STORY lint] manus/main.tex loads the class book, not STORY's; its language option is not checked."
+refute_log language_other_class 'dissertation_language is'
+write_main '\documentclass[oneside]{stys/story}'
 expect_pass language_mismatch
 expect_log language_mismatch 'dissertation_language is zh but manus/main.tex does not load the class with the zh option.'
+write_main '\documentclass[degree=doctor]{ustcthesis}'
+expect_pass language_institutional_class
+expect_log language_institutional_class "[STORY lint] manus/main.tex loads the class ustcthesis, not STORY's; its language option is not checked."
+refute_log language_institutional_class 'dissertation_language is'
+write_main '\documentclass[%' '    oneside, % one-sided print' '    zh% Chinese title page' ']{stys/story}'
+expect_pass language_multiline
+refute_log language_multiline 'dissertation_language is'
+refute_log language_multiline 'not checked'
+write_profile master "A Master's Thesis" 'Master of Science' en
+write_main '\documentclass[oneside,' '    zh]{stys/story} % a comment after the class'
+expect_pass language_en_with_zh
+expect_log language_en_with_zh 'dissertation_language is en but manus/main.tex loads the class with the zh option.'
+write_profile master "A Master's Thesis" 'Master of Science' english
+expect_fail language_invalid
+expect_log language_invalid "invalid dissertation_language 'english' in degree/profile.tex; expected en or zh."
+write_profile master "A Master's Thesis" 'Master of Science' ''
+expect_pass language_unset
+expect_log language_unset 'WARN: dissertation_language is unset in degree/profile.tex; confirm en or zh.'
+write_main '\documentclass{book}'
 write_profile master "A Master's Thesis" 'Master of Science'
 
 # Unresolved requirement rows are counted; resolved ones are not.
@@ -175,10 +245,45 @@ expect_pass milestone_bad_limit
 expect_log milestone_bad_limit "max_pages 'abc' in milestones/defense/milestone.yml is not a positive integer"
 refute_log milestone_bad_limit 'milestones have status: active'
 printf '%s\n' 'kind: defense' 'status: active' 'max_pages: "7"' > "${WORK_DIR}/milestones/defense/milestone.yml"
+# The fake PDF is empty and so is the log: no page count, with or without pdfinfo.
 expect_pass milestone_quoted_limit
-if command -v pdfinfo >/dev/null 2>&1; then
-    expect_log milestone_quoted_limit 'Page limit: ?/7 (milestones/defense/milestone.yml).'
-fi
+expect_log milestone_quoted_limit 'WARN: page limit 7 (milestones/defense/milestone.yml) not checked: the page count could not be read (install pdfinfo).'
+
+# Without pdfinfo, the page count comes from the engine's log line, which TeX
+# wraps at 79 characters; with neither, the limit is reported as unchecked. A
+# PATH holding only the tools lint.sh calls under --no-build hides pdfinfo.
+NO_PDFINFO_BIN="${WORK_DIR}/no-pdfinfo-bin"
+mkdir -p "${NO_PDFINFO_BIN}"
+for tool in bash awk sed grep find wc tr xargs sort tail basename dirname; do
+    ln -s "$(type -P "${tool}")" "${NO_PDFINFO_BIN}/${tool}"
+done
+LINT_PATH="${NO_PDFINFO_BIN}"
+printf '%s\n' 'Output written on /Users/example/Theses/STORY/wkdrs/builds/main-zh.' 'xdv (1 page, 7276 bytes).' > "${WORK_DIR}/wkdrs/builds/main.log"
+expect_pass page_count_from_log
+expect_log page_count_from_log 'Page limit: 1/7 (milestones/defense/milestone.yml).'
+printf '%s\n' 'Output written on /Users/example/Theses/STORY/wkdrs/builds/main.pdf (9 pa' 'ges, 81535 bytes).' > "${WORK_DIR}/wkdrs/builds/main.log"
+expect_fail page_limit_from_log
+expect_log page_limit_from_log '9 pages exceeds the confirmed limit 7 (milestones/defense/milestone.yml)'
+: > "${WORK_DIR}/wkdrs/builds/main.log"
+expect_pass page_limit_unchecked
+expect_log page_limit_unchecked 'WARN: page limit 7 (milestones/defense/milestone.yml) not checked: the page count could not be read (install pdfinfo).'
+
+# pdfinfo's count wins over the log's, and a pdfinfo that reads nothing falls
+# back to the log.
+PDFINFO_STUB_BIN="${WORK_DIR}/pdfinfo-stub-bin"
+mkdir -p "${PDFINFO_STUB_BIN}"
+printf '%s\n' '#!/bin/sh' 'printf "Pages:          8\n"' > "${PDFINFO_STUB_BIN}/pdfinfo"
+chmod +x "${PDFINFO_STUB_BIN}/pdfinfo"
+LINT_PATH="${PDFINFO_STUB_BIN}:${PATH}"
+printf '%s\n' 'Output written on main.pdf (5 pages, 81535 bytes).' > "${WORK_DIR}/wkdrs/builds/main.log"
+expect_fail page_count_from_pdfinfo
+expect_log page_count_from_pdfinfo '8 pages exceeds the confirmed limit 7 (milestones/defense/milestone.yml)'
+printf '%s\n' '#!/bin/sh' 'exit 1' > "${PDFINFO_STUB_BIN}/pdfinfo"
+expect_pass page_count_pdfinfo_unreadable
+expect_log page_count_pdfinfo_unreadable 'Page limit: 5/7 (milestones/defense/milestone.yml).'
+LINT_PATH=''
+: > "${WORK_DIR}/wkdrs/builds/main.log"
+
 mkdir -p "${WORK_DIR}/milestones/predefense"
 printf '%s\n' 'kind: pre-defense' 'status: active' > "${WORK_DIR}/milestones/predefense/milestone.yml"
 expect_pass milestone_two_active
@@ -192,4 +297,15 @@ expect_log last_build_error 'the last build stopped on a LaTeX error'
 expect_log last_build_error 'Result:'
 : > "${WORK_DIR}/wkdrs/builds/main.log"
 
-printf 'ok    degree-level metadata, English/Chinese prose-advisory, placeholder, language, requirement, milestone page-limit, chapter-wiring, and failed-build cases behave as expected\n'
+# Glyphs the fonts lack are dropped from the PDF; the build log counts them.
+printf '%s\n' \
+    'Missing character: There is no 此 (U+6B64) in font [lmroman10-regular]:mapping=tex-text;!' \
+    'Missing character: There is no 文 (U+6587) in font [lmroman10-regular]:mapping=tex-text;!' \
+    > "${WORK_DIR}/wkdrs/builds/main.log"
+expect_pass missing_characters
+expect_log missing_characters 'WARN: the build log reports 2 missing character(s): text in a script the fonts cannot typeset, such as Chinese without the cjk class option.'
+: > "${WORK_DIR}/wkdrs/builds/main.log"
+expect_pass no_missing_characters
+refute_log no_missing_characters 'missing character'
+
+printf 'ok    degree-level metadata and degree-field wording, English/Chinese prose-advisory, placeholder and submission-statement, language and class-option, requirement, milestone page-limit and page-count, missing-character, chapter-wiring, and failed-build cases behave as expected\n'

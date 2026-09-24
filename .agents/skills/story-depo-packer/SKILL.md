@@ -11,10 +11,10 @@ Resolve the degree level and the named, institutionally applicable `deposit` mil
 
 Preflight every gate of conventions §6 (Deposit gates), reporting each as pass or fail with its evidence: the command and its `Result:` line, the file and row, or the path read. Check gate 8 first, recording `git rev-parse HEAD` as the source commit, then run `bash execs/scpts/lint.sh`, which builds first. Beyond the list:
 
-- gate 1: if the milestone is not active, ask the author to confirm making it `active` before lint runs, or compare its `max_pages` with the PDF's page count yourself as the evidence; match each unwired-chapter warning against that chapter's `notes/outline.md` row;
+- gate 1: whenever lint did not print a numeric `Page limit: <n>/<limit> (milestones/<slug>/milestone.yml)` line for this milestone, compare its `max_pages` with the PDF's page count yourself as the evidence, and never change a milestone's status during preflight; match each unwired-chapter warning against that chapter's `notes/outline.md` row;
 - gate 2: read every checked row too, since lint and the status scan count only unchecked boxes, for its applicability and source, including a page limit's recorded counting rule, and check the format against any `official_template` in `degree/profile.tex`;
 - gate 5: compare each `Last full run:` date in `tasks/audits.md` with `git log -1 --format=%cs -- manus mates`; on the same date, ask whether the audit followed that change, and at `low` count the gate as failing;
-- gate 7: no script checks it, so read the entry point and every front- and back-matter file it inputs.
+- gate 7: no script checks it, so read `degree/profile.tex`, the entry point, and every front- and back-matter file it inputs.
 
 This skill fixes nothing: after reporting every gate, route the earliest failure to its owner or name the author action (conventions §7, Ownership; §8, Completion handoff), and do not freeze. A failed preflight is reported and routed, never recorded as `blocked`.
 

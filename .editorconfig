@@ -24,15 +24,22 @@ trim_trailing_whitespace = false
 
 # Reusable or externally supplied bytes: the style layer and any official
 # institutional template. fmt.sh refuses to format these; an editor must not
-# silently retouch them either.
+# silently retouch them either, so they also drop [*]'s charset and line
+# endings: a CRLF or GBK class stays as it was supplied.
 [manus/stys/**]
+charset = unset
+end_of_line = unset
 trim_trailing_whitespace = false
 insert_final_newline = false
 
 [milestones/*/template/**]
+charset = unset
+end_of_line = unset
 trim_trailing_whitespace = false
 insert_final_newline = false
 
 [milestones/*/*/template/**]
+charset = unset
+end_of_line = unset
 trim_trailing_whitespace = false
 insert_final_newline = false

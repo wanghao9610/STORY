@@ -7,9 +7,10 @@
 # reader; the Claude
 # model-id resolver on a delegate's transcript, and the command its SessionStart
 # line injects, run as injected under zsh; the commands the Qwen Code and DSH
-# lines inject, run as injected over a transcript path with a space in it;
-# Codex's post-write model-id check; and
-# the commit guard copies with no JSON parser on PATH.
+# lines inject, run as injected over a transcript path with a space in it, and
+# the Qwen Code resolver past a malformed transcript line; Codex's post-write
+# model-id check; the commit guard copies with no JSON parser on PATH; and the
+# guard's push and tag rules.
 # check_consistency.sh runs it, so pre-push and CI both do.
 set -uo pipefail
 
@@ -330,6 +331,18 @@ for reader in jq python3 none; do
         fail "DSH model-id SessionStart line (${reader}) does not name the resolver from the project root: ${injected}"
     expect_resolves "DSH model-id SessionStart line (${reader})" "${injected}" deepseek/deepseek-v4
 done
+#    A malformed transcript line, in the middle or first, hides no later turn
+#    from the Qwen Code resolver, through its jq and its python3 reader alike.
+printf '%s\n' '{"type":"assistant","model":"qwen3-coder-plus"}' '{"type":"assistant","mod' \
+    '{"type":"assistant","model":"qwen3-max"}' > "${QWEN_CHATS}/torn.jsonl"
+printf '%s\n' '{"type":"assist' '{"type":"assistant","model":"qwen3-max"}' > "${QWEN_CHATS}/torn-first.jsonl"
+for reader in jq python3; do
+    if [[ "${reader}" == jq ]]; then p="${PATH}"; else p="${NOJQ}"; fi
+    for torn in torn torn-first; do
+        got="$(PATH="${p}" bash .qwen/hooks/story_model_id.sh --resolve "${QWEN_CHATS}/${torn}.jsonl")"
+        [[ "${got}" == qwen3-max ]] || fail "Qwen model-id resolver (${reader}) read '${got}' past a malformed line in ${torn}.jsonl, expected qwen3-max"
+    done
+done
 
 # 5. Codex closes provenance with a write-after check: a mismatch fails with its
 #    diagnostic, an exact match passes, and `unrecorded` passes only when the
@@ -344,6 +357,11 @@ out="$(bash .codex/hooks/story_model_id.sh --check "${ARTIFACT}" "${ROLLOUT}" gp
 printf '%s\n' '---' 'model_id: gpt-5.6-sol' '---' > "${ARTIFACT}"
 bash .codex/hooks/story_model_id.sh --check "${ARTIFACT}" "${ROLLOUT}" gpt-5.6-sol 2>/dev/null || \
     fail 'Codex model-id check rejected gpt-5.6-sol against rollout gpt-5.6-sol'
+#    The check accepts what --resolve told the run to copy, the session id's
+#    suffix included.
+printf '%s\n' '---' 'model_id: gpt-5.6-sol[1m]' '---' > "${ARTIFACT}"
+bash .codex/hooks/story_model_id.sh --check "${ARTIFACT}" "${ROLLOUT}" 'gpt-5.6-sol[1m]' 2>/dev/null || \
+    fail 'Codex model-id check rejected gpt-5.6-sol[1m], which --resolve prints for rollout gpt-5.6-sol and session gpt-5.6-sol[1m]'
 printf '%s\n' '---' 'model_id: unrecorded' '---' > "${ARTIFACT}"
 bash .codex/hooks/story_model_id.sh --check "${ARTIFACT}" "" "" 2>/dev/null || \
     fail 'Codex model-id check rejected unrecorded with no rollout and no session model'
@@ -369,8 +387,48 @@ for tree in .claude .codex .dsh .kimi-code .qwen .cursor; do
     done
 done
 
+# 7. A tag or a remote ref has more ways to move or go than `tag -d`, `tag -f`
+#    and `push -f`: a remote delete, a +refspec, an empty-source refspec, and
+#    update-ref on a tag are declined too, while an ordinary push, the matching
+#    push `:`, and depo-packer's `git tag -a` pass. The core is shared, so the
+#    Claude copy and Pi's, the one check there, stand for all seven.
+expect_guard() { # $1 = deny|pass, $2 = command
+    local out status
+    out="$(run_hook .claude/hooks/story_commit_guard.sh "$(bash_payload "$2")")"
+    case "$1" in
+        deny) [[ "${out}" == *'"permissionDecision":"deny"'* ]] || fail "commit guard lets through: $2" ;;
+        pass) [[ -z "${out}" ]] || fail "commit guard declines: $2" ;;
+    esac
+    status=0
+    bash .pi/extensions/story-hooks/story_commit_guard.sh "$2" >/dev/null 2>&1 || status=$?
+    case "$1" in
+        deny) (( status == 1 )) || fail "Pi commit guard lets through: $2" ;;
+        pass) (( status == 0 )) || fail "Pi commit guard declines: $2" ;;
+    esac
+}
+for c in \
+    'git push origin --delete v1.0-deposit' \
+    'git push -d origin v1' \
+    'git push origin :refs/tags/v1.0-deposit' \
+    'git push origin +main' \
+    'git push origin +HEAD:main' \
+    "git push --prune origin 'refs/tags/*:refs/tags/*'" \
+    'git update-ref -d refs/tags/v1' \
+    'git update-ref refs/tags/v1 HEAD'; do
+    expect_guard deny "${c}"
+done
+for c in \
+    'git push origin main' \
+    'git push origin :' \
+    'git push -u origin main' \
+    'git push origin HEAD:main' \
+    'git push origin --tags' \
+    'git tag -a v1.0-deposit -m "deposit freeze"'; do
+    expect_guard pass "${c}"
+done
+
 if (( FAILURES > 0 )); then
     printf '%d hook fixture failure(s).\n' "${FAILURES}"
     exit 1
 fi
-printf 'ok    hooks: bash and edit gates keep the red lines at low, the level resolver never lets a Skill call lower the typed level, the Claude and Codex model-id resolvers hold their contract, the injected Claude, Qwen Code and DSH commands run as injected over a spaced transcript path, and every commit guard declines with no JSON parser\n'
+printf 'ok    hooks: bash and edit gates keep the red lines at low, the level resolver never lets a Skill call lower the typed level, the Claude, Qwen Code and Codex model-id resolvers hold their contract, the injected Claude, Qwen Code and DSH commands run as injected over a spaced transcript path, every commit guard declines with no JSON parser, and the guard declines remote deletes, +refspecs and update-ref on a tag while an ordinary push passes\n'

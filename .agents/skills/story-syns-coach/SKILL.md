@@ -18,7 +18,7 @@ description: Use before outlining, when the thesis lacks a coherent argument, or
 - `notes/publications.md`: `ID | Citation / artifact | Authors | Candidate chapters | Reused material | Permission / policy | Author contribution | Status`;
 - `notes/claims.md`: the claims columns of conventions §3.
 
-Set statuses only as conventions §3 (Who sets each status) assigns them to this skill. Match an existing claim row, adopted rows included, before adding one; once contribution IDs are author-confirmed, fill the `Contribution` cell of existing claim rows. Once `notes/outline.md` exists, leave `Chapters` and `Candidate chapters` to `story-outl-planner` (conventions §7, Ownership).
+Set statuses only as conventions §3 (Who sets each status) assigns them to this skill, including `retired`, never a deleted row, for a `proposed` claim the author drops. Match an existing claim row, adopted rows included, before adding one; once contribution IDs are author-confirmed, fill the `Contribution` cell of existing claim rows. Once `notes/outline.md` exists, leave `Chapters` and `Candidate chapters` to `story-outl-planner` (conventions §7, Ownership).
 
 Produce:
 

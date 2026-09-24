@@ -157,7 +157,7 @@ STORY/
 
 项目专属命令，例如 `\newcommand{\method}{...}`，应写在入口文件中，而不是写入 `story.cls` 或 `story.sty`。这种分层便于审查学校格式适配；实例拥有整个 `manus/` 树，`execs/update.sh` 永远不会替换它。
 
-class 接受常规 `book` 选项，以及 `draft|final` 与 `en|english|zh|chinese`。默认模式是英文草稿。英文入口使用 `\documentclass[oneside]{stys/story}`；中文起始模板使用 `\documentclass[oneside,zh]{stys/story}`，并包含 `% !TeX program = xelatex` 指令。
+class 接受常规 `book` 选项，以及 `draft|final`、`en|english|zh|chinese` 与 `cjk`。默认模式是英文草稿。英文入口使用 `\documentclass[oneside]{stys/story}`；中文起始模板使用 `\documentclass[oneside,zh]{stys/story}`，并包含 `% !TeX program = xelatex` 指令。`cjk` 让英文学位论文也能排印中文：在 XeLaTeX 或 LuaLaTeX 下，它以 `scheme=plain` 加载 ctex，英文标题与版式保持不变；在 pdfLaTeX 下，class 报错停止，并提示改用 `% !TeX program = xelatex`；与 `zh` 同用时不起作用。
 
 ### 英文与简体中文
 
@@ -177,6 +177,8 @@ bash execs/scpts/lint.sh
 
 当 `LATEX_ENGINE` 为空时，`run.sh` 遵循入口文件中的 TeX program 指令，因此会为 `main-zh.tex` 选择 XeLaTeX；显式引擎可以是 `pdflatex`、`xelatex` 或 `lualatex`。把中文设为正式论文语言前，应先确认学校规则，并在 `degree/profile.tex` 中设置 `% dissertation_language: zh`。class 只负责本地化结构，不会翻译论文内容，也不会虚构学位元数据。
 
+当 `degree/requirements.md` 要求两种语言的摘要时，每份摘要写明自己的语言：`fronts/abstract.tex` 中是 `\begin{storyabstract}[en]` 与 `\storykeywords[en]{...}`，`fronts/abstract-zh.tex` 中是 `[zh]`。该参数默认取 class 语言，决定标题、目录条目和关键词标签：`en` 为 `Abstract` 与 `Keywords:`，`zh` 为 `摘要` 与 `关键词：`。`main-zh.tex` 带有一行注释掉的 `% \input{fronts/abstract}`，用于英文摘要，无需其他设置。`main.tex` 带有一行注释掉的 `% \input{fronts/abstract-zh}`；在这里加入中文摘要，还需要 `cjk` class 选项和 XeLaTeX：把 class 写成 `\documentclass[oneside,cjk]{stys/story}`，并把前两行改为 `% !TeX program = xelatex` 与 `% !LW recipe = XeLaTeX`。不带 `cjk` 用 XeLaTeX 构建时，中文会排成空白而构建照常成功，因此构建日志报告缺失字符时 lint 会警告。
+
 ### 学位档案与学校格式
 
 在 `degree/profile.tex` 中只设置一个经作者确认的学位模式：
@@ -186,9 +188,9 @@ bash execs/scpts/lint.sh
 % 或：degree_level: doctoral
 ```
 
-学位层级特意不做成 `.env` 选项，因为它是持久的学校事实。缺失值保持未知；非法值，以及与所选层级冲突的题名或学位措辞，会使 lint 失败。STORY 只应用已选层级的贡献标准，也只应用学校实际要求的里程碑。
+学位层级特意不做成 `.env` 选项，因为它是持久的学校事实。缺失值保持未知；非法值，以及 `\degree` 字段中与所选层级冲突的措辞，会使 lint 失败；题名不参与检查，因此经批准的题名可以含有“Doctor”或“Master”这样的学科用词。`% dissertation_language` 取 `en` 或 `zh`：留空时 lint 发出警告，其他任何值都会使 lint 失败。STORY 只应用已选层级的贡献标准，也只应用学校实际要求的里程碑。
 
-仓库自带的 class 有意保持通用。学校正式模板、标题页措辞、页边距、前置部分顺序、页数限制、截止日期、提交门户、延迟公开选择和审批规则，都必须来自作者确认过的正式材料。规范档案写在 `degree/profile.tex`，带来源的检查表写在 `degree/requirements.md`，里程碑专属规则写在 `milestones/<slug>/milestone.yml`。你拿到的正式模板原样保存在 `milestones/<slug>/template/` 下，`fmt.sh` 从不重排它；论文实际用来构建的 class 放在 `manus/stys/`。不得凭记忆静默改写 STORY 的通用源文件树。
+仓库自带的 class 有意保持通用。学校正式模板、标题页措辞、页边距、前置部分顺序、页数限制、截止日期、提交门户、延迟公开选择和审批规则，都必须来自作者确认过的正式材料。规范档案写在 `degree/profile.tex`，带来源的检查表写在 `degree/requirements.md`，里程碑专属规则写在 `milestones/<slug>/milestone.yml`。标题页上印在学位名称上方的提交说明也是学位档案字段之一：把 `\submissionstatement{...}` 设为正式模板中的原文；模板不印此说明时写 `\submissionstatement{}`，该行随之省去。在此之前，标题页印出占位文字 `Submission Statement`（中文为 `提交说明`），lint 会把它与其他标题页占位符一起报告；学位档案中根本没有 `\submissionstatement` 行时，lint 也会警告。你拿到的正式模板原样保存在 `milestones/<slug>/template/` 下，`fmt.sh` 从不重排它；论文实际用来构建的 class 放在 `manus/stys/`。不得凭记忆静默改写 STORY 的通用源文件树。
 
 ## 快速开始
 
@@ -220,7 +222,7 @@ curl -fsSL https://raw.githubusercontent.com/wanghao9610/STORY/main/execs/update
 bash /tmp/story-update.sh --adopt
 ```
 
-接入不会覆盖任何已有路径：它只复制缺失文件，并报告保留了什么。加上 `--harnesses claude`——或从 `claude`、`codex`、`cursor`、`dsh`、`kimi`、`pi`、`qwen` 中任选多个并用逗号分隔——即可只安装实际使用的 agent 树。随后调用 `story-proj-adopt`；它会盘点草稿，在映射层级相关材料前请你确认学位层级，请你先提交一次并记录该 commit，在文件映射或入口文件改变前征求确认，复制而不是移动原始源文件，把已有但无来源的陈述记录为审计工作，并验证接入后的构建。它不会填写 `degree/requirements.md` 或学位档案的其余部分：这些由你填写。基于学校 class 的草稿会把该 class 保留在 `manus/stys/`；lint 对 `zh` class 选项与 `% dissertation_language` 是否一致的检查是为 STORY 的 class 编写的，换用其他 class 时可能给出警告。
+接入不会覆盖任何已有路径：它只复制缺失文件，并报告保留了什么。加上 `--harnesses claude`——或从 `claude`、`codex`、`cursor`、`dsh`、`kimi`、`pi`、`qwen` 中任选多个并用逗号分隔——即可只安装实际使用的 agent 树。随后调用 `story-proj-adopt`；它会盘点草稿，在映射层级相关材料前请你确认学位层级，请你先提交一次并记录该 commit，在文件映射或入口文件改变前征求确认，复制而不是移动原始源文件，把已有但无来源的陈述记录为审计工作，并验证接入后的构建。它不会填写 `degree/requirements.md` 或学位档案的其余部分：这些由你填写。基于学校 class 的草稿会把该 class 保留在 `manus/stys/`；只有当入口文件加载 STORY 的 class 时，lint 才检查 `zh` class 选项与 `% dissertation_language` 是否一致；换用其他 class 时，它只在日志中说明未检查该 class 的语言选项，不给出警告。
 
 ### 2. 配置本地运行环境和学位档案
 
@@ -269,7 +271,7 @@ bash execs/scpts/import.sh --source ../earlier-story --slug prior-thesis
 bash execs/scpts/import.sh --diff --source ../my-star-project --slug project-a
 ```
 
-上游出现新材料或已有材料有变化时，diff 以 `2` 退出；快照与来源一致时以 `0` 退出；检查本身无法运行时以 `1` 退出。以 `2` 退出会把该条目标为 `stale`，陈旧快照在你重新导入之前不算已登记证据。导入证据只能单向流动：在上游修正后重新导入。
+diff 为每个有差异的文件打印一行：来源已变化的快照文件为 `stale`，尚未导入的来源文件为 `new upstream`，来源文件已不存在的 manifest 条目为 `removed upstream`。打印了 `stale` 或 `new upstream` 行时以 `2` 退出，否则以 `0` 退出；检查本身无法运行时以 `1` 退出。只有带 `stale` 行的文件才是 `stale`，陈旧快照在你重新导入之前不算已登记证据。`removed upstream` 行只报告给你，由你决定如何处理；快照仍然保留，因为重新导入从不删除快照。导入证据只能单向流动：在上游修正后重新导入。
 
 ### 4. 路径 B：登记独立证据
 
@@ -285,9 +287,9 @@ bash execs/scpts/lint.sh
 bash execs/scpts/fmt.sh --check
 ```
 
-`run.sh` 调用 `latexmk`，在 `wkdrs/builds/` 中进行源目录外构建（`manus/` 之外的入口文件，例如答辩演示文稿，会构建到其旁边一个被 git 忽略的 `.build/` 中），并在 `pdfinfo` 可用时打印 PDF 路径与页数。`lint.sh` 默认先构建，再把构建失败、未定义引用或交叉引用、可见 `\todo`、非法或冲突的学位元数据，以及超出已确认页数限制视为失败。页数限制取当前里程碑的 `max_pages`（即 supervision 以外、`status: active` 的那个里程碑）；没有这样的里程碑时，取 `notes/story.md` 中旧式键 `active_milestone` 所指里程碑的 `max_pages`；再没有则取 `degree/profile.tex` 中的值；lint 用它与 PDF 的总页数比较。它会就以下情况发出警告：标题页占位符、入口文件加载 class 时的语言与 `% dissertation_language` 不一致、`degree/requirements.md` 中尚未解决的条目、入口文件从未引入的章节文件、多于一个的 active 里程碑、不是正整数的 `max_pages`、比 PDF 更新的源文件、overfull box、格式漂移、未知学位层级、高置信度聊天机器人残留和集中出现的公式化表达。要求条目的计数只包括未勾选的复选框；已勾选的条目是否注明来源，仍由 `story-depo-packer` 逐条阅读，哪些警告会阻塞归档见[规约 §6（Deposit gates）](docs/mds/story-workflow/writing-workflow-conventions.md#deposit-gates)（英文）。针对正文的检查发现只是建议性复核信号，既不能证明文本由 AI 创作，也不构成硬失败。每次运行都以一行 `Result:` 结尾，构建失败时也不例外。lint 报红是稿件起草期的预期状态——证据契约要求你写下的 `\todo` 标记在清零之前本身就是硬失败，它们只阻塞归档，不阻塞起草。`--no-build` 复用上一次构建：该次构建的日志缺失或因错误停止时它会失败，源文件比 PDF 更新时它会警告。
+`run.sh` 调用 `latexmk`，在 `wkdrs/builds/` 中进行源目录外构建（`manus/` 之外的入口文件，例如答辩演示文稿，会构建到其旁边一个被 git 忽略的 `.build/` 中），并在 `pdfinfo` 可用时打印 PDF 路径与页数。`lint.sh` 默认先构建，再把构建失败、未定义引用或交叉引用、可见 `\todo`、非法或冲突的学位元数据，以及超出已确认页数限制视为失败。页数限制取当前里程碑的 `max_pages`（即 supervision 以外、`status: active` 的那个里程碑）；没有这样的里程碑时，取 `notes/story.md` 中旧式键 `active_milestone` 所指里程碑的 `max_pages`；再没有则取 `degree/profile.tex` 中的值；lint 用它与 PDF 的总页数比较：页数用 `pdfinfo` 读取，没有 `pdfinfo` 时从构建日志的 `Output written on` 行读取，两者都读不到页数时，它警告该页数限制未经检查。它会就以下情况发出警告：标题页占位符（包括学位档案中没有 `\submissionstatement` 行）、未设置的 `% dissertation_language`、入口文件加载 STORY 的 class 时所用（或缺少的）语言选项与之不一致、`degree/requirements.md` 中尚未解决的条目、入口文件从未引入的章节文件、多于一个的 active 里程碑、不是正整数的 `max_pages`、比 PDF 更新的源文件、overfull box、构建日志中的缺失字符、格式漂移、未知学位层级、高置信度聊天机器人残留和集中出现的公式化表达。要求条目的计数只包括未勾选的复选框；已勾选的条目是否注明来源，仍由 `story-depo-packer` 逐条阅读，哪些警告会阻塞归档见[规约 §6（Deposit gates）](docs/mds/story-workflow/writing-workflow-conventions.md#deposit-gates)（英文）。针对正文的检查发现只是建议性复核信号，既不能证明文本由 AI 创作，也不构成硬失败。每次运行都以一行 `Result:` 结尾，构建失败时也不例外。lint 报红是稿件起草期的预期状态——证据契约要求你写下的 `\todo` 标记在清零之前本身就是硬失败，它们只阻塞归档，不阻塞起草。`--no-build` 复用上一次构建：该次构建的日志缺失或因错误停止时它会失败，源文件比 PDF 更新时它会警告。
 
-`fmt.sh` 使用仓库的 `latexindent` 配置，在不改变排版文本的前提下维持一句一行。它尚不拆分或检查中文句子，因此中文正文请手动保持一句一行；`--check` 不会对含多句的中文行报错。它排除可复用样式（`manus/stys/`）和学校正式模板（`milestones/*/template/`）。不带 `--check` 运行即可应用格式化。
+`fmt.sh` 使用仓库的 `latexindent` 配置，在不改变排版文本的前提下维持一句一行。它把收尾的 `}` 或 `]` 留在它所结束的句子那一行，并拒绝任何会改变排版文本的改写：该文件保持原样，脚本以 `2` 退出。被拒绝的文件需要手动修正：通常是被误读为句末的小写缩写，应改用不断行空格或转义空格（`Fig.~`、`et al.\ `）；或是独占一行的收尾 `}` 或 `]`，应移到上一行末尾。它尚不拆分或检查中文句子，因此中文正文请手动保持一句一行；`--check` 不会对含多句的中文行报错。它排除可复用样式（`manus/stys/`）和学校正式模板（`milestones/*/template/`）。不带 `--check` 运行即可应用格式化。
 
 ### 6. 启动学位论文工作流
 
@@ -450,7 +452,7 @@ Claude Code 以 `effort: medium` 运行 `story-flow-status`：生成的 `.claude
 
 ### Hook 与权限
 
-每个 harness 在会话开始时都会注入两个 hook 的内容：一个说明写入记忆文件 `model_id` 时应复制的模型 ID（读取顺序见写作工作流规范 §7；各 harness 的解析命令、兜底读取、hook 事件与注册方式见 [§11 harness 适配](docs/mds/story-workflow/writing-workflow-conventions.md#11-harness-adapters)，英文），另一个把[项目记忆](#项目记忆)索引交给 agent。七个 harness 还都带有 `story_commit_guard.sh`，在任何介入级别下生效：它拒绝全量或强制暂存、改写历史、强制分支操作、整体丢弃未提交的改动、强制推送、移动或删除 tag，以及暂存文件超过 10 MB 的提交。Claude Code、Codex、DSH、Kimi Code 和 Qwen Code 在 shell 命令执行前的 `PreToolUse` 上运行它，Cursor 在 `beforeShellExecution` 上运行，Pi 在其 `tool_call` 事件上运行；Pi 没有权限提示，因此它是 git 命令与仓库之间唯一的检查。
+每个 harness 在会话开始时都会注入两个 hook 的内容：一个说明写入记忆文件 `model_id` 时应复制的模型 ID（读取顺序见写作工作流规范 §7；各 harness 的解析命令、兜底读取、hook 事件与注册方式见 [§11 harness 适配](docs/mds/story-workflow/writing-workflow-conventions.md#11-harness-adapters)，英文），另一个把[项目记忆](#项目记忆)索引交给 agent。七个 harness 还都带有 `story_commit_guard.sh`，在任何介入级别下生效：它拒绝全量或强制暂存、改写历史、强制分支操作、整体丢弃未提交的改动、强制推送（包括 `+refspec`）、删除远程分支或 tag（`push -d`、`--delete`、`--prune` 或 `:dst` refspec）、移动或删除 tag（包括对 `refs/tags/` 的 `update-ref`），以及暂存文件超过 10 MB 的提交。Claude Code、Codex、DSH、Kimi Code 和 Qwen Code 在 shell 命令执行前的 `PreToolUse` 上运行它，Cursor 在 `beforeShellExecution` 上运行，Pi 在其 `tool_call` 事件上运行；Pi 没有权限提示，因此它是 git 命令与仓库之间唯一的检查。
 
 在 `INVOLVE=low` 下，gate hook 会代为回答权限提示，但从不回答确认点：skill 必须提出的问题仍会交给你。在 Claude Code、Codex 和 Qwen Code 中，`story_involve_gate.sh` 放行项目内的编辑；项目根目录下点目录中的路径，以及借 `..` 跳出项目的路径，仍保留提示。Claude Code 还注册了 `story_bash_gate.sh`：在 `low` 下它放行 shell 命令，除非命令越过红线——删除、`sudo`、磁盘与设备写入、系统或 TeX 包安装（包括 `tlmgr`）、进程控制、服务控制、内核模块、计划任务（`crontab`）、会删除文件或执行命令的 `find`、`git push`、`git clean`、`git stash drop`/`clear`、整棵树的 `git restore`/`checkout`、强制 `mv`/`cp`，或向外传输（`gh`、`scp`/`sftp`/`ftp`、`rclone`、传往远程主机的 `rsync`，以及 `curl`/`wget` 上传；普通下载仍然放行）。两个 gate 在任何级别都为写入学位论文受保护记录的操作保留提示：证据库 `mates/`、`degree/` 中已确认的学校事实，以及 `milestones/*/feedback/` 中收到的反馈。bash gate 放行 `bash execs/scpts/import.sh` 写入 `mates/`（这正是它的职责），也放行 `cat`、`grep`、`sed -n` 等只读命令在其中读取。因此 `story-evid-curator` 自己的登记操作在把文件复制进 `mates/manual/` 之前会先询问你。在 Claude Code 中，两个 gate 从你在本会话中最近一次输入的 STORY 命令里的 `involve=` token 取得级别；该命令没有给出级别时回退到 `.env`。agent 写进它所派发 skill 的 token 只能提高级别，不能降低级别。这个级别会延续到运行结束之后：`/story-chap-drafter 3 involve=low` 结束后，同一会话中后续的编辑和 shell 命令仍按 `low` 应答；像“多问我一些”这样的自然语言请求会改变 skill 询问的多少，但不会改变 hook 的应答。输入一条不带参数的 STORY 命令（例如 `/story-flow-status`）即可让 hook 回到 `.env`，输入带新 `involve=` token 的 STORY 命令则设定另一个级别。Codex 和 Qwen Code 只依据 `.env`。Cursor、DSH、Kimi Code 和 Pi 没有编辑 gate，因为它们的 harness 在编辑前不提供可由 hook 回答的提示。
 
@@ -546,11 +548,11 @@ bash execs/update.sh --skill story-flow-status
 
 ## 环境要求
 
-- Git 与 Bash 3.2+
+- Git 2.25+ 与 Bash 3.2+
 - 带 `latexmk` 的较完整 TeX Live 或 MacTeX
 - 用于手稿格式化的 `latexindent`
-- 简体中文模板所需的 CTeX，以及 XeLaTeX 或 LuaLaTeX
-- 用于报告页数的 `pdfinfo`
+- 简体中文模板以及 `cjk` 选项下的中文摘要所需的 CTeX，以及 XeLaTeX 或 LuaLaTeX
+- 用于读取页数的 `pdfinfo`：`run.sh` 只有在它可用时才报告页数；没有它时，lint 改读构建日志，两者都读不到页数时发出警告
 - 用于可选字数统计的 `texcount`
 - 用于接入和上游更新的 `curl`
 - 用于证据指纹的 `shasum` 或 `sha256sum`
@@ -561,6 +563,7 @@ bash execs/update.sh --skill story-flow-status
 
 按日期列出要点，最新在前。STORY 目前还没有给版本打 tag，因此 `bash execs/update.sh` 跟随 `main`；某个版本打了 tag 之后，把 tag 作为 `ref` 传入即可把更新固定到该版本。
 
+- **2026-09-24** —— 学位论文可以同时带两种语言的摘要：`\begin{storyabstract}[en|zh]` 与 `\storykeywords[en|zh]{...}` 写明每份摘要的语言，新增的 `cjk` class 选项让英文学位论文在 XeLaTeX 或 LuaLaTeX 下排印中文摘要（见[英文与简体中文](#英文与简体中文)）。`degree/profile.tex` 新增 `\submissionstatement`，即标题页上印在学位名称上方的提交说明，出厂为占位文字。`lint.sh` 只从学位字段读取层级措辞，只在 STORY 的 class 下检查语言选项；缺少 `pdfinfo` 时从构建日志读取页数，无法检查页数限制时发出警告；遇到缺失字符、未设置的 `dissertation_language` 或没有 `\submissionstatement` 的学位档案时发出警告；遇到非法的 `dissertation_language` 时失败。`import.sh --diff` 按文件打印 `stale`、`new upstream` 或 `removed upstream` 行，只有前两种使它以 `2` 退出，也只有 `stale` 行使文件成为 stale。`fmt.sh` 把收尾的 `}` 或 `]` 留在其句子所在行，并拒绝在它旁边增删空格的改写。commit guard 还会拒绝 `+refspec` 推送、删除远程分支或 tag，以及对 tag 的 `update-ref`。`execs/update.sh` 现在支持 Git 2.25–2.36，这些版本的稀疏检出不以 cone 模式开始；`--adopt` 还会安装 `manus/main-zh.tex`，并在保留已有 `.gitignore` 时，指出它未忽略 `.env` 或忽略了 `mates/` 下的证据，而模板自带的 `.gitignore` 从不忽略这些证据。更新或 `--adopt` 保留了缺少收尾括号规则的 `.latexindent.yaml` 时会指出这一点，`import.sh` 在忽略规则会让导入的文件无法被 git 跟踪时发出警告，状态扫描把缺少构建日志的 PDF 报告为 stale 构建。规约明确了 `weakened` 的含义（已确认的较窄范围尚未写进措辞），失败再次出现时重新打开审计行，一次写入未完成时把大纲行退回 `in-progress`，写明由谁退役论断，并收紧归档关口 1 与 7；`story-chap-drafter` 只在出版物行为 `in-scope` 或 `cleared` 时改编已发表材料，`/story-auto` 对每个目标只要求它实际需要的输入。记忆 hook 把加引号的 `verified` 日期当作日期读取；Qwen Code 的解析器会跳过格式错误的 transcript 行，Kimi Code 的 provenance 行要求原样复制配置中的模型 ID，Codex 的 `--check` 接受 `--resolve` 给出的 ID。已有的论文仓库会保留自己的 `.gitignore`、`.cursorignore`、`.vscode/settings.json`、`.latexindent.yaml`、`.editorconfig`、`degree/profile.tex` 和 `manus/`，更新不会覆盖它们，因此请手动应用这些改动：在 `.gitignore` 中 LaTeX 构建文件规则之后、`.DS_Store` 之前加入 `!/mates/**`，并在 `.cursorignore` 的同一位置加入 `!mates/**`；把 `latex-workshop.latex.autoClean.run` 设为 `"never"`，使编辑器构建不再删除 `lint.sh --no-build` 与状态扫描要读取的日志；从上游 `.latexindent.yaml` 复制 `modifyLineBreaks` 下的两条收尾括号规则，否则新的 `fmt.sh` 会拒绝任何有句子在括号组内结束的文件；在 `.editorconfig` 的样式层与模板小节中把 `charset` 和 `end_of_line` 设为 `unset`；在 `degree/profile.tex` 的 `\degree` 之前加入一行 `\submissionstatement`；如需按语言区分的摘要和 `cjk`，从上游复制 `manus/stys/story.cls`。
 - **2026-09-23** —— 谁来设置各台账状态，现由一条规则统一规定，即[规约 §3（Who sets each status）](docs/mds/story-workflow/writing-workflow-conventions.md#who-sets-each-status)（英文）；只有当 `story-depo-packer` 报告[规约 §6（Deposit gates）](docs/mds/story-workflow/writing-workflow-conventions.md#deposit-gates)（英文）中的每个关口都通过时，归档才算就绪，其中包括 Git 工作树干净、两项审计都在最后一次修改之后运行过；它在 RECORD 中记录源 commit，只有在你确认后才打 tag。`story-chap-drafter` 也能起草一份前置或后置部分文件，`trace CHAPTER` 只补充缺失的来源锚点，不改变排版文本。导师或合作者的非正式反馈进入常设的 `milestones/supervision/` 记录；没有指定或当前里程碑时，`story-exam-reviewer` 写入 `wkdrs/reports/SIM_EXAM_<date>.md`，绝不自行创建里程碑。`story-proj-adopt` 在你提交一次检查点之后复制草稿，而不是移动它。模板中的 `degree/profile.tex` 现在让 `% thesis_type:` 留空，不再预填 `monograph`，由 `story-outl-planner` 询问；每个 skill 的参数提示都以 `[involve=LEVEL]` 结尾。
 - **2026-09-23** —— `/story-auto <目标>`（Codex 中为 `$story-auto`）朝一个目标推进：先运行 `story-flow-status`，再启动每次交接点名的未标记 skill（共十个）；遇到 `AGENTS.md` §1 规定须先询问的选择时向你提问，遇到标 † 的 skill 或只有作者能解除的关口就停下；它绝不导入证据，不写 `degree/` 或收到的反馈，不宣布归档就绪，不提交也不推送（[Goal runs](docs/mds/story-workflow/writing-workflow-conventions.md#goal-runs)，英文）。Claude Code 新增 `story_bash_gate.sh`：在 `INVOLVE=low` 下代为回答红线之外的 shell 权限提示，并采用你最近一次敲下的 `involve=` token；所有 gate 在任何级别都为写入 `mates/`、`degree/` 或 `milestones/*/feedback/` 保留提示，Pi 也有了 commit guard。provenance 读取命令已按 zsh 加上引号，并在 `.claude/settings.json` 中预先放行；Codex 增加了写入后的 `--check`。每个记忆文件现在都带一行 `summary`，hook 据此生成索引（`--list` 可打印），模板的记忆库只带 `.story/memory/.gitkeep`。学术自然写作指南、项目记忆规格和 model-id 兜底说明并入[写作工作流规范](docs/mds/story-workflow/writing-workflow-conventions.md)（英文），成为 §5、§10 和新增的 §11 harness 适配——唯一点名 harness 的一节。指令只有英文版：`SKILL_zh.md`、`AGENTS.zh-CN.md` 及其他指令对照版已删除，中文运行仍用中文回复，`execs/update.sh` 会删除上游已退役的文件（`RETIRED_FILES`）。`story-flow-status` 在 Claude Code 中以 `effort: medium` 运行；`lint.sh` 把构建失败视为失败，并从状态为 `active` 的里程碑读取页数限制。旧版更新脚本会报 `Upstream ref is missing AGENTS.zh-CN.md` 并停止：请按[更新 STORY](#更新-story-的-skill-与工作流文档)一节所述，手动替换一次 `execs/update.sh`。已有的论文仓库会保留自己的 `.claude/settings.json` 与 `.codex/hooks.json`：请手动合并 bash gate 的注册和三条 allow 规则（见 [Hook 与权限](#hook-与权限)），以及 Codex 中单独成组的记忆 `SessionStart` 条目（更新器会报告缺失的 gate、缺失的 resolver 规则和旧的分组方式），并重新安装 Codex 或 Kimi Code 插件，才能用上 `/story-auto`。
 

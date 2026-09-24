@@ -12,11 +12,13 @@
 # below (branch -D / -f, switch -C / -f / --discard-changes, checkout -B / -f),
 # blanket discards of uncommitted work (checkout or restore of `.` or `:/`,
 # a forced clean, stash clear / drop), forced pushes (push -f / --force* /
-# --mirror — the remote's history is the user's too), any deletion or move of a
-# tag (a freeze tag is the immutable record of what was deposited, and exactly
-# one skill creates one), and a commit whose staged files exceed 10 MB — a build
-# PDF, a raw figure export, or an evidence blob in history is costly to remove,
-# since clearing it back out needs exactly those rewrites. A plain `push` stays
+# --mirror, or a +refspec — the remote's history is the user's too), remote
+# deletions (push -d / --delete / --prune, or a :dst refspec), any deletion or
+# move of a tag (tag -d / -f, or update-ref on refs/tags/ — a freeze tag is the
+# immutable record of what was deposited, and exactly one skill creates one),
+# and a commit whose staged files exceed 10 MB — a build PDF, a raw figure
+# export, or an evidence blob in history is costly to remove, since clearing it
+# back out needs exactly those rewrites. A plain `push` stays
 # absent: no rule here makes a skill likelier to push, and a user who asks for
 # one directly should get it.
 #
@@ -139,7 +141,7 @@ while IFS= read -r segment; do
                     -A|--all|-u|--update|--no-ignore-removal|.|./|:/|:/*|'*')
                         deny "STORY git safety: a blanket add stages work this run did not do, and it sweeps in build litter, half-registered evidence, and the user's own uncommitted edits. Stage the paths this run wrote, by name." ;;
                     -f|--force)
-                        deny "STORY git safety: a force-add puts a git-ignored path — .env, a build under wkdrs/ — into history. Stage a tracked path instead." ;;
+                        deny "STORY git safety: a force-add puts a git-ignored path — .env, a build under wkdrs/ — into history. Stage paths the ignore rules allow; evidence under mates/ that an ignore rule catches needs '!/mates/**' after the build-file rules in .gitignore, not a force-add." ;;
                     --*) ;;
                     -*[Auf]*)
                         deny "STORY git safety: this flag cluster carries a blanket or forced add. Stage the paths this run wrote, by name." ;;
@@ -192,6 +194,20 @@ while IFS= read -r segment; do
                     --*) ;;
                     -*[df]*)
                         deny "STORY git safety: this flag cluster deletes or moves a tag, and a freeze tag is the immutable record of what was deposited." ;;
+                esac
+            done
+            ;;
+        update-ref)
+            # The plumbing spelling of `tag -f` and `tag -d`. A freeze tag is
+            # created with `git tag -a`, so no skill needs this on a tag.
+            for ((j = i + 1; j < ${#tok[@]}; j++)); do
+                arg="${tok[j]}"
+                case "${arg}" in
+                    \'*\'|\"*\") arg="${arg#?}"; arg="${arg%?}" ;;
+                esac
+                case "${arg}" in
+                    refs/tags/*)
+                        deny "STORY git safety: update-ref on a tag moves or deletes it outside git tag, and a freeze tag is the immutable record of what was deposited. Leave the tag where it is." ;;
                 esac
             done
             ;;
@@ -317,9 +333,18 @@ while IFS= read -r segment; do
                 case "${arg}" in
                     -f|--force|--force-with-lease|--force-with-lease=*|--force-if-includes|--mirror)
                         deny "STORY git safety: a forced push rewrites the remote, and the remote's history is the user's too — a freeze tag must keep pointing at what was deposited. Push a new commit instead." ;;
+                    -d|--delete|--prune)
+                        deny "STORY git safety: this push deletes a branch or a tag on the remote, and the remote is the user's — a freeze tag must keep pointing at what was deposited. Leave remote refs to the user." ;;
                     --*) ;;
-                    -*f*)
-                        deny "STORY git safety: this flag cluster carries a forced push, which rewrites the remote the user owns. Push a new commit instead." ;;
+                    -*[fd]*)
+                        deny "STORY git safety: this flag cluster carries a forced push or a remote delete, which rewrites the remote the user owns. Push a new commit instead." ;;
+                    # A refspec is src:dst. A leading + forces that one update, and
+                    # an empty src deletes dst; a bare : is the matching push and
+                    # passes.
+                    +*)
+                        deny "STORY git safety: a +refspec forces that update, which rewrites the remote the user owns. Push a new commit instead." ;;
+                    :?*)
+                        deny "STORY git safety: a refspec with an empty source deletes that branch or tag on the remote, and the remote is the user's. Leave remote refs to the user." ;;
                 esac
             done
             ;;

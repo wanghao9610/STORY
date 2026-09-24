@@ -19,5 +19,7 @@ manus/out/
 *.out
 *.synctex.gz
 *.toc
+# ...but never evidence under mates/, whatever its extension.
+!mates/**
 
 .DS_Store

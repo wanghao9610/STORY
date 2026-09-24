@@ -1,9 +1,12 @@
 # .latexindent.yaml — the manuscript's line-break rule, in one file.
 #
-# One sentence per line: LaTeX reads a single newline as a space, so where a
-# sentence breaks costs the PDF nothing and buys the repository a per-sentence
-# diff, a per-sentence blame, and — the reason this workflow cares — a fixed
-# two-line shape for `% src:` and the sentence it heads (conventions §2).
+# One sentence per line: LaTeX reads a single newline as a space, so a break
+# placed where the text already has a space costs the PDF nothing and buys the
+# repository a per-sentence diff, a per-sentence blame, and — the reason this
+# workflow cares — a fixed two-line shape for `% src:` and the sentence it heads
+# (conventions §2). A break beside a brace or bracket is not free: it adds a
+# space the PDF prints, so the rules below keep a closing one on its sentence's
+# line.
 #
 # Read by `bash execs/scpts/fmt.sh`, which passes it with -l and refuses any
 # rewrite that would change the typeset text; the editor points at this same
@@ -35,3 +38,13 @@ modifyLineBreaks:
       exclamationMark: 1
       questionMark: 1
       other: 0
+  # A sentence that ends a group — `\caption{A. B.}`, `\emph{A. B.} and` — would
+  # leave its `}` on a line of its own, an extra space inside the group.
+  # Keeping the closing brace and bracket on the sentence's line prevents that.
+  # The same switch also joins any `}` or `]` already alone on a line, so an
+  # argument spelled over several lines is refused by fmt.sh, whose guard sees
+  # the space the join would remove, and needs its closer moved up by hand.
+  mandatoryArguments:
+    RCuBStartsOnOwnLine: -1
+  optionalArguments:
+    RSqBStartsOnOwnLine: -1

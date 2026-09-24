@@ -6,7 +6,6 @@ description: Route an explicitly invoked $story request to exactly one master's 
 # Route a STORY request
 
 Read `.agents/commands/story.md` from the current project root and follow it as the authoritative routing roster.
-When the reply language resolves to Chinese under the workflow conventions §7 — the author asks for Chinese; or, with no author request for a language, `.env` sets `STORY_LANG=zh`; or `STORY_LANG` is unset or invalid and the conversation is in Chinese — use `.agents/commands/story.zh-CN.md` for the user-facing wording while preserving the English roster's skill names and routing decisions.
 
 Adapt only its invocation spelling for Codex:
 
