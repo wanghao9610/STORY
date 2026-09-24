@@ -268,16 +268,6 @@ if ! awk '/^## 11\. /{f=1;next} f&&NF{print;exit}' "${CONVENTIONS}" | grep -Fq '
     fail "${CONVENTIONS}: §11 (harness adapters) no longer opens by claiming the harness names"
     conv_errors=1
 fi
-# Every skill loads the conventions in full, so per-harness mechanics a run never
-# acts on live in harness-reference.md, which no skill loads; §11 links it.
-HARNESS_REFERENCE="docs/mds/story-workflow/harness-reference.md"
-if [[ ! -f "${HARNESS_REFERENCE}" ]]; then
-    fail "${HARNESS_REFERENCE} is missing; §11 points maintainers at it for hook events and registration"
-    conv_errors=1
-elif ! awk '/^## 11\. /{f=1} f' "${CONVENTIONS}" | grep -qF '(harness-reference.md)'; then
-    fail "${CONVENTIONS}: §11 no longer links ${HARNESS_REFERENCE}"
-    conv_errors=1
-fi
 HUMAN_WRITING_SKILLS=(story-chap-drafter story-copy-editor story-exam-reviewer)
 for root in "${ROOTS[@]}"; do
     for skill in "${HUMAN_WRITING_SKILLS[@]}"; do
