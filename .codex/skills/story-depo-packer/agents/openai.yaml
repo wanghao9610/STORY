@@ -2,6 +2,6 @@ interface:
   display_name: "Deposit Packer"
   short_description: "Preflight and freeze a thesis deposit"
   brand_color: "#173B57"
-  default_prompt: "Use $story-depo-packer to preflight the deposit milestone under milestones/ and report every open gate before any freeze."
+  default_prompt: "Use $story-depo-packer to preflight the deposit milestone under miles/ and report every open gate before any freeze."
 policy:
   allow_implicit_invocation: false

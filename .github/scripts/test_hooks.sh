@@ -2,7 +2,7 @@
 # What the gate and provenance hooks decide is behavior, not text a grep can pin,
 # so this runs them against fixture payloads: the Claude bash gate and the three
 # edit gates at INVOLVE=low, with the STORY red lines (mates/, degree/,
-# milestones/*/feedback/, and outward transfers) that keep their prompt; the
+# miles/*/feedback/, and outward transfers) that keep their prompt; the
 # Claude level resolver, on a fixture transcript, through its jq and its python3
 # reader; the Claude
 # model-id resolver on a delegate's transcript, and the command its SessionStart
@@ -101,7 +101,7 @@ for c in \
     'cd manus && sudo make install' \
     'cp notes/x.csv mates/manual/x.csv' \
     'sed -i s/0.81/0.82/ mates/proj/results.csv' \
-    'echo x > milestones/defense/feedback/comments.md' \
+    'echo x > miles/defense/feedback/comments.md' \
     'printf x >> degree/requirements.md' \
     'tee degree/profile.tex < /dev/null' \
     'python3 fix.py mates/proj/results.csv' \
@@ -154,10 +154,10 @@ expect_edit() { # $1 = allow|prompt, $2 = path relative to the project
     esac
 }
 expect_edit allow manus/chaps/1_intro.tex
-expect_edit allow milestones/defense/response/points.md
+expect_edit allow miles/defense/response/points.md
 expect_edit prompt mates/MANIFEST.md
 expect_edit prompt degree/profile.tex
-expect_edit prompt milestones/defense/feedback/comments.md
+expect_edit prompt miles/defense/feedback/comments.md
 expect_edit prompt .env
 expect_edit prompt manus/../../outside.tex
 

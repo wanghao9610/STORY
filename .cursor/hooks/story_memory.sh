@@ -75,7 +75,7 @@ if $list; then
   exit 0
 fi
 
-ctx="STORY project memory — what earlier sessions in this repository learned, recorded under .story/memory/ rather than in your own memory store. Each line is a pointer, not the fact: type · scope · last verified · file — summary. Open the file under .story/memory/ before acting on one. A scope naming a machine or a milestone applies only there, and where a memory disagrees with a file in the repository, the file wins. A memory is never a source for a number, an institutional rule, or what a cited paper says — those trace to mates/, degree/ and milestones/, and notes/refs/. Recording a new one: AGENTS.md section 8; its file format: docs/mds/story-workflow/writing-workflow-conventions.md section 10."
+ctx="STORY project memory — what earlier sessions in this repository learned, recorded under .story/memory/ rather than in your own memory store. Each line is a pointer, not the fact: type · scope · last verified · file — summary. Open the file under .story/memory/ before acting on one. A scope naming a machine or a milestone applies only there, and where a memory disagrees with a file in the repository, the file wins. A memory is never a source for a number, an institutional rule, or what a cited paper says — those trace to mates/, degree/ and miles/, and notes/refs/. Recording a new one: AGENTS.md section 8; its file format: docs/mds/story-workflow/writing-workflow-conventions.md section 10."
 [ -n "${shared}" ] && ctx="${ctx}
 Shared (.story/memory/):
 ${shared}"

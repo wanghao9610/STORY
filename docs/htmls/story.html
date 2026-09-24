@@ -899,7 +899,7 @@
       <div class="card wide reveal" style="--card-glow: rgba(245,166,35,0.14); --card-c: #f5a623">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></div>
         <h3>Milestones as data</h3>
-        <p>Each proposal, review, pre-defense, defense, correction, or deposit stage that the confirmed degree program requires lives in <code>milestones/&lt;slug&gt;/</code> — received feedback preserved verbatim, point-by-point responses, and a frozen outcome record. A deposit package cannot be declared ready while a required check or an open promise remains unresolved.</p>
+        <p>Each proposal, review, pre-defense, defense, correction, or deposit stage that the confirmed degree program requires lives in <code>miles/&lt;slug&gt;/</code> — received feedback preserved verbatim, point-by-point responses, and a frozen outcome record. A deposit package cannot be declared ready while a required check or an open promise remains unresolved.</p>
       </div>
       <div class="card wide reveal" style="--card-glow: rgba(139,147,255,0.14); --card-c: #8b93ff">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="9" width="14" height="11" rx="2"/><path d="M12 9V5"/><circle cx="12" cy="3.5" r="1.2"/><path d="M2.5 14v2"/><path d="M21.5 14v2"/><path d="M9.5 13.5v2"/><path d="M14.5 13.5v2"/></svg></div>
@@ -909,7 +909,7 @@
       <div class="card wide reveal" style="--card-glow: rgba(76,195,255,0.14); --card-c: #4cc3ff">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
         <h3>Project memory, never evidence</h3>
-        <p>What a session learns that no repository file owns — a TeX package missing on this machine, a standing preference, an approach a mock examination rejected — goes into <code>.story/memory/</code>, one file per fact with a one-line <code>summary</code>. At every session start, in every harness, a hook builds the index from those files and hands it to the agent. Memory only helps the agent find its way: it never stands in for evidence and never overrides <code>degree/</code>, <code>mates/</code>, <code>notes/</code>, or <code>milestones/</code>. Facts true only of this machine stay in the git-ignored <code>.story/memory/local/</code>, and the agent records at most two memories a session, asking you first unless you set <code>INVOLVE=low</code>.</p>
+        <p>What a session learns that no repository file owns — a TeX package missing on this machine, a standing preference, an approach a mock examination rejected — goes into <code>.story/memory/</code>, one file per fact with a one-line <code>summary</code>. At every session start, in every harness, a hook builds the index from those files and hands it to the agent. Memory only helps the agent find its way: it never stands in for evidence and never overrides <code>degree/</code>, <code>mates/</code>, <code>notes/</code>, or <code>miles/</code>. Facts true only of this machine stay in the git-ignored <code>.story/memory/local/</code>, and the agent records at most two memories a session, asking you first unless you set <code>INVOLVE=low</code>.</p>
       </div>
     </div>
   </div>
@@ -946,7 +946,7 @@
 ├── <span class="dir">degree/</span>      <span class="cm"># profile, requirements, committee</span>
 ├── <span class="dir">notes/</span>       <span class="cm"># story, claims, outline, publications</span>
 │   └── <span class="dir">refs/</span>    <span class="cm"># reading notes per paper</span>
-├── <span class="dir">milestones/</span>  <span class="cm"># proposal → defense → deposit</span>
+├── <span class="dir">miles/</span>       <span class="cm"># proposal → defense → deposit</span>
 ├── <span class="dir">tasks/</span>       <span class="cm"># durable open work &amp; promises</span>
 ├── <span class="dir">wkdrs/</span>       <span class="cm"># builds &amp; reports (gitignored)</span>
 ├── <span class="dir">execs/</span>
@@ -962,7 +962,7 @@
         <div class="legend-row"><code>mates/</code><span><strong>Materials</strong> — fingerprinted evidence snapshots, read-only</span></div>
         <div class="legend-row"><code>degree/</code><span><strong>Degree facts</strong> — author-confirmed institutional record</span></div>
         <div class="legend-row"><code>notes/</code><span><strong>Writing metadata</strong> — story, outline, and the claim ledger</span></div>
-        <div class="legend-row"><code>milestones/</code><span><strong>Milestones</strong> — one directory per examination event</span></div>
+        <div class="legend-row"><code>miles/</code><span><strong>Milestones</strong> — one directory per examination event</span></div>
         <div class="legend-row"><code>tasks/</code><span><strong>Tasks</strong> — durable open work and feedback promises</span></div>
         <div class="legend-row"><code>wkdrs/</code><span><strong>Work directories</strong> — builds and ephemeral reports, never committed</span></div>
         <div class="legend-row"><code>.story/memory/</code><span><strong>Project memory</strong> — what sessions learned, indexed by hooks; never evidence</span></div>

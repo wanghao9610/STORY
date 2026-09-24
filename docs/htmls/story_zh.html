@@ -898,7 +898,7 @@
       <div class="card wide reveal" style="--card-glow: rgba(245,166,35,0.14); --card-c: #f5a623">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></div>
         <h3>里程碑即数据</h3>
-        <p>培养项目实际要求的开题、考核、预答辩、答辩、修改和归档分别放在 <code>milestones/&lt;slug&gt;/</code>——收到的反馈逐字保留、逐点回应、结果记录冻结。只要还有必检项或未兑现的承诺，归档包就不能宣告就绪。</p>
+        <p>培养项目实际要求的开题、考核、预答辩、答辩、修改和归档分别放在 <code>miles/&lt;slug&gt;/</code>——收到的反馈逐字保留、逐点回应、结果记录冻结。只要还有必检项或未兑现的承诺，归档包就不能宣告就绪。</p>
       </div>
       <div class="card wide reveal" style="--card-glow: rgba(139,147,255,0.14); --card-c: #8b93ff">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="9" width="14" height="11" rx="2"/><path d="M12 9V5"/><circle cx="12" cy="3.5" r="1.2"/><path d="M2.5 14v2"/><path d="M21.5 14v2"/><path d="M9.5 13.5v2"/><path d="M14.5 13.5v2"/></svg></div>
@@ -908,7 +908,7 @@
       <div class="card wide reveal" style="--card-glow: rgba(76,195,255,0.14); --card-c: #4cc3ff">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
         <h3>项目记忆，绝不充当证据</h3>
-        <p>会话中学到、却没有任何仓库文件负责的事——本机缺少的 TeX 宏包、长期的写作偏好、被模拟答辩否定过的思路——写入 <code>.story/memory/</code>，每条事实一个文件，附一行 <code>summary</code>。每次会话开始时，各个 harness 的 hook 都会从这些文件生成索引，交给 agent。记忆只帮 agent 认路：它不能代替证据，也不能覆盖 <code>degree/</code>、<code>mates/</code>、<code>notes/</code> 或 <code>milestones/</code>。只在本机成立的事实放在 git 忽略的 <code>.story/memory/local/</code>；agent 每次会话最多记录两条记忆，除非你设置 <code>INVOLVE=low</code>，否则都会先征得你同意。</p>
+        <p>会话中学到、却没有任何仓库文件负责的事——本机缺少的 TeX 宏包、长期的写作偏好、被模拟答辩否定过的思路——写入 <code>.story/memory/</code>，每条事实一个文件，附一行 <code>summary</code>。每次会话开始时，各个 harness 的 hook 都会从这些文件生成索引，交给 agent。记忆只帮 agent 认路：它不能代替证据，也不能覆盖 <code>degree/</code>、<code>mates/</code>、<code>notes/</code> 或 <code>miles/</code>。只在本机成立的事实放在 git 忽略的 <code>.story/memory/local/</code>；agent 每次会话最多记录两条记忆，除非你设置 <code>INVOLVE=low</code>，否则都会先征得你同意。</p>
       </div>
     </div>
   </div>
@@ -945,7 +945,7 @@
 ├── <span class="dir">degree/</span>      <span class="cm"># 学位档案、学校要求、委员会</span>
 ├── <span class="dir">notes/</span>       <span class="cm"># 总叙事、论断、提纲、发表记录</span>
 │   └── <span class="dir">refs/</span>    <span class="cm"># 逐篇文献的阅读笔记</span>
-├── <span class="dir">milestones/</span>  <span class="cm"># 开题 → 答辩 → 归档</span>
+├── <span class="dir">miles/</span>       <span class="cm"># 开题 → 答辩 → 归档</span>
 ├── <span class="dir">tasks/</span>       <span class="cm"># 持久化待办与承诺</span>
 ├── <span class="dir">wkdrs/</span>       <span class="cm"># 构建产物与临时报告（git 忽略）</span>
 ├── <span class="dir">execs/</span>
@@ -961,7 +961,7 @@
         <div class="legend-row"><code>mates/</code><span><strong>材料</strong> — 带指纹的证据快照，只读</span></div>
         <div class="legend-row"><code>degree/</code><span><strong>学位事实</strong> — 经作者确认的学校档案</span></div>
         <div class="legend-row"><code>notes/</code><span><strong>写作元数据</strong> — 总叙事、提纲与论断记录表</span></div>
-        <div class="legend-row"><code>milestones/</code><span><strong>里程碑</strong> — 每次评审事件一个目录</span></div>
+        <div class="legend-row"><code>miles/</code><span><strong>里程碑</strong> — 每次评审事件一个目录</span></div>
         <div class="legend-row"><code>tasks/</code><span><strong>待办</strong> — 持久化未决事项与反馈承诺</span></div>
         <div class="legend-row"><code>wkdrs/</code><span><strong>工作目录</strong> — 构建产物与临时报告，绝不提交</span></div>
         <div class="legend-row"><code>.story/memory/</code><span><strong>项目记忆</strong> — 会话积累的经验，由 hook 建立索引；绝不作为证据</span></div>

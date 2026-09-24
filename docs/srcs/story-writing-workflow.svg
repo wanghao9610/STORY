@@ -8,7 +8,7 @@
        figure; flow-status sits between them at the top, reads what the left
        column wrote, and hands the right column its next unit. The loop closes
        back into the hub through the middle column. The examination cycle takes
-       the bottom row, one milestones/<slug>/ event at a time, and the deposit
+       the bottom row, one miles/<slug>/ event at a time, and the deposit
        hangs under the defense because it is the last event a thesis reaches.
 
        Loops, after STAR's diagram: every way back that can be drawn without
@@ -179,7 +179,7 @@
   <text class="no" x="978" y="674">notes/claims.md · tasks/audits.md ## Claims</text>
 
   <!-- ============ BOTTOM ROWS — the examination cycle ============ -->
-  <!-- One institutional event per milestones/<slug>/ directory — only the
+  <!-- One institutional event per miles/<slug>/ directory — only the
        events the confirmed degree level and program actually require. -->
 
   <!-- 11 exam-reviewer (READ) — writes a simulation, never received feedback,
@@ -191,7 +191,7 @@
   <rect x="310" y="776" width="70" height="18" rx="9" fill="#ffffff" stroke="#a7f3d0"/>
   <text class="tag" x="345" y="788.5">never edits</text>
   <text class="np" x="78" y="820">A degree-level mock exam of the built thesis</text>
-  <text class="no" x="78" y="842">milestones/&lt;slug&gt;/simulations/SIM_EXAM_*.md</text>
+  <text class="no" x="78" y="842">miles/&lt;slug&gt;/simulations/SIM_EXAM_*.md</text>
 
   <!-- 12 revs-resolver (MILESTONE) — the only writer of feedback/, and the
        place every official outcome is recorded. -->
@@ -213,7 +213,7 @@
   <rect x="1200" y="776" width="80" height="18" rx="9" fill="#ffffff" stroke="#fcc2d7"/>
   <text class="tag" x="1240" y="788.5">explicit-only</text>
   <text class="np" x="978" y="820">An applicable defense: narrative, deck, questions</text>
-  <text class="no" x="978" y="842">milestones/&lt;slug&gt;/materials/deck.&lt;ext&gt;</text>
+  <text class="no" x="978" y="842">miles/&lt;slug&gt;/materials/deck.&lt;ext&gt;</text>
 
   <!-- 14 depo-packer (MILESTONE) — the terminal node, and the only place a
        deposit is declared ready. It packs and records locally; it never
@@ -225,7 +225,7 @@
   <rect x="1200" y="952" width="80" height="18" rx="9" fill="#ffffff" stroke="#fcc2d7"/>
   <text class="tag" x="1240" y="964.5">explicit-only</text>
   <text class="np" x="978" y="996">Every gate checked; bundle packed, record frozen</text>
-  <text class="no" x="978" y="1018">milestones/&lt;slug&gt;/RECORD_&lt;date&gt;.md · bundle</text>
+  <text class="no" x="978" y="1018">miles/&lt;slug&gt;/RECORD_&lt;date&gt;.md · bundle</text>
 
   <!-- The deposit's row has one node, so the two columns it leaves carry what
        the promises stub can only gesture at: that corrections open a new
@@ -235,7 +235,7 @@
   <text class="lh" x="78" y="966">CORRECTIONS OPEN A NEW MILESTONE · FEEDBACK IS NEVER EDITED</text>
   <text class="cb" x="78" y="990">An outcome that requires corrections opens a correction milestone whose parent is the</text>
   <text class="cb" x="78" y="1008">milestone examined; its open promises run back through the drafting loop to be closed.</text>
-  <text class="ef" x="78" y="1026">one event per milestones/&lt;slug&gt;/ · conventions §6</text>
+  <text class="ef" x="78" y="1026">one event per miles/&lt;slug&gt;/ · conventions §6</text>
 
   <!-- ============ SPINE EDGES ============ -->
 

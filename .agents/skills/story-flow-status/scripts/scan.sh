@@ -211,7 +211,7 @@ heading 'Milestones'
 # name it as active_milestone in notes/story.md.
 active=''
 active_count=0
-for yml in milestones/*/milestone.yml; do
+for yml in miles/*/milestone.yml; do
     [[ -f "${yml}" ]] || continue
     slug="$(basename -- "$(dirname -- "${yml}")")"
     kind="$(yml_value "${yml}" kind)"
@@ -228,7 +228,7 @@ case "${active_count}" in
     1) printf 'active milestone: %s\n' "${active}" ;;
     *) printf 'active milestone: ambiguous — %s have status: active\n' "${active}" ;;
 esac
-find milestones -maxdepth 3 -type f -not -name '.*' 2>/dev/null | sort || true
+find miles -maxdepth 3 -type f -not -name '.*' 2>/dev/null | sort || true
 
 heading 'Open tasks'
 # Open work and feedback promises live only in tasks/; boxes in milestone

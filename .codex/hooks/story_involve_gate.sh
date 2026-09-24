@@ -51,7 +51,7 @@ except Exception:
 # keep their prompt at every level: the evidence store mates/ (AGENTS.md §1 —
 # written only through execs/scpts/import.sh and story-evid-curator, whose edits
 # you approve here), the confirmed institutional facts in degree/, and received
-# committee feedback in milestones/*/feedback/.
+# committee feedback in miles/*/feedback/.
 path_ok() { # $1 = path as the header writes it, relative to cwd or absolute
     local rel="$1"
     case "$1" in
@@ -62,7 +62,7 @@ path_ok() { # $1 = path as the header writes it, relative to cwd or absolute
     esac
     case "${rel}" in
         .*|*/..|*/../*) return 1 ;;
-        mates|mates/*|degree|degree/*|milestones/*/feedback|milestones/*/feedback/*) return 1 ;;
+        mates|mates/*|degree|degree/*|miles/*/feedback|miles/*/feedback/*) return 1 ;;
     esac
     return 0
 }

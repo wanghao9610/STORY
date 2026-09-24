@@ -16,7 +16,7 @@ Read `STORY_LANG`, `INVOLVE` and `STORY_MAIN` from `.env` once (conventions §7)
 
 - a row status in `notes/outline.md`: a chapter, figure, or table reaching `in-progress` or `ready`;
 - claim statuses in `notes/claims.md`: the chapter's claim IDs audited during this invocation, none left `drafted`;
-- a file this invocation writes, such as `milestones/<slug>/simulations/SIM_EXAM_<date>.md`, `wkdrs/reports/SIM_EXAM_<date>.md` when no milestone applies, or an audit report under `wkdrs/reports/`, each created or rewritten during this invocation; a file left by an earlier session, even one dated today, proves nothing;
+- a file this invocation writes, such as `miles/<slug>/simulations/SIM_EXAM_<date>.md`, `wkdrs/reports/SIM_EXAM_<date>.md` when no milestone applies, or an audit report under `wkdrs/reports/`, each created or rewritten during this invocation; a file left by an earlier session, even one dated today, proves nothing;
 - `bash execs/run.sh` building the manuscript.
 
 A status check trusts only the setters conventions §3 (Who sets each status) names: a row is `ready` because its writing skill set it, and a claim leaves `drafted` only through the runs that section lists.
@@ -46,7 +46,7 @@ These stay outside the grant whatever the goal says and whatever level resolves.
 - start a skill marked †: `story-proj-adopt`, `story-syns-coach`, `story-outl-planner`, `story-revs-resolver`, `story-defn-builder`, or `story-depo-packer`;
 - import, register, or refresh evidence: nothing in a goal run writes `mates/` (`AGENTS.md` §1);
 - write anything under `degree/`, whose facts only the author confirms;
-- write or edit received feedback under `milestones/*/feedback/`;
+- write or edit received feedback under `miles/*/feedback/`;
 - declare a deposit ready, or report any check as deposit readiness: only the author's own `story-depo-packer` run freezes a deposit;
 - answer a confirmation point or an `AGENTS.md` §1 ask-first choice on the author's behalf;
 - commit, push, or tag: the author reviews the runs' changes and commits them;
@@ -60,7 +60,7 @@ Report and stop at the first of:
 - the goal's check passes;
 - the next action that bears on the goal is a skill marked †, an author action, or an action outside the grant;
 - a mandatory question has nobody to answer it;
-- a full pass made no progress. A pass is one `story-flow-status` run and every action it led to, a restart after an answered question included. It made no progress when it wrote no durable file under `manus/`, `notes/`, `tasks/`, or `milestones/*/simulations/` and moved no status field (conventions §3) or `tasks/` checkbox. A build, or a report regenerated under `wkdrs/`, is not progress;
+- a full pass made no progress. A pass is one `story-flow-status` run and every action it led to, a restart after an answered question included. It made no progress when it wrote no durable file under `manus/`, `notes/`, `tasks/`, or `miles/*/simulations/` and moved no status field (conventions §3) or `tasks/` checkbox. A build, or a report regenerated under `wkdrs/`, is not progress;
 - step 5 runs out of moves.
 
 The final reply lists:

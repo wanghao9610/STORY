@@ -11,7 +11,7 @@
 # command that may write into the thesis's protected records — the evidence
 # store mates/ (except through its sanctioned writer, bash
 # execs/scpts/import.sh), the confirmed institutional facts in degree/, and
-# received committee feedback in milestones/*/feedback/. This gate stays silent
+# received committee feedback in miles/*/feedback/. This gate stays silent
 # on those, and the normal permission flow takes over. Confirmation points
 # (conventions §7) are untouched: they are questions a skill asks in a model
 # turn, not permission prompts a hook can answer.
@@ -94,7 +94,7 @@ cmd="$(strip_heredocs)"
 
 # Whether a word names a path under one of the thesis's protected records:
 # mates/ (AGENTS.md §1: written only through import.sh and story-evid-curator),
-# degree/ (user-confirmed institutional facts), and milestones/*/feedback/
+# degree/ (user-confirmed institutional facts), and miles/*/feedback/
 # (received comments, never edited in place). The word is read the way the shell
 # would hand it over: backslashes (so an escaped quote inside `python3 -c "..."`
 # is the quote it escapes), quotes, a redirect written onto its target (`>f`,
@@ -111,8 +111,8 @@ protected_path() { # $1 = one word of the command
     p="${p#"${root}"/}"
     while [[ "${p}" == ./* ]]; do p="${p#./}"; done
     case "${p}" in
-        mates|mates/*|degree|degree/*|milestones/*/feedback|milestones/*/feedback/*) return 0 ;;
-        */mates|*/mates/*|*/degree|*/degree/*|*/milestones/*/feedback|*/milestones/*/feedback/*) return 0 ;;
+        mates|mates/*|degree|degree/*|miles/*/feedback|miles/*/feedback/*) return 0 ;;
+        */mates|*/mates/*|*/degree|*/degree/*|*/miles/*/feedback|*/miles/*/feedback/*) return 0 ;;
     esac
     return 1
 }

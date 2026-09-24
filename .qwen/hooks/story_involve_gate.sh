@@ -50,10 +50,10 @@ esac
 # So do the thesis's protected records, at every level: the evidence store
 # mates/ (AGENTS.md §1 — written only through execs/scpts/import.sh and
 # story-evid-curator, whose edits you approve here), the confirmed institutional
-# facts in degree/, and received committee feedback in milestones/*/feedback/.
+# facts in degree/, and received committee feedback in miles/*/feedback/.
 case "${path#"${root}"/}" in
     .*|*/..|*/../*) exit 0 ;;
-    mates|mates/*|degree|degree/*|milestones/*/feedback|milestones/*/feedback/*) exit 0 ;;
+    mates|mates/*|degree|degree/*|miles/*/feedback|miles/*/feedback/*) exit 0 ;;
 esac
 
 printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow","permissionDecisionReason":"INVOLVE=low"}}\n'

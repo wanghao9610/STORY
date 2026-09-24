@@ -348,7 +348,7 @@ else
         'Green lint is never the check' \
         'nothing in a goal run writes `mates/`' \
         'write anything under `degree/`' \
-        'write or edit received feedback under `milestones/*/feedback/`' \
+        'write or edit received feedback under `miles/*/feedback/`' \
         'declare a deposit ready' \
         'commit, push, or tag' \
         'are asked and waited on at every involve level' \
@@ -872,7 +872,7 @@ fi
 # them and replies in Chinese. A Chinese edition ships only where a person or a
 # run reads it, and each one is listed here with its English original. Anything
 # else in Chinese is a twin STORY dropped, and it must not come back. The walk
-# prunes what a thesis owns rather than STORY (notes, milestones, tasks, the
+# prunes what a thesis owns rather than STORY (notes, miles, tasks, the
 # evidence store, and the memory store, versioned and machine-local alike),
 # where a thesis may keep twins of its own from an earlier release. Upstream's
 # own store is held to its .gitkeep above.
@@ -896,7 +896,7 @@ while IFS= read -r path; do
         fail "${path}: STORY ships no Chinese edition of this file; the English one is the only copy"
         markdown_errors=1
     fi
-done < <(find . \( -path './.git' -o -path './wkdrs' -o -path './notes' -o -path './milestones' -o -path './tasks' -o -path './mates' -o -path './.story/memory' \) -prune \
+done < <(find . \( -path './.git' -o -path './wkdrs' -o -path './notes' -o -path './miles' -o -path './tasks' -o -path './mates' -o -path './.story/memory' \) -prune \
     -o \( -type f -o -type l \) \( -name '*.zh-CN.md' -o -name '*_zh.md' \) -print | sort)
 # By name and with no -type test, so a dangling link left by a hand-deleted
 # target is caught too: SKILL.md is the only manifest in every tree and plugin.
@@ -918,7 +918,7 @@ for spec in human-writing-guide memory_spec model_id_spec; do
     fi
 done
 (( spec_errors == 0 )) && ok 'the human-writing guide, memory spec, and model-id spec stay folded into the conventions'
-spec_links="$(grep -RInE --exclude-dir=.git --exclude-dir=wkdrs --exclude-dir=notes --exclude-dir=milestones \
+spec_links="$(grep -RInE --exclude-dir=.git --exclude-dir=wkdrs --exclude-dir=notes --exclude-dir=miles \
     --exclude-dir=tasks --exclude-dir=mates --exclude-dir=manus --exclude-dir=.story \
     '(human-writing-guide|memory_spec|model_id_spec)(\.zh-CN)?\.md' . 2>/dev/null |
     grep -vE '^\./\.github/scripts/check_consistency\.sh:' || true)"
@@ -973,7 +973,7 @@ fi
 
 grep -q 'Systematic Toolchain for Organizing Research over Years' README.md || fail 'README.md lacks the official expansion'
 grep -q 'A STAR takes the STAGE to tell a STORY' README.md || fail 'README.md lacks the official tagline'
-for path in degree/profile.tex degree/requirements.md notes/.gitkeep notes/refs/.gitkeep mates/MANIFEST.md manus/main.tex manus/main-zh.tex manus/stys/story.cls manus/stys/story.sty milestones/.gitkeep tasks/.gitkeep .story/memory/.gitkeep; do
+for path in degree/profile.tex degree/requirements.md notes/.gitkeep notes/refs/.gitkeep mates/MANIFEST.md manus/main.tex manus/main-zh.tex manus/stys/story.cls manus/stys/story.sty miles/.gitkeep tasks/.gitkeep .story/memory/.gitkeep; do
     [[ -f "${path}" ]] || fail "missing core path: ${path}"
 done
 for path in notes notes/refs; do

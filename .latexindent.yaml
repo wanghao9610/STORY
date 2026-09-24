@@ -12,7 +12,7 @@
 # rewrite that would change the typeset text; the editor points at this same
 # file (.vscode/settings.json) so a save and a script run cannot disagree.
 # Never applied to manus/stys/ or to an official institutional template under
-# milestones/*/template/ — those are reusable or externally supplied files.
+# miles/*/template/ — those are reusable or externally supplied files.
 
 # Spaces, not tabs, and the same width the editor inserts — a mismatch here is a
 # file that reformats one way on save and the other way in the script, forever.

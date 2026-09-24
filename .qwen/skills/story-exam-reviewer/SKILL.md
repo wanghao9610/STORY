@@ -19,6 +19,6 @@ argument-hint: "[MILESTONE] [DESCRIPTION] [involve=LEVEL]"
    - the thesis commands the literature and positions the work accurately;
    - the synthesis, limitations, and generalization boundaries fit the degree level;
    - the presentation holds up under the human-writing contract (conventions §5).
-5. Write an executive verdict, major and minor concerns, required clarifications, the claim and contribution IDs attacked, and a defense bank of likely oral-examination questions to `milestones/<slug>/simulations/SIM_EXAM_<date>.md`. With no milestone, write `wkdrs/reports/SIM_EXAM_<date>.md` and say it is regenerable and untracked; to keep it, the author asks `story-revs-resolver` to copy it unchanged into a milestone's `simulations/`.
+5. Write an executive verdict, major and minor concerns, required clarifications, the claim and contribution IDs attacked, and a defense bank of likely oral-examination questions to `miles/<slug>/simulations/SIM_EXAM_<date>.md`. With no milestone, write `wkdrs/reports/SIM_EXAM_<date>.md` and say it is regenerable and untracked; to keep it, the author asks `story-revs-resolver` to copy it unchanged into a milestone's `simulations/`.
 
 Never create a milestone, write into `feedback/` (conventions §6), or edit the manuscript or the claim ledger.

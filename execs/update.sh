@@ -357,6 +357,21 @@ report_legacy_memory_index() {
     fi
 }
 
+# The milestone records an earlier release kept under milestones/, before the
+# directory took its short name miles/: every skill, lint.sh, scan.sh, and the
+# gates that guard received feedback now read miles/ and find nothing there.
+# Reported, not moved — the records are the thesis's.
+report_legacy_milestones() {
+    [[ -d "${ROOT_DIR}/milestones" ]] || return 0
+    if [[ -e "${ROOT_DIR}/miles" ]]; then
+        log "NOTE: both milestones/ and miles/ exist; skills, lint.sh, and the gates read only miles/."
+        log "      Move each record from milestones/<slug>/ into miles/<slug>/ with git mv, then remove the empty milestones/."
+    else
+        log "NOTE: milestones/ is now miles/; skills, lint.sh, and the gates read only miles/."
+        log "      Run 'git mv milestones miles' and commit it."
+    fi
+}
+
 # fmt.sh is synced but .latexindent.yaml is the thesis's: a kept config without
 # the rules that hold a closing brace or bracket on its sentence's line makes
 # fmt.sh refuse every file in which a sentence ends a group. Reported, not
@@ -612,7 +627,7 @@ if [[ "${ADOPT}" == true ]]; then
         "manus/fronts"
         "manus/chaps"
         "manus/backs"
-        "milestones"
+        "miles"
     )
     ADOPT_FILES=(
         "${AGENT_DOCS[@]}"
@@ -663,7 +678,7 @@ if [[ "${ADOPT}" == true ]]; then
         "mates/manual"
         "notes/refs"
         "degree"
-        "milestones"
+        "miles"
         "tasks"
         "wkdrs"
         "execs/scpts"
@@ -991,6 +1006,7 @@ if [[ "${ADOPT}" == false ]]; then
         fi
         report_unregistered_hooks
         report_legacy_memory_index
+        report_legacy_milestones
         report_latexindent_closers
     fi
 
@@ -1115,6 +1131,7 @@ if [[ -e "${ROOT_DIR}/.gitignore" ]] && \
     fi
 fi
 report_unregistered_hooks
+report_legacy_milestones
 report_latexindent_closers
 
 log "Next: confirm degree_level in degree/profile.tex, copy .env.example to .env, then run story-proj-adopt in your agent to wire the thesis up."

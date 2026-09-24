@@ -47,7 +47,7 @@ manus/main-zh.tex, manus/fronts/, manus/chaps/, manus/backs/, and manus/tabs/.
 A PATH may be a file or a directory; directories are searched for *.tex.
 
 Two trees are never formatted, named or not: manus/stys/ and an official
-institutional template under milestones/*/template/. Those are reusable or
+institutional template under miles/*/template/. Those are reusable or
 externally supplied files, and reformatting one is editing the template.
 
 Every rewrite is checked before it is kept. LaTeX collapses each whitespace run
@@ -114,7 +114,7 @@ command -v latexindent >/dev/null 2>&1 || \
 is_protected() {
     case "$1" in
         manus/stys/*)                       return 0 ;;
-        milestones/*/template/*|milestones/*/*/template/*) return 0 ;;
+        miles/*/template/*|miles/*/*/template/*) return 0 ;;
     esac
     return 1
 }

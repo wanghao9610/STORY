@@ -37,7 +37,7 @@ This repository uses STORY — **Systematic Toolchain for Organizing Research ov
 
 ## 4. Degree milestones
 
-- Each applicable proposal, review, pre-defense, defense, correction round, or deposit attempt lives under `milestones/<slug>/`; do not require a milestone merely because another degree level uses it. Informal supervisor or coauthor feedback goes to the standing `milestones/supervision/` record.
+- Each applicable proposal, review, pre-defense, defense, correction round, or deposit attempt lives under `miles/<slug>/`; do not require a milestone merely because another degree level uses it. Informal supervisor or coauthor feedback goes to the standing `miles/supervision/` record.
 - `milestone.yml` holds author-confirmed facts, `feedback/` received comments unchanged, `simulations/` generated reviews, `response/` point ledgers, `materials/` defense materials, `template/` an official template the author supplied, and `RECORD_<date>.md` a frozen outcome (conventions §6, Milestone lifecycle).
 - Received feedback is never edited in place. Each point gets one disposition from conventions §6 (Feedback and promises).
 - Only `story-depo-packer` declares a deposit ready, and only when every gate of conventions §6 (Deposit gates) passes.
@@ -81,4 +81,4 @@ This repository uses STORY — **Systematic Toolchain for Organizing Research ov
 - Store session knowledge in `.story/memory/` only when no repository file already owns it. The versioned `.story/memory/` travels with the thesis; a `machine:` scoped fact, or any memory the author keeps off the repository, goes to the git-ignored `.story/memory/local/`.
 - One file per memory, with a one-line `summary` in its frontmatter from which the session hooks build the index; types, format, and retirement: conventions §10.
 - Offer, never assume: make at most two memory offers per session, counting every skill a `story-auto` goal run starts, and write only after the author agrees. `INVOLVE=low` skips the question but not the cap: it records at most two and names each.
-- Memory is never evidence and cannot override `degree/`, `mates/`, `notes/`, or `milestones/`.
+- Memory is never evidence and cannot override `degree/`, `mates/`, `notes/`, or `miles/`.

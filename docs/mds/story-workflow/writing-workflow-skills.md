@@ -42,7 +42,7 @@ flowchart LR
 | `story-copy-editor` | Authorial voice, formulaic prose, terminology, transitions, or repetition need polishing | manuscript edits, a report, or `notes/style.md` |
 | `story-clms-auditor` | Numbers and contribution claims need traceability checks | claim verdicts and tasks |
 | `story-cite-auditor` | Citation keys or literature assertions need checking | citation report and tasks |
-| `story-exam-reviewer` | The thesis needs a degree-appropriate mock examination | `milestones/<slug>/simulations/SIM_EXAM_<date>.md`, or `wkdrs/reports/SIM_EXAM_<date>.md` when no milestone is named or active |
+| `story-exam-reviewer` | The thesis needs a degree-appropriate mock examination | `miles/<slug>/simulations/SIM_EXAM_<date>.md`, or `wkdrs/reports/SIM_EXAM_<date>.md` when no milestone is named or active |
 | `story-revs-resolver` † | Supervisor, committee, examiner, or deposit feedback arrived | point ledger, responses, promises |
 | `story-defn-builder` † | An applicable defense narrative or deck needs preparation | defense plan and deck artifacts |
 | `story-depo-packer` † | A final package needs preflight and a freeze record | deposit bundle and record |

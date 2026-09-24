@@ -42,7 +42,7 @@ flowchart LR
 | `story-copy-editor` | 统一作者声音，修改公式化表达、术语、过渡或重复 | 正文修改、报告或 `notes/style.md` |
 | `story-clms-auditor` | 检查数字和贡献论断的可追溯性 | 论断结论与任务 |
 | `story-cite-auditor` | 检查引用键与文献断言 | 引用报告与任务 |
-| `story-exam-reviewer` | 进行适合学位层级的模拟评审 | `milestones/<slug>/simulations/SIM_EXAM_<date>.md`；没有指定或当前里程碑时为 `wkdrs/reports/SIM_EXAM_<date>.md` |
+| `story-exam-reviewer` | 进行适合学位层级的模拟评审 | `miles/<slug>/simulations/SIM_EXAM_<date>.md`；没有指定或当前里程碑时为 `wkdrs/reports/SIM_EXAM_<date>.md` |
 | `story-revs-resolver` † | 导师、委员会、评阅人或归档反馈到达 | 逐点记录、回复与承诺 |
 | `story-defn-builder` † | 准备适用的答辩叙事或演示文稿 | 答辩计划与演示产物 |
 | `story-depo-packer` † | 最终检查、打包并冻结版本 | 归档包与记录 |

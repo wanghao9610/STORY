@@ -239,16 +239,16 @@ rm "${WORK_DIR}/degree/requirements.md"
 
 # The active milestone is the one milestone.yml with status: active, a standing
 # supervision record aside; a malformed limit is reported, a quoted one is read.
-mkdir -p "${WORK_DIR}/milestones/supervision" "${WORK_DIR}/milestones/defense"
-printf '%s\n' 'kind: supervision' 'status: active' 'max_pages: 3' > "${WORK_DIR}/milestones/supervision/milestone.yml"
-printf '%s\n' 'kind: defense' 'status: active' 'max_pages: "abc"' > "${WORK_DIR}/milestones/defense/milestone.yml"
+mkdir -p "${WORK_DIR}/miles/supervision" "${WORK_DIR}/miles/defense"
+printf '%s\n' 'kind: supervision' 'status: active' 'max_pages: 3' > "${WORK_DIR}/miles/supervision/milestone.yml"
+printf '%s\n' 'kind: defense' 'status: active' 'max_pages: "abc"' > "${WORK_DIR}/miles/defense/milestone.yml"
 expect_pass milestone_bad_limit
-expect_log milestone_bad_limit "max_pages 'abc' in milestones/defense/milestone.yml is not a positive integer"
+expect_log milestone_bad_limit "max_pages 'abc' in miles/defense/milestone.yml is not a positive integer"
 refute_log milestone_bad_limit 'milestones have status: active'
-printf '%s\n' 'kind: defense' 'status: active' 'max_pages: "7"' > "${WORK_DIR}/milestones/defense/milestone.yml"
+printf '%s\n' 'kind: defense' 'status: active' 'max_pages: "7"' > "${WORK_DIR}/miles/defense/milestone.yml"
 # The fake PDF is empty and so is the log: no page count, with or without pdfinfo.
 expect_pass milestone_quoted_limit
-expect_log milestone_quoted_limit 'WARN: page limit 7 (milestones/defense/milestone.yml) not checked: the page count could not be read (install pdfinfo).'
+expect_log milestone_quoted_limit 'WARN: page limit 7 (miles/defense/milestone.yml) not checked: the page count could not be read (install pdfinfo).'
 
 # Without pdfinfo, the page count comes from the engine's log line, which TeX
 # wraps at 79 characters; with neither, the limit is reported as unchecked. A
@@ -261,13 +261,13 @@ done
 LINT_PATH="${NO_PDFINFO_BIN}"
 printf '%s\n' 'Output written on /Users/example/Theses/STORY/wkdrs/builds/main-zh.' 'xdv (1 page, 7276 bytes).' > "${WORK_DIR}/wkdrs/builds/main.log"
 expect_pass page_count_from_log
-expect_log page_count_from_log 'Page limit: 1/7 (milestones/defense/milestone.yml).'
+expect_log page_count_from_log 'Page limit: 1/7 (miles/defense/milestone.yml).'
 printf '%s\n' 'Output written on /Users/example/Theses/STORY/wkdrs/builds/main.pdf (9 pa' 'ges, 81535 bytes).' > "${WORK_DIR}/wkdrs/builds/main.log"
 expect_fail page_limit_from_log
-expect_log page_limit_from_log '9 pages exceeds the confirmed limit 7 (milestones/defense/milestone.yml)'
+expect_log page_limit_from_log '9 pages exceeds the confirmed limit 7 (miles/defense/milestone.yml)'
 : > "${WORK_DIR}/wkdrs/builds/main.log"
 expect_pass page_limit_unchecked
-expect_log page_limit_unchecked 'WARN: page limit 7 (milestones/defense/milestone.yml) not checked: the page count could not be read (install pdfinfo).'
+expect_log page_limit_unchecked 'WARN: page limit 7 (miles/defense/milestone.yml) not checked: the page count could not be read (install pdfinfo).'
 
 # pdfinfo's count wins over the log's, and a pdfinfo that reads nothing falls
 # back to the log.
@@ -278,18 +278,18 @@ chmod +x "${PDFINFO_STUB_BIN}/pdfinfo"
 LINT_PATH="${PDFINFO_STUB_BIN}:${PATH}"
 printf '%s\n' 'Output written on main.pdf (5 pages, 81535 bytes).' > "${WORK_DIR}/wkdrs/builds/main.log"
 expect_fail page_count_from_pdfinfo
-expect_log page_count_from_pdfinfo '8 pages exceeds the confirmed limit 7 (milestones/defense/milestone.yml)'
+expect_log page_count_from_pdfinfo '8 pages exceeds the confirmed limit 7 (miles/defense/milestone.yml)'
 printf '%s\n' '#!/bin/sh' 'exit 1' > "${PDFINFO_STUB_BIN}/pdfinfo"
 expect_pass page_count_pdfinfo_unreadable
-expect_log page_count_pdfinfo_unreadable 'Page limit: 5/7 (milestones/defense/milestone.yml).'
+expect_log page_count_pdfinfo_unreadable 'Page limit: 5/7 (miles/defense/milestone.yml).'
 LINT_PATH=''
 : > "${WORK_DIR}/wkdrs/builds/main.log"
 
-mkdir -p "${WORK_DIR}/milestones/predefense"
-printf '%s\n' 'kind: pre-defense' 'status: active' > "${WORK_DIR}/milestones/predefense/milestone.yml"
+mkdir -p "${WORK_DIR}/miles/predefense"
+printf '%s\n' 'kind: pre-defense' 'status: active' > "${WORK_DIR}/miles/predefense/milestone.yml"
 expect_pass milestone_two_active
 expect_log milestone_two_active '2 milestones have status: active'
-rm -rf "${WORK_DIR}/milestones"
+rm -rf "${WORK_DIR}/miles"
 
 # --no-build trusts an earlier build only when that build finished cleanly.
 printf '%s\n' '! Undefined control sequence.' > "${WORK_DIR}/wkdrs/builds/main.log"

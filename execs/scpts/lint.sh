@@ -413,7 +413,7 @@ take_limit() {
 }
 active=''
 active_count=0
-for yml in milestones/*/milestone.yml; do
+for yml in miles/*/milestone.yml; do
     [[ -f "${yml}" ]] || continue
     [[ "$(yml_value "${yml}" status)" == active ]] || continue
     [[ "$(yml_value "${yml}" kind)" != supervision ]] || continue
@@ -426,8 +426,8 @@ if (( active_count > 1 )); then
 elif (( active_count == 0 )) && [[ -f notes/story.md ]]; then
     active="$(awk '/^active_milestone:/ { sub(/^active_milestone:[[:space:]]*/, ""); gsub(/["\047[:space:]]/, ""); print; exit }' notes/story.md)"
 fi
-if [[ -n "${active}" && -f "milestones/${active}/milestone.yml" ]]; then
-    take_limit "milestones/${active}/milestone.yml" || true
+if [[ -n "${active}" && -f "miles/${active}/milestone.yml" ]]; then
+    take_limit "miles/${active}/milestone.yml" || true
 fi
 if [[ -z "${limit}" && -s degree/profile.tex ]]; then
     take_limit degree/profile.tex || true
