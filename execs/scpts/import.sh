@@ -22,11 +22,11 @@ usage() {
         '' \
         '--diff compares the snapshot with the source and writes nothing. It prints' \
         'one line per differing file: stale (the source changed a snapshotted file),' \
-        'new upstream (the source has a file not yet imported), or removed upstream' \
-        '(a manifest entry for the slug whose source file no longer exists; the' \
-        'snapshot stays, and this line alone does not change the exit code). It exits' \
-        '2 when it prints a stale or new upstream line, 0 otherwise, and 1 when the' \
-        'check itself cannot run.'
+        'new upstream (the source has a file with no snapshot under mates/<slug>/),' \
+        'or removed upstream (a manifest entry for the slug whose source file no' \
+        'longer exists; the snapshot stays, and this line alone does not change the' \
+        'exit code). It exits 2 when it prints a stale or new upstream line, 0' \
+        'otherwise, and 1 when the check itself cannot run.'
 }
 
 while (( $# > 0 )); do
@@ -113,7 +113,14 @@ case "${SOURCE_TYPE}" in
         ;;
 esac
 sort -u "${LIST_FILE}" -o "${LIST_FILE}"
-[[ -s "${LIST_FILE}" ]] || fail "no importable ${SOURCE_TYPE} artifacts found in ${SOURCE_DIR}."
+ENTRIES_FILE="${TEMP_DIR}/entries"
+: > "${ENTRIES_FILE}"
+if [[ "${DIFF}" == true && -f "${MANIFEST}" ]]; then
+    awk -v p="## ${SLUG}/" '{ sub(/\r$/, "") } index($0, p) == 1 { print substr($0, length(p) + 1) }' \
+        "${MANIFEST}" | sort -u > "${ENTRIES_FILE}" || fail "cannot read ${MANIFEST}."
+fi
+# --diff still runs when the source dropped every file the slug's entries name.
+[[ -s "${LIST_FILE}" || -s "${ENTRIES_FILE}" ]] || fail "no importable ${SOURCE_TYPE} artifacts found in ${SOURCE_DIR}."
 
 DEST_DIR="${ROOT_DIR}/mates/${SLUG}"
 if [[ "${DIFF}" == true ]]; then
@@ -128,15 +135,11 @@ if [[ "${DIFF}" == true ]]; then
     done < "${LIST_FILE}"
     # A re-import never deletes a snapshot or its entry, so a file the source
     # dropped is reported, not counted as drift: exit 2 could never clear.
-    if [[ -f "${MANIFEST}" ]]; then
-        awk -v p="## ${SLUG}/" '{ sub(/\r$/, "") } index($0, p) == 1 { print substr($0, length(p) + 1) }' \
-            "${MANIFEST}" | sort -u > "${TEMP_DIR}/entries"
-        while IFS= read -r rel; do
-            if [[ ! -f "${SOURCE_DIR}/${rel}" ]]; then
-                printf 'removed upstream  %s\n' "${rel}"; removed=$((removed + 1))
-            fi
-        done < "${TEMP_DIR}/entries"
-    fi
+    while IFS= read -r rel; do
+        if [[ ! -f "${SOURCE_DIR}/${rel}" ]]; then
+            printf 'removed upstream  %s\n' "${rel}"; removed=$((removed + 1))
+        fi
+    done < "${ENTRIES_FILE}"
     # 2, not 1: fail() uses 1 for every hard error, so a caller could not
     # otherwise distinguish "the snapshot is stale" from "the check itself
     # broke" — the same contract update.sh --diff keeps.
@@ -236,5 +239,5 @@ done
 log "Imported ${count} ${SOURCE_TYPE} artifact(s) into mates/${SLUG}/ from commit ${SOURCE_COMMIT}."
 if (( ${#ignored[@]} > 0 )); then
     log "WARN: .gitignore ignores ${#ignored[@]} imported file(s), so git will not track them: ${ignored[*]}."
-    log "      Add '!/mates/**' after its LaTeX build-file rules and before any .DS_Store rule."
+    log "      Add '!/mates/**' after its LaTeX build-file rules and before any .DS_Store rule, with a .env line right after it."
 fi

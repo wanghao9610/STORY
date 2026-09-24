@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{stys/story}[2026/08/23 v0.3 English and Chinese STORY thesis class]
+\ProvidesClass{stys/story}[2026/09/24 v0.4 English and Chinese STORY thesis class]
 
 \newif\ifstory@draft
 \newif\ifstory@chinese
@@ -42,9 +42,10 @@
 %% required Chinese abstract: under XeLaTeX or LuaLaTeX it loads ctex with the
 %% zh branch's fonts and scheme=plain, which leaves English headings and layout
 %% as they are. Under pdfLaTeX it stops with an error; the zh branch ignores it.
+%% iftex loads first so a skipped branch still sees \iftutex as a conditional.
+\RequirePackage{iftex}
 \ifstory@chinese\else
   \ifstory@cjk
-    \RequirePackage{iftex}
     \iftutex
       \RequirePackage[UTF8,scheme=plain,fontset=fandol]{ctex}
     \else

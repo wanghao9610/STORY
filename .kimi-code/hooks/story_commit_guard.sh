@@ -14,8 +14,9 @@
 # a forced clean, stash clear / drop), forced pushes (push -f / --force* /
 # --mirror, or a +refspec — the remote's history is the user's too), remote
 # deletions (push -d / --delete / --prune, or a :dst refspec), any deletion or
-# move of a tag (tag -d / -f, or update-ref on refs/tags/ — a freeze tag is the
-# immutable record of what was deposited, and exactly one skill creates one),
+# move of a tag (tag -d / -f, or update-ref on refs/tags/ or with --stdin — a
+# freeze tag is the immutable record of what was deposited, and exactly one
+# skill creates one),
 # and a commit whose staged files exceed 10 MB — a build PDF, a raw figure
 # export, or an evidence blob in history is costly to remove, since clearing it
 # back out needs exactly those rewrites. A plain `push` stays
@@ -199,13 +200,16 @@ while IFS= read -r segment; do
             ;;
         update-ref)
             # The plumbing spelling of `tag -f` and `tag -d`. A freeze tag is
-            # created with `git tag -a`, so no skill needs this on a tag.
+            # created with `git tag -a`, so no skill needs this on a tag, and
+            # none needs --stdin, whose refs arrive where this cannot read them.
             for ((j = i + 1; j < ${#tok[@]}; j++)); do
                 arg="${tok[j]}"
                 case "${arg}" in
                     \'*\'|\"*\") arg="${arg#?}"; arg="${arg%?}" ;;
                 esac
                 case "${arg}" in
+                    --stdin)
+                        deny "STORY git safety: update-ref --stdin can move or delete a tag the guard cannot see, and a freeze tag is the immutable record of what was deposited. Leave the tag where it is." ;;
                     refs/tags/*)
                         deny "STORY git safety: update-ref on a tag moves or deletes it outside git tag, and a freeze tag is the immutable record of what was deposited. Leave the tag where it is." ;;
                 esac

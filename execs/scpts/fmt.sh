@@ -55,11 +55,26 @@ to a single space, so a reformat that only moves line breaks between words
 leaves the typeset text identical, while a space gained or lost beside a brace
 or bracket shows in the PDF; the file is compared before and after under
 exactly that normalization, and a file that fails is reported and left
-untouched. It needs a hand fix — usually a sentence latexindent misread, such
-as a lowercase abbreviation ("std.", "et al.") that ends a line and is better
-written with a tie or an escaped space, or a closing } or ] alone on its line
+untouched. It needs a hand fix — usually a closing } or ] alone on its line
 (an argument spelled over several lines), which belongs at the end of the line
-above.
+above, in place of the bare % that ends it if there is one: that % only ate
+the line end, and the closer keeps a % after it only if its own line ended in
+one (}%). A {% group around running prose (\mbox{% ... }) is refused however it
+is split, since latexindent joins the sentence; write it on one line without
+the %. A sentence that follows a closing } on its line (\todo{...} The end.,
+or \emph{One thing.} here. The end.) goes on a line of its own. A % glued to
+the end of a sentence (good.% note, or good.\footnote{...}% note) eats the
+space before the next line's sentence, which the split puts back; move the
+comment to a line of its own, a fix that does add that space to the PDF.
+
+A period glued to a footnote, citation, label, index entry, or \todo
+(good.\footnote{...}, et al.\cite{x}) ends a sentence only after the command,
+and only before a capital, a comment, or a line end not continued in
+lowercase; one before an escaped or thin space (et al.\ The, Fig.\,3) ends
+none. Neither is split where the source has no space. An abbreviation read as
+a sentence end before a capital or a number (et al. The, Fig. 3) is not
+refused but split onto two lines, since a line break is a space; a tie keeps
+it whole.
 
 Options:
   --check       Report what would change; write nothing. Exit 1 on drift.
@@ -259,8 +274,10 @@ fi
 if [[ -n "${UNSAFE}" ]]; then
     log "REFUSED: $(count "${UNSAFE}") file(s) whose reformat would have changed the typeset text — left untouched:"
     show "${UNSAFE}"
-    log "      fix the sentence latexindent misread (a lowercase abbreviation before a capital is the usual one: write 'et al.\\ ' or 'Fig.~'), then run again."
-    log "      a closing } or ] alone on its line (an argument spelled over several lines, or a sentence and its '}' split by an earlier fmt.sh) goes at the end of the line above, by hand."
+    log "      a closing } or ] alone on its line (an argument spelled over several lines, or a sentence and its '}' split by an earlier fmt.sh) goes at the end of the line above, by hand, in place of the bare % that ends it if there is one, which only ate that line end; keep a % after the closer only if its own line ended in one ('}%')."
+    log "      a '{%' group around running prose ('\\mbox{%', 'the first result%', '}') is refused however it is split, since latexindent joins the sentence: write it on one line without the % ('\\mbox{the first result}'), by hand."
+    log "      a sentence that follows a closing } on its line ('\\todo{...} The end.', or '\\emph{One thing.} here. The end.') goes on a line of its own, by hand."
+    log "      a '%' glued to the end of a sentence ('good.% note', or 'good.\\footnote{...}% note') eats the space before the next line's sentence, which the split puts back: move the comment to a line of its own, by hand, a fix that does add that space to the PDF."
     STATUS=2
 fi
 

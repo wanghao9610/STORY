@@ -561,8 +561,7 @@ for readme in README.md README.zh-CN.md; do
         'bash execs/update.sh --skill story-flow-status' \
         '--adopt' \
         '--force' \
-        'effort: medium' \
-        'RETIRED_FILES'; do
+        'effort: medium'; do
         if ! grep -qF -- "${shared_topic}" "${readme}"; then
             fail "${readme} omits shared setup or update topic: ${shared_topic}"
             deployment_errors=1
@@ -872,12 +871,12 @@ fi
 # Instructions and the workflow conventions are English only: a run in Chinese follows
 # them and replies in Chinese. A Chinese edition ships only where a person or a
 # run reads it, and each one is listed here with its English original. Anything
-# else in Chinese is a twin STORY retired, and it must not come back. The walk
+# else in Chinese is a twin STORY dropped, and it must not come back. The walk
 # prunes what a thesis owns rather than STORY (notes, milestones, tasks, the
 # evidence store, and the memory store, versioned and machine-local alike),
 # where a thesis may keep twins of its own from an earlier release. Upstream's
 # own store is held to its .gitkeep above.
-section 'Chinese editions and retired files'
+section 'Chinese editions'
 markdown_errors=0
 ZH_PAIRS=(
     "README.md|README.zh-CN.md"
@@ -905,39 +904,34 @@ while IFS= read -r path; do
     fail "${path}: SKILL.md has no Chinese edition; a Chinese run reads SKILL.md and replies in Chinese"
     markdown_errors=1
 done < <(find "${ROOTS[@]}" .codex/skills .codex/plugins .kimi-code/plugins -name SKILL_zh.md | sort)
-# Every file execs/update.sh retires downstream stays gone here, so an update
-# never deletes what upstream has quietly started shipping again.
-RETIRED_LIST="$(sed -n '/^RETIRED_FILES=(/,/^)/p' execs/update.sh | sed -nE 's/^[[:space:]]*"([^"]+)".*/\1/p')"
-if [[ -z "${RETIRED_LIST}" ]]; then
-    fail 'execs/update.sh has no readable RETIRED_FILES list'
-    markdown_errors=1
-fi
-while IFS= read -r path; do
-    [[ -n "${path}" ]] || continue
-    if [[ -e "${path}" || -L "${path}" ]]; then
-        fail "${path} is back, but execs/update.sh retires it downstream (RETIRED_FILES)"
-        markdown_errors=1
-    fi
-done <<<"${RETIRED_LIST}"
-(( markdown_errors == 0 )) && ok "${#ZH_PAIRS[@]} en/zh pairs ship; no other Chinese edition, SKILL_zh.md, or retired file is present"
+(( markdown_errors == 0 )) && ok "${#ZH_PAIRS[@]} en/zh pairs ship; no other Chinese edition or SKILL_zh.md is present"
 # The three specs folded into the conventions (§5, §7 with §11, §10) stay
-# folded: beyond RETIRED_FILES keeping the files gone, no shipped file may point
-# at one by path again. execs/update.sh names them to retire them, and this
-# script to reject them; a thesis's own records are skipped.
+# folded: none ships again, by name and with no -type test so a dangling link
+# is caught too, and no shipped file may point at one by path. This script
+# names them to reject them; a thesis's own records are skipped.
+spec_errors=0
+for spec in human-writing-guide memory_spec model_id_spec; do
+    spec_path="docs/mds/story-workflow/${spec}.md"
+    if [[ -e "${spec_path}" || -L "${spec_path}" ]]; then
+        fail "${spec_path} is back; the conventions absorbed it, so change the section that did instead"
+        spec_errors=1
+    fi
+done
+(( spec_errors == 0 )) && ok 'the human-writing guide, memory spec, and model-id spec stay folded into the conventions'
 spec_links="$(grep -RInE --exclude-dir=.git --exclude-dir=wkdrs --exclude-dir=notes --exclude-dir=milestones \
     --exclude-dir=tasks --exclude-dir=mates --exclude-dir=manus --exclude-dir=.story \
     '(human-writing-guide|memory_spec|model_id_spec)(\.zh-CN)?\.md' . 2>/dev/null |
-    grep -vE '^\./(execs/update\.sh|\.github/scripts/check_consistency\.sh):' || true)"
+    grep -vE '^\./\.github/scripts/check_consistency\.sh:' || true)"
 if [[ -n "${spec_links}" ]]; then
     fail 'a file still points at a retired workflow spec; cite the conventions section that absorbed it:'
     printf '%s\n' "${spec_links}" | sed 's/^/      /'
 else
     ok 'no file points at the retired human-writing guide, memory spec, or model-id spec'
 fi
-# Whether an update still deletes them is behavior, not text a grep can pin, so
+# What an update installs and keeps is behavior, not text a grep can pin, so
 # the updater is run against a fixture thesis.
-if ! bash .github/scripts/test_update_retired.sh; then
-    fail 'execs/update.sh no longer retires what upstream dropped'
+if ! bash .github/scripts/test_update.sh; then
+    fail 'execs/update.sh no longer installs what upstream ships or keeps the thesis'"'"'s own files'
 fi
 
 section 'Scripts and repository layout'

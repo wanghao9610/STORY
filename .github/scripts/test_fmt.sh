@@ -30,10 +30,11 @@ cp "${ROOT_DIR}/execs/scpts/fmt.sh" "${WORK_DIR}/execs/scpts/fmt.sh"
 cp "${ROOT_DIR}/.latexindent.yaml" "${WORK_DIR}/.latexindent.yaml"
 
 # The typeset text, as TeX reads the source: a whitespace run is one space, a
-# blank line ends a paragraph, and a space at a group edge is kept. (The
-# fixtures hold no comments, so none are stripped.)
+# blank line ends a paragraph, a space at a group edge is kept, and a `%` drops
+# the rest of its line, the line end, and the next line's indent.
 typeset_text() {
-    perl -0777 -ne 'print join "\n\n", map { s/\s+/ /g; s/^ | $//g; $_ } split /\n[ \t]*\n\s*/, $_' "$1"
+    perl -0777 -ne 's/(?<!\\)%.*\n[ \t]*(?=\n)/\n/g; s/(?<!\\)%.*\n?[ \t]*//g;
+        print join "\n\n", map { s/\s+/ /g; s/^ | $//g; $_ } split /\n[ \t]*\n\s*/, $_' "$1"
 }
 
 # A fixture chapter from stdin, with a pristine copy to compare against.
@@ -86,10 +87,10 @@ expect_reformat() {
 }
 
 # latexindent's rewrite really does change the typeset text, so the refusal is
-# for the right reason; fmt.sh then refuses it with the hand-fix hint, in both
-# modes, and the source keeps every byte.
+# for the right reason; fmt.sh then refuses it with the hand-fix hint (the line
+# that carries the given phrase), in both modes, and the source keeps every byte.
 expect_refused() {
-    local name="$1"
+    local name="$1" hint="${2:-alone on its line}"
     local file="${WORK_DIR}/manus/chaps/${name}.tex" log="${WORK_DIR}/${name}.log"
     local cand="${WORK_DIR}/indent/${name}.tex"
 
@@ -114,9 +115,28 @@ expect_refused() {
             fail "${name}: fmt.sh ${mode} did not refuse a rewrite that changes the typeset text (exit ${RC})"
             show_log "${log}"
         fi
-        grep -qF 'alone on its line' "${log}" || fail "${name}: the refusal does not give the closing-brace hand fix"
+        grep -qF -- "${hint}" "${log}" || fail "${name}: the refusal does not give the hand fix ('${hint}')"
         cmp -s "${WORK_DIR}/orig/${name}.tex" "${file}" || fail "${name}: fmt.sh ${mode} wrote to a refused file"
     done
+}
+
+# A file already one sentence per line: --check passes it and writes nothing.
+# Given the refused fixture it hand-fixes, it also typesets exactly as that one
+# does, so a hint whose fix changes the text fails here.
+expect_clean() {
+    local name="$1" refused="${2:-}"
+    local file="${WORK_DIR}/manus/chaps/${name}.tex" log="${WORK_DIR}/${name}.log"
+
+    run_fmt "${log}" --check "manus/chaps/${name}.tex"
+    if (( RC != 0 )) || ! grep -qF 'ok: 1 file(s)' "${log}"; then
+        fail "${name}: the file is not clean on --check (exit ${RC})"
+        show_log "${log}"
+    fi
+    cmp -s "${WORK_DIR}/orig/${name}.tex" "${file}" || fail "${name}: --check wrote to the file"
+    if [[ -n "${refused}" ]] && \
+        [[ "$(typeset_text "${WORK_DIR}/orig/${refused}.tex")" != "$(typeset_text "${file}")" ]]; then
+        fail "${name}: the hand fix for ${refused} changes the typeset text"
+    fi
 }
 
 # 1. A sentence that ends a group keeps the group's closer on its line: the
@@ -168,8 +188,165 @@ fixture split_options <<'EOF'
 EOF
 expect_refused split_options
 
+# 3. The hand fixes the refusal names are clean and typeset as the refused file
+#    does. A `{%` wrapper's closer takes the place of the bare `%` above it: that
+#    `%` only ate the line end before the `}`, while the line end after it is a
+#    space, here between two boxes, that a `%` kept after the `}` would eat. A
+#    `{%` group around running prose goes on one line without the `%`, and a
+#    sentence that follows a closing brace on its line, which latexindent would
+#    join to what precedes it without a space, goes on a line of its own.
+fixture wrapper <<'EOF'
+\begin{table}
+    \centering
+    \resizebox{0.4\linewidth}{!}{%
+        \begin{tabular}{l}
+            a \\
+        \end{tabular}%
+    }
+    \resizebox{0.4\linewidth}{!}{%
+        \begin{tabular}{l}
+            b \\
+        \end{tabular}%
+    }
+\end{table}
+EOF
+expect_refused wrapper 'in place of the bare %'
+
+fixture wrapper_fixed <<'EOF'
+\begin{table}
+    \centering
+    \resizebox{0.4\linewidth}{!}{%
+        \begin{tabular}{l}
+            a \\
+        \end{tabular}}
+    \resizebox{0.4\linewidth}{!}{%
+        \begin{tabular}{l}
+            b \\
+        \end{tabular}}
+\end{table}
+EOF
+expect_clean wrapper_fixed wrapper
+
+# A closer whose own line ends in `%` keeps that `%` after it.
+fixture wrapper_kept <<'EOF'
+\begin{figure}
+    \centering
+    \resizebox{0.4\linewidth}{!}{%
+        \begin{tabular}{l}
+            a \\
+        \end{tabular}%
+    }%
+    \hfill
+\end{figure}
+EOF
+
+fixture wrapper_kept_fixed <<'EOF'
+\begin{figure}
+    \centering
+    \resizebox{0.4\linewidth}{!}{%
+        \begin{tabular}{l}
+            a \\
+        \end{tabular}}%
+    \hfill
+\end{figure}
+EOF
+expect_clean wrapper_kept_fixed wrapper_kept
+
+fixture prose_group <<'EOF'
+The box \mbox{%
+the first result%
+}
+and more.
+EOF
+expect_refused prose_group 'write it on one line without the %'
+
+fixture prose_group_fixed <<'EOF'
+The box \mbox{the first result} and more.
+EOF
+expect_clean prose_group_fixed prose_group
+
+fixture todo_sentence <<'EOF'
+We know. \todo{Fill in the value.} The end.
+EOF
+expect_refused todo_sentence 'goes on a line of its own'
+
+fixture todo_sentence_fixed <<'EOF'
+We know.
+\todo{Fill in the value.}
+The end.
+EOF
+expect_clean todo_sentence_fixed todo_sentence
+
+fixture group_sentence <<'EOF'
+We see \emph{One thing.} here. The end.
+EOF
+expect_refused group_sentence 'goes on a line of its own'
+
+fixture group_sentence_fixed <<'EOF'
+We see \emph{One thing.} here.
+The end.
+EOF
+expect_clean group_sentence_fixed group_sentence
+
+# A `%` glued to a sentence end, after a command or not, eats the space before
+# the next line's sentence, and the split puts it back: refused. Its hand fix,
+# the comment on a line of its own, is the one that does not typeset as the
+# refused file does: it adds exactly that space, as the hint says.
+fixture glued_comment <<'EOF'
+The results hold.\footnote{See the log.}% keep tight
+More here.
+EOF
+expect_refused glued_comment "a '%' glued to the end of a sentence"
+
+fixture glued_comment_plain <<'EOF'
+The results hold.% keep tight
+More here.
+EOF
+expect_refused glued_comment_plain "a '%' glued to the end of a sentence"
+
+fixture glued_comment_fixed <<'EOF'
+The results hold.\footnote{See the log.}
+% keep tight
+More here.
+EOF
+expect_clean glued_comment_fixed
+[[ "$(typeset_text "${WORK_DIR}/orig/glued_comment_fixed.tex")" == \
+    "$(typeset_text "${WORK_DIR}/orig/glued_comment.tex" | sed 's/}More/} More/')" ]] || \
+    fail "glued_comment_fixed: the hand fix does more than add the space the glued % ate"
+
+# 4. A period glued to a footnote, a citation, or a label ends its sentence after
+#    the command, and one before an escaped or thin space ends none: a break
+#    between the period and what follows it would add a space. Such a sentence
+#    stays whole on its own line: a sentence after it is split off, and a line
+#    that continues it in lowercase is joined to it.
+fixture glued <<'EOF'
+The results are good.\footnote{See the appendix.}
+The value rose by 3.\cite[p.~4]{x}
+As shown in the table.\label{tab:x}
+We cite Smith et al.\cite{x} and more.
+We cite Smith et al.\cite{x}, and more.
+We follow Smith et al.\ The results hold.
+EOF
+expect_clean glued
+
+fixture glued_footnote <<'EOF'
+It works well.\footnote{See the appendix.} It is fast.
+EOF
+expect_reformat glued_footnote 'It works well.\footnote{See the appendix.}'
+
+fixture glued_wrapped <<'EOF'
+We cite Smith et al.\cite{x}
+and more work.
+EOF
+expect_reformat glued_wrapped 'We cite Smith et al.\cite{x} and more work.'
+
+fixture glued_thin <<'EOF'
+See Fig.\,3 for more. It holds.
+EOF
+expect_reformat glued_thin 'See Fig.\,3 for more.'
+
 if (( FAILURES > 0 )); then
     printf '%d fmt fixture failure(s).\n' "${FAILURES}"
     exit 1
 fi
-printf 'ok    fmt: a sentence that ends a group keeps its closing brace or bracket on its line with the typeset text unchanged, --check reports drift without writing, and a rewrite that would add or drop a space at a group edge is refused and left untouched\n'
+printf 'ok    fmt: a sentence that ends a group keeps its closing brace or bracket on its line with the typeset text unchanged, --check reports drift without writing, a period glued to a command stays with its sentence, a rewrite that would add or drop a space at a group edge is refused and left untouched, and the hand fixes the refusal names are clean and typeset as the refused file does, but for the one for a glued comment, which adds only the space the %% ate\n'

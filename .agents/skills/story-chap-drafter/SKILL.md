@@ -10,7 +10,7 @@ description: Use to draft or revise what one thesis chapter or one front- or bac
 **Target.** Resolve one per run, and ask when it is absent or ambiguous:
 1. a chapter, by number, slug, or unique title in `notes/outline.md` (for `trace` without that file, by its path under `manus/chaps/`);
 2. a file under `manus/fronts/` or `manus/backs/` that the active entry point inputs, abstracts required in more than one language being one target (conventions §5);
-3. such a file the entry point does not yet input, when `degree/requirements.md` or the author calls for it and this run first fills it; add its `\input`, and for a second-language abstract the entry point cannot typeset, the `cjk` class option and the `% !TeX program` line (conventions §5; §7, Ownership).
+3. such a file the entry point does not yet input, when `degree/requirements.md` or the author calls for it and this run first fills it; add its `\input`, and for a second-language abstract the entry point cannot typeset under STORY's class, the `cjk` class option, the `% !TeX program` line, and any `% !LW recipe` line beside it (conventions §5; §7, Ownership).
 
 **Front and back matter** have no outline row: skip the outline update and read the `degree/requirements.md` rows that govern the file. The abstract answers to `notes/story.md` and the confirmed contributions; an appendix takes as its brief that of the chapter referencing it. Acknowledgements and declarations are supplied wording, never drafted: place, format, or lightly edit what the author supplies, taking a declaration only from institution wording whose `degree/requirements.md` row is checked with its source.
 

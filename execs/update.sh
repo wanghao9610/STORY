@@ -126,44 +126,6 @@ is_optional_path() {
 AGENT_DOCS=("AGENTS.md")
 AGENT_RULES_TREE=".cursor/rules"
 
-# STORY files that upstream shipped and no longer does. The extract below only
-# adds and overwrites, so these are deleted by name — and so, by rule, is a
-# SKILL_zh.md beside any SKILL.md upstream ships and a .pi/prompts/<name>.zh-CN.md
-# beside any prompt upstream ships (retired_files below). Every entry was
-# STORY's: AGENTS.zh-CN.md and CLAUDE.zh-CN.md were overwritten on every update
-# like AGENTS.md, so no project ever owned its own copy. So was the Chinese
-# router twin .agents/commands/story.zh-CN.md, which the synced .agents/commands
-# tree shipped until the Codex and Kimi routers stopped reading it. The three English specs
-# beside the conventions (the human-writing guide, the memory spec, and the
-# model-id fallbacks) were folded into writing-workflow-conventions.md, which
-# ships in the same synced directory. The two index files an earlier release
-# seeded into the memory store, .story/memory/MEMORY.md and MEMORY.zh-CN.md, are
-# not here: the store is the thesis's, and a thesis may have written its own
-# lines into them. The hooks no longer read either file (they build the index
-# from each memory's frontmatter), so a kept one is inert, and
-# report_legacy_memory_index says so, as it does for the local/ index and for a
-# memory's leftover Chinese twin. Nor is .github/CONTRIBUTING.zh-CN.md: nothing
-# under .github/ is synced (it is the template's maintainer CI, which a thesis
-# removes), so an update never shipped it and does not own a thesis's copy.
-RETIRED_FILES=(
-    ".agents/commands/story.zh-CN.md"
-    "AGENTS.zh-CN.md"
-    "CLAUDE.zh-CN.md"
-    ".claude/commands/story.zh-CN.md"
-    ".cursor/commands/story.zh-CN.md"
-    ".pi/APPEND_SYSTEM.zh-CN.md"
-    ".pi/prompts/story.zh-CN.md"
-    ".qwen/commands/story.zh-CN.md"
-    "docs/mds/story-workflow/human-writing-guide.md"
-    "docs/mds/story-workflow/human-writing-guide.zh-CN.md"
-    "docs/mds/story-workflow/mates-MANIFEST.zh-CN.md"
-    "docs/mds/story-workflow/memory_spec.md"
-    "docs/mds/story-workflow/memory_spec.zh-CN.md"
-    "docs/mds/story-workflow/model_id_spec.md"
-    "docs/mds/story-workflow/model_id_spec.zh-CN.md"
-    "docs/mds/story-workflow/writing-workflow-conventions.zh-CN.md"
-)
-
 # Harness configuration a project may have edited: installed when it is missing
 # — by --adopt and by an update alike — and never overwritten unless --force
 # says so. A flat file list on purpose: an empty array expands to an unbound
@@ -411,36 +373,6 @@ report_latexindent_closers() {
     log "      Copy the mandatoryArguments and optionalArguments rules under modifyLineBreaks from ${STORY_REPOSITORY} .latexindent.yaml."
 }
 
-# The retired STORY files this run deletes, one project-relative path per line:
-# on a full update each RETIRED_FILES entry the harness selection covers, and in
-# any mode the SKILL_zh.md beside every SKILL.md, and the .zh-CN.md prompt beside
-# every Pi prompt, that the fetched ref ships under a synced path. A file the
-# fetched ref still carries is not retired, so an older ref keeps it. Needs
-# SYNCED and SOURCE_DIR.
-retired_files() {
-    local rel path
-    {
-        if [[ -z "${SKILL_NAME}" ]]; then
-            for rel in "${RETIRED_FILES[@]}"; do
-                path_selected "${rel}" || continue
-                if [[ ( -e "${ROOT_DIR}/${rel}" || -L "${ROOT_DIR}/${rel}" ) && ! -e "${SOURCE_DIR}/${rel}" ]]; then
-                    printf '%s\n' "${rel}"
-                fi
-            done
-        fi
-        while IFS= read -r path; do
-            case "${path}" in
-                */SKILL.md)       rel="$(dirname -- "${path}")/SKILL_zh.md" ;;
-                .pi/prompts/*.md) rel="${path%.md}.zh-CN.md" ;;
-                *) continue ;;
-            esac
-            if [[ ( -e "${ROOT_DIR}/${rel}" || -L "${ROOT_DIR}/${rel}" ) && ! -e "${SOURCE_DIR}/${rel}" ]]; then
-                printf '%s\n' "${rel}"
-            fi
-        done < <(cd "${SOURCE_DIR}" && find -L "${SYNCED[@]}" -type f \( -name SKILL.md -o -path '.pi/prompts/*.md' \) ! -name '*.zh-CN.md' 2>/dev/null | sort)
-    } | awk '!seen[$0]++'
-}
-
 usage() {
     cat <<'EOF'
 Usage: bash execs/update.sh [ref] [--harnesses LIST] [--skill NAME] [--force]
@@ -458,9 +390,7 @@ the hooks (the session hooks that inject project memory and model provenance,
 the commit guard, and the gates that answer permission prompts at INVOLVE=low),
 docs/mds/story-workflow/, and every script under execs/ — the two entrypoints,
 run.sh and this one, and the three utilities in execs/scpts/: import.sh,
-lint.sh, fmt.sh — with files from upstream. The STORY files upstream has
-retired (RETIRED_FILES, a SKILL_zh.md beside any SKILL.md upstream ships, and a
-.zh-CN.md Pi prompt beside any prompt upstream ships) are deleted; every other
+lint.sh, fmt.sh — with files from upstream. An update deletes nothing: every
 local-only file, the project's own included, is kept.
 The default ref is main; a branch or tag may be supplied instead. Local edits to
 those paths are replaced, AGENTS.md included; the manuscript, evidence, notes,
@@ -502,17 +432,16 @@ After a full update, leftovers of the old memory index in the thesis's own
 and a memory's Chinese twin) are reported, never removed.
 
 --diff previews an update without changing anything: it lists upstream files
-that are new or differ from the local copies, retired STORY files an update
-would delete, harness configuration that differs but would be kept, and
-project-local files an update would keep. It exits 0 when everything already
-matches, 2 when an update would change files, and 1 on error — so a script can
-tell "an update is available" from "the check itself failed".
+that are new or differ from the local copies, harness configuration that
+differs but would be kept, and project-local files an update would keep. It
+exits 0 when everything already matches, 2 when an update would change files,
+and 1 on error — so a script can tell "an update is available" from "the check
+itself failed".
 
 --force updates the same paths with both refusals lifted: uncommitted changes
 under them are overwritten instead of stopping the command, and the harness
 configuration above is overwritten instead of kept. It widens nothing — the
-path list is unchanged, and a local file upstream does not have is still kept
-unless it is one of the retired STORY files above.
+path list is unchanged, and a local file upstream does not have is still kept.
 Combined with --diff it previews that scope without changing anything.
 
 --adopt installs the STORY skeleton into an already-started thesis repo instead
@@ -879,15 +808,9 @@ if [[ "${ADOPT}" == false ]]; then
         fi
     done
 
-    # Computed once, before anything is written: whether a file is retired is
-    # decided by the fetched ref alone, so the preview, the dirty check, and the
-    # deletion after the extract all act on the same list.
-    RETIRED="$(retired_files)"
-
     if [[ "${DIFF}" == true ]]; then
         changed=0
         added=0
-        removed=0
         kept=0
 
         # Upstream files that an update would overwrite or add.
@@ -901,16 +824,9 @@ if [[ "${ADOPT}" == false ]]; then
             fi
         done < <(cd "${SOURCE_DIR}" && find -L "${SYNCED[@]}" -type f | sort)
 
-        # STORY files upstream no longer ships; an update deletes them.
-        while IFS= read -r rel; do
-            [[ -n "${rel}" ]] || continue
-            printf '  removes  %s (no longer shipped upstream)\n' "${rel}"
-            removed=$(( removed + 1 ))
-        done <<<"${RETIRED}"
-
         # Project-local files under the same paths; an update keeps them.
         while IFS= read -r rel; do
-            if [[ ! -e "${SOURCE_DIR}/${rel}" ]] && ! grep -qxF -- "${rel}" <<<"${RETIRED}"; then
+            if [[ ! -e "${SOURCE_DIR}/${rel}" ]]; then
                 printf '  extra    %s (not in upstream ref; update keeps it)\n' "${rel}"
                 kept=$(( kept + 1 ))
             fi
@@ -935,13 +851,13 @@ if [[ "${ADOPT}" == false ]]; then
             done < <(harness_rels)
         fi
 
-        if (( changed + added + removed > 0 )); then
+        if (( changed + added > 0 )); then
             hint="bash execs/update.sh"
             [[ "${REF_SET}" == false ]] || hint="${hint} ${STORY_REF}"
             [[ -z "${SKILL_NAME}" ]] || hint="${hint} --skill ${SKILL_NAME}"
             [[ -z "${HARNESSES_ARG}" ]] || hint="${hint} --harnesses ${HARNESSES_ARG}"
             [[ "${FORCE}" == false ]] || hint="${hint} --force"
-            log "${changed} differ, ${added} new upstream, ${removed} dropped upstream, ${kept} extra local."
+            log "${changed} differ, ${added} new upstream, ${kept} extra local."
             log "'differs' is direction-blind: it includes files you edited yourself."
             log "Run '${hint}' to apply the upstream versions."
             # 2, not 1: fail() uses 1 for every hard error, so a caller could not
@@ -958,15 +874,8 @@ if [[ "${ADOPT}" == false ]]; then
     # anywhere.
     if git -C "${ROOT_DIR}" rev-parse --git-dir >/dev/null 2>&1; then
         # --force also overwrites the harness configuration, so it belongs in
-        # what gets reported as about to be lost. So do the retired files: the
-        # deletion below has no way back either, and a top-level one such as
-        # AGENTS.zh-CN.md sits under no synced path.
+        # what gets reported as about to be lost.
         DIRTY_PATHS=("${SYNCED[@]}")
-        while IFS= read -r rel; do
-            if [[ -n "${rel}" ]]; then
-                DIRTY_PATHS+=("${rel}")
-            fi
-        done <<<"${RETIRED}"
         if [[ "${FORCE}" == true && -z "${SKILL_NAME}" ]]; then
             filter_paths "${HARNESS_FILES[@]}"
             # FILTERED is empty under --harnesses none, and bash 3.2 treats an
@@ -1012,7 +921,10 @@ if [[ "${ADOPT}" == false ]]; then
     esac
     # Codex and Kimi Code copy their plugin when it is installed, so a changed
     # plugin tree reaches neither harness until the author installs it again.
-    # Compared before the extract, which makes the trees match.
+    # Compared before the extract, which makes each file upstream ships match.
+    # Only those files count: the extract never touches a file only the thesis
+    # has, such as a SKILL_zh.md an earlier release shipped, so counting one
+    # would ask for a reinstall on every update that none could clear.
     PLUGIN_REINSTALL=()
     if [[ -z "${SKILL_NAME}" ]]; then
         for plugin_harness in codex kimi; do
@@ -1024,21 +936,19 @@ if [[ "${ADOPT}" == false ]]; then
             [[ -d "${SOURCE_DIR}/${plugin_tree}" ]] || continue
             if [[ ! -d "${ROOT_DIR}/${plugin_tree}" ]]; then
                 PLUGIN_REINSTALL+=("${plugin_harness}-new")
-            elif ! diff -rq "${SOURCE_DIR}/${plugin_tree}" "${ROOT_DIR}/${plugin_tree}" >/dev/null 2>&1; then
-                PLUGIN_REINSTALL+=("${plugin_harness}")
+                continue
             fi
+            while IFS= read -r rel; do
+                if ! cmp -s "${SOURCE_DIR}/${rel}" "${ROOT_DIR}/${rel}"; then
+                    PLUGIN_REINSTALL+=("${plugin_harness}")
+                    break
+                fi
+            done < <(cd "${SOURCE_DIR}" && find -L "${plugin_tree}" -type f | sort)
         done
     fi
 
     tar -C "${SOURCE_DIR}" "${TAR_CREATE_ARGS[@]}" -f "${ARCHIVE_FILE}" "${TAR_PATHS[@]}"
     tar -C "${ROOT_DIR}" -xf "${ARCHIVE_FILE}"
-
-    # The extract never deletes, so a file upstream dropped goes here, by name.
-    while IFS= read -r rel; do
-        [[ -n "${rel}" ]] || continue
-        rm -f -- "${ROOT_DIR}/${rel}"
-        log "Removed ${rel}: upstream no longer ships it."
-    done <<<"${RETIRED}"
 
     if [[ -z "${SKILL_NAME}" ]] && is_selected codex; then
         link_codex_marketplace
@@ -1178,22 +1088,30 @@ if [[ -e "${ROOT_DIR}/.gitignore" ]] && \
    ! cmp -s "${SOURCE_DIR}/.gitignore" "${ROOT_DIR}/.gitignore"; then
     # Git's own verdict, asked per path with a probe name that need not exist,
     # so every rule form counts (.env*, /wkdrs/, .story/memory/local/**) and a
-    # directory-only rule such as .env/ does not pass for the .env file.
+    # directory-only rule such as .env/ does not pass for the .env file. Only the
+    # repository's .gitignore files are read: an empty git directory stands in
+    # for .git, so this clone's .git/info/exclude is left out, and this machine's
+    # global excludes file is masked. No other clone shares either.
+    git init -q --bare --template= "${TEMP_DIR}/ignore-probe.git"
+    kept_rules_ignore() {
+        GIT_DIR="${TEMP_DIR}/ignore-probe.git" GIT_WORK_TREE="${ROOT_DIR}" \
+            git -C "${ROOT_DIR}" -c core.excludesFile=/dev/null check-ignore -q --no-index -- "$1"
+    }
     unignored=()
     for probe in ".env" "wkdrs/probe" ".story/memory/local/probe"; do
-        git -C "${ROOT_DIR}" check-ignore -q --no-index -- "${probe}" || \
-            unignored+=("${probe%probe}")
+        kept_rules_ignore "${probe}" || unignored+=("${probe%probe}")
     done
     if (( ${#unignored[@]} > 0 )); then
         log "NOTE: your .gitignore was kept and does not ignore ${unignored[*]}."
         log "      Add them before committing, or machine-local config, builds, reports, or one machine's own notes enter history."
     fi
-    # The reverse mistake: an unanchored LaTeX-junk glob such as *.log or *.out
-    # also matches evidence, which git then leaves untracked while MANIFEST.md
-    # fingerprints it.
-    if git -C "${ROOT_DIR}" check-ignore -q --no-index -- "mates/manual/probe.log"; then
+    # The reverse mistake, judged by the same rules: an unanchored LaTeX-junk
+    # glob such as *.log or *.out also matches evidence, which git then leaves
+    # untracked while MANIFEST.md fingerprints it. import.sh names a file that
+    # any rule on this machine leaves untracked.
+    if kept_rules_ignore "mates/manual/probe.log"; then
         log "NOTE: your .gitignore was kept and ignores evidence under mates/ (mates/manual/probe.log matches)."
-        log "      Add '!/mates/**' after its LaTeX build-file rules and before any .DS_Store rule, or a registered log or output file never enters history."
+        log "      Add '!/mates/**' after its LaTeX build-file rules and before any .DS_Store rule, with a .env line right after it, or a registered log or output file never enters history."
     fi
 fi
 report_unregistered_hooks

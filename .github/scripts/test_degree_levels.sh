@@ -211,7 +211,8 @@ write_main '\documentclass[degree=doctor]{ustcthesis}'
 expect_pass language_institutional_class
 expect_log language_institutional_class "[STORY lint] manus/main.tex loads the class ustcthesis, not STORY's; its language option is not checked."
 refute_log language_institutional_class 'dissertation_language is'
-write_main '\documentclass[%' '    oneside, % one-sided print' '    zh% Chinese title page' ']{stys/story}'
+write_profile master "A Master's Thesis" 'Master of Science' zh
+write_main '\documentclass[%' '    oneside, % one-sided print [see 1]' '    zh% Chinese title page' ']{stys/story}'
 expect_pass language_multiline
 refute_log language_multiline 'dissertation_language is'
 refute_log language_multiline 'not checked'

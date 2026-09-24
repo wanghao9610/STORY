@@ -37,14 +37,75 @@ modifyLineBreaks:
       betterFullStop: 1
       exclamationMark: 1
       questionMark: 1
-      other: 0
+      # A period glued to a footnote, citation, label, index entry, or todo
+      # (`good.\footnote{...}`, `rose.\cite{x}`) ends its sentence after the
+      # command, where a break costs nothing, and only before a capital, a
+      # comment, or a line end not continued in lowercase: `et al.\cite{x} and`
+      # or `et al.\cite{x},` goes on.
+      # betterFullStop (fineTuning, below) no longer breaks between the period
+      # and the command, which would add a space the source does not have.
+      other: |-
+        (?x)
+        \.
+        (?:
+          \\(?:footnote|cite[a-zA-Z]*|label|index|todo)(?![a-zA-Z])\*?
+          (?:\h*\[[^\]]*\])*
+          \h*\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\}
+        )+
+        (?=\h*(?:\R(?!\h*[a-z])|\z|[A-Z%]))
   # A sentence that ends a group — `\caption{A. B.}`, `\emph{A. B.} and` — would
   # leave its `}` on a line of its own, an extra space inside the group.
   # Keeping the closing brace and bracket on the sentence's line prevents that.
   # The same switch also joins any `}` or `]` already alone on a line, so an
-  # argument spelled over several lines is refused by fmt.sh, whose guard sees
-  # the space the join would remove, and needs its closer moved up by hand.
+  # argument spelled over several lines, a `\resizebox{...}{!}{%` wrapper
+  # included, is refused by fmt.sh, whose guard sees the space the join would
+  # remove, and needs its closer moved up by hand: it takes the place of any
+  # bare `%` ending the line above, which only ate that line end, and whatever
+  # followed the closer — the line end, a space, or a `%` — stays after it.
   mandatoryArguments:
     RCuBStartsOnOwnLine: -1
   optionalArguments:
     RSqBStartsOnOwnLine: -1
+
+# betterFullStop as latexindent 3.24.4 ships it (a fineTuning entry replaces the
+# whole regex, so all of it is here), with two additions to what may not follow
+# the period: an escaped or thin space or a `\@` (`et al.\ The`, `Fig.\,3`),
+# which marks it as no sentence end, and a command that `other` above ends the
+# sentence after. A break between the period and either adds a space the
+# source does not have, so fmt.sh could only refuse it, for good.
+fineTuning:
+  modifyLineBreaks:
+    betterFullStop: |-
+      (?x)                                # ignore spaces in the below
+      (?:                                 #
+        \.\)                              # .)
+        (?!\h*[a-z])                      # not *followed by* a-z
+      )                                   #
+      |                                   # OR
+      (?:                                 #
+        (?<!                              # not *preceded by*
+          (?:                             #
+            (?:[eE]\.[gG])                # e.g OR E.g OR e.G OR E.G
+            |                             #
+            (?:[iI]\.[eE])                # i.e OR I.e OR i.E OR I.E
+            |                             #
+            (?:etc)                       # etc
+            |                             #
+            (?:[wW]\.[rR]\.[tT])          # w.r.t OR W.r.t OR w.R.t OR w.r.T OR W.R.t OR W.r.T OR w.R.T OR W.R.T
+          )                               #
+        )                                 #
+      )                                   #
+      \.                                  # .
+      (?!                                 # not *followed by*
+        (?:                               #
+          [a-zA-Z0-9-~,]                  #
+          |                               #
+          \),                             # ),
+          |                               #
+          \)\.                            # ).
+          |                               #
+          \\[\ ,@]                        # \ , \, or \@
+          |                               #
+          \\(?:footnote|cite[a-zA-Z]*|label|index|todo)(?![a-zA-Z])
+        )                                 #
+      )                                   #

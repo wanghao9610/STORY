@@ -389,9 +389,10 @@ done
 
 # 7. A tag or a remote ref has more ways to move or go than `tag -d`, `tag -f`
 #    and `push -f`: a remote delete, a +refspec, an empty-source refspec, and
-#    update-ref on a tag are declined too, while an ordinary push, the matching
-#    push `:`, and depo-packer's `git tag -a` pass. The core is shared, so the
-#    Claude copy and Pi's, the one check there, stand for all seven.
+#    update-ref on a tag or with --stdin are declined too, while an ordinary
+#    push, the matching push `:`, and depo-packer's `git tag -a` pass. The core
+#    is shared, so the Claude copy and Pi's, the one check there, stand for all
+#    seven.
 expect_guard() { # $1 = deny|pass, $2 = command
     local out status
     out="$(run_hook .claude/hooks/story_commit_guard.sh "$(bash_payload "$2")")"
@@ -414,7 +415,8 @@ for c in \
     'git push origin +HEAD:main' \
     "git push --prune origin 'refs/tags/*:refs/tags/*'" \
     'git update-ref -d refs/tags/v1' \
-    'git update-ref refs/tags/v1 HEAD'; do
+    'git update-ref refs/tags/v1 HEAD' \
+    'git update-ref --stdin'; do
     expect_guard deny "${c}"
 done
 for c in \
@@ -431,4 +433,4 @@ if (( FAILURES > 0 )); then
     printf '%d hook fixture failure(s).\n' "${FAILURES}"
     exit 1
 fi
-printf 'ok    hooks: bash and edit gates keep the red lines at low, the level resolver never lets a Skill call lower the typed level, the Claude, Qwen Code and Codex model-id resolvers hold their contract, the injected Claude, Qwen Code and DSH commands run as injected over a spaced transcript path, every commit guard declines with no JSON parser, and the guard declines remote deletes, +refspecs and update-ref on a tag while an ordinary push passes\n'
+printf 'ok    hooks: bash and edit gates keep the red lines at low, the level resolver never lets a Skill call lower the typed level, the Claude, Qwen Code and Codex model-id resolvers hold their contract, the injected Claude, Qwen Code and DSH commands run as injected over a spaced transcript path, every commit guard declines with no JSON parser, and the guard declines remote deletes, +refspecs and update-ref on a tag or with --stdin while an ordinary push passes\n'
