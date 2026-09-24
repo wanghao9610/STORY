@@ -9,7 +9,7 @@ end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-# One sentence per line (conventions §3.7): a source line is exactly as long as
+# One sentence per line (conventions §5): a source line is exactly as long as
 # its sentence, so no editor may wrap it at a column. indent_size matches
 # defaultIndent in .latexindent.yaml — a disagreement there is a file that
 # reindents one way on save and the other way under execs/scpts/fmt.sh.

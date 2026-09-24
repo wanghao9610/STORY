@@ -98,7 +98,8 @@ printf '%s\n' \
     'The key parameter is fixed; however, the passive construction is deliberate.' \
     > "${WORK_DIR}/manus/chaps/1_prose_test.tex"
 expect_pass prose_advisory
-for expected in 'chatbot-residue' 'formulaic-contrast' 'stock-signposting' 'findings are advisory, not proof of AI authorship'; do
+for expected in 'chatbot-residue' 'formulaic-contrast' 'stock-signposting' 'findings are advisory, not proof of AI authorship' \
+        'does not \input manus/chaps/1_prose_test.tex'; do
     grep -Fq "${expected}" "${WORK_DIR}/prose_advisory.log" || {
         printf 'FAIL  prose advisory case omitted: %s\n' "${expected}" >&2
         sed -n '1,160p' "${WORK_DIR}/prose_advisory.log" >&2
@@ -117,4 +118,78 @@ if grep -Fq 'WARN: manus/chaps/1_prose_test.tex' "${WORK_DIR}/prose_false_positi
     exit 1
 fi
 
-printf 'ok    degree-level metadata and English/Chinese prose-advisory cases behave as expected\n'
+expect_log() {
+    local name="$1" expected="$2"
+    grep -Fq -- "${expected}" "${WORK_DIR}/${name}.log" || {
+        printf 'FAIL  %s case omitted: %s\n' "${name}" "${expected}" >&2
+        sed -n '1,160p' "${WORK_DIR}/${name}.log" >&2
+        exit 1
+    }
+}
+
+refute_log() {
+    local name="$1" unexpected="$2"
+    if grep -Fq -- "${unexpected}" "${WORK_DIR}/${name}.log"; then
+        printf 'FAIL  %s case reported: %s\n' "${name}" "${unexpected}" >&2
+        sed -n '1,160p' "${WORK_DIR}/${name}.log" >&2
+        exit 1
+    fi
+}
+
+# A chapter the entry point inputs is not reported as missing from the PDF.
+printf '%s\n' '\documentclass{book}' '\begin{document}' '\input{chaps/1_prose_test}' '\end{document}' > "${WORK_DIR}/manus/main.tex"
+expect_pass chapter_wired
+refute_log chapter_wired 'does not \input'
+
+# Placeholders are read from compiled lines only: the profile's own comments
+# name the fields, while an unreplaced department or Chinese half is a real one.
+write_profile master "A Master's Thesis" 'Master of Science'
+printf '%s\n' '%% The degree name must agree with degree_level above.（学位名称必须与上方 degree_level 一致。）' >> "${WORK_DIR}/degree/profile.tex"
+expect_pass placeholder_comment
+refute_log placeholder_comment 'title-page placeholders'
+printf '%s\n' '\department{\storylocalized{Department or Program}{院系或培养单位}}' >> "${WORK_DIR}/degree/profile.tex"
+expect_pass placeholder_department
+expect_log placeholder_department 'title-page placeholders remain in degree/profile.tex: Department or Program, 院系或培养单位.'
+
+# The manuscript language and the entry point's class option must agree.
+write_profile master "A Master's Thesis" 'Master of Science'
+printf '%s\n' '% dissertation_language: zh' >> "${WORK_DIR}/degree/profile.tex"
+expect_pass language_mismatch
+expect_log language_mismatch 'dissertation_language is zh but manus/main.tex does not load the class with the zh option.'
+write_profile master "A Master's Thesis" 'Master of Science'
+
+# Unresolved requirement rows are counted; resolved ones are not.
+printf '%s\n' '- [ ] Title-page wording confirmed — applicability: — source: — notes:' \
+    '- [x] Degree level confirmed — applicability: applies — source: degree/x.pdf — notes:' \
+    > "${WORK_DIR}/degree/requirements.md"
+expect_pass requirement_rows
+expect_log requirement_rows '1 unresolved row(s) in degree/requirements.md'
+rm "${WORK_DIR}/degree/requirements.md"
+
+# The active milestone is the one milestone.yml with status: active, a standing
+# supervision record aside; a malformed limit is reported, a quoted one is read.
+mkdir -p "${WORK_DIR}/milestones/supervision" "${WORK_DIR}/milestones/defense"
+printf '%s\n' 'kind: supervision' 'status: active' 'max_pages: 3' > "${WORK_DIR}/milestones/supervision/milestone.yml"
+printf '%s\n' 'kind: defense' 'status: active' 'max_pages: "abc"' > "${WORK_DIR}/milestones/defense/milestone.yml"
+expect_pass milestone_bad_limit
+expect_log milestone_bad_limit "max_pages 'abc' in milestones/defense/milestone.yml is not a positive integer"
+refute_log milestone_bad_limit 'milestones have status: active'
+printf '%s\n' 'kind: defense' 'status: active' 'max_pages: "7"' > "${WORK_DIR}/milestones/defense/milestone.yml"
+expect_pass milestone_quoted_limit
+if command -v pdfinfo >/dev/null 2>&1; then
+    expect_log milestone_quoted_limit 'Page limit: ?/7 (milestones/defense/milestone.yml).'
+fi
+mkdir -p "${WORK_DIR}/milestones/predefense"
+printf '%s\n' 'kind: pre-defense' 'status: active' > "${WORK_DIR}/milestones/predefense/milestone.yml"
+expect_pass milestone_two_active
+expect_log milestone_two_active '2 milestones have status: active'
+rm -rf "${WORK_DIR}/milestones"
+
+# --no-build trusts an earlier build only when that build finished cleanly.
+printf '%s\n' '! Undefined control sequence.' > "${WORK_DIR}/wkdrs/builds/main.log"
+expect_fail last_build_error
+expect_log last_build_error 'the last build stopped on a LaTeX error'
+expect_log last_build_error 'Result:'
+: > "${WORK_DIR}/wkdrs/builds/main.log"
+
+printf 'ok    degree-level metadata, English/Chinese prose-advisory, placeholder, language, requirement, milestone page-limit, chapter-wiring, and failed-build cases behave as expected\n'

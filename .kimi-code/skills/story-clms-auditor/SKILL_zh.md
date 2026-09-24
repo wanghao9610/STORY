@@ -1,1 +1,0 @@
-../../../.agents/skills/story-clms-auditor/SKILL_zh.md

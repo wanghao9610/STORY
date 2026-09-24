@@ -10,7 +10,7 @@
 
 STORY 把多年的研究生阶段研究组织成一部连贯、可答辩、可归档的硕士学位论文或博士学位论文。它把手稿、研究证据、出版物复用、学位要求、章节计划、贡献与论断记录、委员会反馈、答辩材料、修改过程及归档历史放在可预测的位置。研究者和 AI 写作 agent 依据同一套由仓库拥有的指令协作，因此即使一次对话早已结束，学位论文仍可在后续会话中继续推进并接受复核。
 
-这套系统的核心契约是来源可追溯。论文中的每项定量或比较性陈述，都必须追溯到 `mates/` 下带指纹的文件，否则就以 `\todo{...}` 显式保留为未解决项；关于引用文献的每项断言，都必须能由阅读笔记或已导入材料核验；每项学位贡献都要记录对应的证据、章节、出版物和作者贡献边界。因此，STORY 把学位论文视为对研究的综合，而不是把若干论文简单拼接在一起。
+这套系统的核心契约是来源可追溯。论文中的每项定量或比较性陈述，都必须追溯到 `mates/` 下带指纹的文件，否则就以 `\todo{...}` 显式保留为未解决项；关于引用文献的每项断言，都必须能由阅读笔记或已导入材料核验；每项学位贡献都要记录对应的证据、章节、出版物和归属边界。因此，STORY 把学位论文视为对研究的综合，而不是把若干论文简单拼接在一起。
 
 STORY 有两层：本仓库是**模板**；一部学位论文对应一个**实例**，可以克隆模板创建，也可以用 `execs/update.sh --adopt` 把骨架装入已有学位论文仓库。一个实例可以导入任意数量的 [STAR](https://github.com/wanghao9610/STAR) 研究仓库、[STAGE](https://github.com/wanghao9610/STAGE) 论文仓库、其他 STORY 学位论文仓库和人工登记来源。这种配套关系并非强制——STORY 也可以作为独立的学位论文仓库使用。
 
@@ -33,14 +33,16 @@ STORY 有两层：本仓库是**模板**；一部学位论文对应一个**实�
   - [6. 启动学位论文工作流](#6-启动学位论文工作流)
 - [写作工作流](#写作工作流)
 - [从研究到归档的路径](#从研究到归档的路径)
-- [证据、作者贡献与论断记录表](#证据作者贡献与论断记录表)
+- [证据、归属与论断记录表](#证据归属与论断记录表)
 - [学位里程碑](#学位里程碑)
 - [Agent harness](#agent-harness)
+  - [Hook 与权限](#hook-与权限)
 - [项目记忆](#项目记忆)
 - [更新 STORY 的 skill 与工作流文档](#更新-story-的-skill-与工作流文档)
 - [项目约定](#项目约定)
 - [把 STORY 适配到实际学位论文](#把-story-适配到实际学位论文)
 - [环境要求](#环境要求)
+- [更新日志](#更新日志)
 - [许可证](#许可证)
 
 ## STAR · STAGE · STORY
@@ -61,15 +63,15 @@ STORY 有两层：本仓库是**模板**；一部学位论文对应一个**实�
 - **通用且可构建的 LaTeX 模板**：同时支持英文与简体中文的硕士、博士学位论文，把可复用 class、写作宏和参考文献样式与论文内容分离。
 - **带指纹的证据层**：`mates/` 可以从多个 STAR、STAGE、STORY 或结构化通用仓库导入指定材料，并保留来源路径、commit、导入日期和 SHA-256 指纹。
 - **学位论文层面的事实源**：`notes/` 下的中心论点、研究主线、贡献映射、出版与复用映射、章节结构、符号表、风格、阅读笔记和论断记录表由各自负责的工作流按需创建。
-- **学位层级感知标准**：`degree/profile.tex` 选择 `master` 或 `doctoral`；该事实未知时，层级相关的综合、外审、答辩和归档门槛不会启用。
+- **学位层级感知标准**：`degree/profile.tex` 选择 `master` 或 `doctoral`；该事实未知时，层级相关的综合、评审、答辩和归档关口不会启用。
 - **学校事实与猜测分离**：正式要求、标题页措辞、委员会记录、模板、限制、批准和截止日期只能来自作者确认过的来源，并放在 `degree/` 与 `milestones/` 下。
-- **由十六个 skill 覆盖完整生命周期**：接入、证据整理、综合、提纲、章节起草、图、表、参考文献、文字润色、审计、模拟外审、反馈处理、答辩、归档和状态汇报。
-- **确定性的构建与检查**：`execs/run.sh` 在源目录外构建；`lint.sh` 检查引用、todo、学位档案一致性、页数限制和格式；`fmt.sh` 维持一句一行；`import.sh --diff` 检测证据漂移。
+- **由十六个 skill 覆盖完整生命周期**：接入、证据整理、综合、提纲、章节起草、图、表、参考文献、文字润色、审计、模拟评审、反馈处理、答辩、归档和状态汇报。
+- **确定性的构建与检查**：`execs/run.sh` 在源目录外构建；`lint.sh` 检查引用、todo、学位档案一致性、页数限制和格式；`fmt.sh` 让英文正文保持一句一行；`import.sh --diff` 检测证据漂移。
 - **七个 agent harness 共用一套工作流**：Codex、Claude Code、Cursor、DeepSeek Harness、Kimi Code、Pi 与 Qwen Code 共享中立 skill 和请求分流器。
 - **属于项目的跨会话记忆**：`.story/memory/` 保存那些没有被证据、学位档案、笔记、里程碑或任务文件认领的持久知识。
-- **成对的英文与简体中文文档**：方便人类读者，同时路径、ID、状态、命令和机器可读字段始终保持英文稳定值。
+- **用英文或简体中文回复并撰写笔记**：`STORY_LANG` 决定一次运行用哪种语言回复和写作；README 与 skill 指南同时提供英文和简体中文版，而路径、ID、状态、命令和机器可读字段始终保持英文稳定值。
 
-[写作工作流](#写作工作流)列出每个 skill 的职责与产物；[STORY 工作流 Skill 指南](docs/mds/story-workflow/writing-workflow-skills.zh-CN.md)给出紧凑流程图；[写作工作流规范](docs/mds/story-workflow/writing-workflow-conventions.zh-CN.md)定义所有 skill 共同遵守的证据、学位、里程碑、语言与验证契约。
+[写作工作流](#写作工作流)列出每个 skill 的职责与产物；[STORY 工作流 Skill 指南](docs/mds/story-workflow/writing-workflow-skills.zh-CN.md)给出紧凑流程图；[写作工作流规范](docs/mds/story-workflow/writing-workflow-conventions.md)（英文）定义所有 skill 共同遵守的证据、学位、里程碑、语言与验证契约。
 
 ## 项目结构
 
@@ -96,14 +98,14 @@ STORY/
 ├── notes/                         # 学位论文叙事与写作元数据
 │   ├── story.md                   # 中心论点与学位研究主线
 │   ├── contributions.md           # 贡献 → 证据/出版物/章节
-│   ├── publications.md            # 作者贡献、复用、许可、重叠
+│   ├── publications.md            # 作者署名、复用、许可、重叠
 │   ├── outline.md                 # 章节简报与视觉计划
 │   ├── claims.md                  # 论断记录表
 │   ├── notation.md                # 全文符号约定
 │   ├── style.md                   # 可衡量的文字风格约定
 │   └── refs/                      # 阅读笔记与参考文献索引
 ├── milestones/                    # 开题、考核、外审、答辩、归档
-│   └── <slug>/                    # milestone.yml、feedback/、response/、materials/、RECORD_*.md
+│   └── <slug>/                    # milestone.yml、feedback/、simulations/、response/、materials/、template/、RECORD_*.md
 ├── tasks/                         # 持久化未解决工作与反馈承诺
 ├── wkdrs/                         # 构建产物和可再生成报告，git 忽略
 ├── execs/
@@ -111,9 +113,9 @@ STORY/
 │   ├── update.sh                  # 同步上游工作流；--adopt 安装骨架
 │   └── scpts/                     # import.sh、lint.sh、fmt.sh
 ├── docs/                          # 文档网站与工作流指南
-├── .story/memory/                 # 项目记忆；local/ 仅属于本机
-├── .agents/                       # 中立 skill 与共享 /story 分流器
-├── .codex/                        # Codex hook、manifest 与 $story 插件
+├── .story/memory/                 # 项目记忆；local/ 被 git 忽略
+├── .agents/                       # 中立 skill、共享 /story 分流器与 /story-auto 流程
+├── .codex/                        # Codex hook、manifest 与 $story / $story-auto 插件
 ├── .claude/ .cursor/ .dsh/        # 各 harness 的入口与 hook
 ├── .kimi-code/ .pi/ .qwen/        # 各 harness 的入口与 hook
 ├── .env.example                   # 本地配置示例
@@ -186,7 +188,7 @@ bash execs/scpts/lint.sh
 
 学位层级特意不做成 `.env` 选项，因为它是持久的学校事实。缺失值保持未知；非法值，以及与所选层级冲突的题名或学位措辞，会使 lint 失败。STORY 只应用已选层级的贡献标准，也只应用学校实际要求的里程碑。
 
-仓库自带的 class 有意保持通用。学校正式模板、标题页措辞、页边距、前置部分顺序、页数限制、截止日期、提交门户、延迟公开选择和审批规则，都必须来自作者确认过的正式材料。规范档案写在 `degree/profile.tex`，带来源的检查表写在 `degree/requirements.md`，里程碑专属规则写在 `milestones/<slug>/milestone.yml`。学校提供的模板保存在适用里程碑下；不得凭记忆静默改写 STORY 的通用源文件树。
+仓库自带的 class 有意保持通用。学校正式模板、标题页措辞、页边距、前置部分顺序、页数限制、截止日期、提交门户、延迟公开选择和审批规则，都必须来自作者确认过的正式材料。规范档案写在 `degree/profile.tex`，带来源的检查表写在 `degree/requirements.md`，里程碑专属规则写在 `milestones/<slug>/milestone.yml`。你拿到的正式模板原样保存在 `milestones/<slug>/template/` 下，`fmt.sh` 从不重排它；论文实际用来构建的 class 放在 `manus/stys/`。不得凭记忆静默改写 STORY 的通用源文件树。
 
 ## 快速开始
 
@@ -207,7 +209,7 @@ git add .
 git commit -m "First commit."
 ```
 
-如果使用 GitHub 的 **Use this template** 功能，新仓库已经有自己的 Git 历史；除非你打算维护 STORY fork，否则应删除 `.github/`。上游 workflow 检查的是 STORY 的七棵生成 skill 树和双语文档，而不是一部具体学位论文的内容。
+如果使用 GitHub 的 **Use this template** 功能，新仓库已经有自己的 Git 历史；除非你打算维护 STORY fork，否则应删除 `.github/`。上游 workflow 检查的是 STORY 的七棵生成 skill 树和文档，而不是一部具体学位论文的内容。
 
 ### 1b. 或者接入已有学位论文仓库
 
@@ -218,7 +220,7 @@ curl -fsSL https://raw.githubusercontent.com/wanghao9610/STORY/main/execs/update
 bash /tmp/story-update.sh --adopt
 ```
 
-接入不会覆盖任何已有路径：它只复制缺失文件，并报告保留了什么。加上 `--harnesses claude`——或从 `claude`、`codex`、`cursor`、`dsh`、`kimi`、`pi`、`qwen` 中任选多个并用逗号分隔——即可只安装实际使用的 agent 树。随后调用 `story-proj-adopt`；它会盘点草稿，在修改文件映射前征求确认，确认学位档案和要求，保留原始源文件，把已有但无来源的陈述记录为审计工作，并验证接入后的构建。
+接入不会覆盖任何已有路径：它只复制缺失文件，并报告保留了什么。加上 `--harnesses claude`——或从 `claude`、`codex`、`cursor`、`dsh`、`kimi`、`pi`、`qwen` 中任选多个并用逗号分隔——即可只安装实际使用的 agent 树。随后调用 `story-proj-adopt`；它会盘点草稿，在映射层级相关材料前请你确认学位层级，请你先提交一次并记录该 commit，在文件映射或入口文件改变前征求确认，复制而不是移动原始源文件，把已有但无来源的陈述记录为审计工作，并验证接入后的构建。它不会填写 `degree/requirements.md` 或学位档案的其余部分：这些由你填写。基于学校 class 的草稿会把该 class 保留在 `manus/stys/`；lint 对 `zh` class 选项与 `% dissertation_language` 是否一致的检查是为 STORY 的 class 编写的，换用其他 class 时可能给出警告。
 
 ### 2. 配置本地运行环境和学位档案
 
@@ -247,7 +249,7 @@ INVOLVE=medium
 STORY_LANG=
 ```
 
-`.env` 已被 Git 忽略。`STORY_MAIN` 为构建与 lint 选择默认入口，单次命令中的 `--main` 优先。`INVOLVE=low|medium|high` 控制 skill 在一般裁量事项前询问的频率，但绝不会绕过学校事实、作者贡献、删除、覆盖或最终冻结的确认。它是项目默认值；单次调用中的 `involve=<level>` token 只覆盖那一次运行。`STORY_LANG=en|zh` 控制回复与新写入 Markdown 的语言；留空时跟随对话，且永远不会翻译已有文件。手稿语言和学位层级仍保存在 `degree/profile.tex`。
+`.env` 已被 Git 忽略。`STORY_MAIN` 为构建与 lint 选择默认入口，单次命令中的 `--main` 优先。`INVOLVE=low|medium|high` 决定 skill 在你已给出的授权范围内，对尚未决定的裁量事项询问多少：`low` 采用推荐的稳妥选项并说明，`medium` 按各 skill 写明的方式询问，`high` 对每个有影响的选择单独询问。你已经给出的批准在其范围内持续有效，不再重复询问；状态、审计或模拟评审请求在交付自身报告后结束，绝不接着启动写入型 skill。任何级别都不会跳过确认点——把学校、学位要求或里程碑事实记录为已确认，删除文件或台账行，整体替换文件，冻结归档或为其打 tag（[规约 §7](docs/mds/story-workflow/writing-workflow-conventions.md#7-interaction-language-and-provenance)，英文）——也不会跳过 `AGENTS.md` §1 规定须先询问的选择：论文整体论证、章节边界、归属、出版物复用或学位要求。它是项目默认值；单次调用中的 `involve=<level>` token 覆盖该次运行的级别。在 Claude Code 中，这个 token 还会传到权限 hook：hook 从你最近一次输入的 STORY 命令中读取它，并在运行结束后继续沿用，直到你输入下一条 STORY 命令；在其他 harness 中，权限提示只依据 `.env`。在 `low` 下，权限 hook 还会跳过项目内编辑前的 harness 权限提示，在 Claude Code 中也会跳过红线之外的 shell 命令的提示；写入 `mates/`、`degree/` 和 `milestones/*/feedback/` 的操作在任何级别都保留提示（见 [Hook 与权限](#hook-与权限)）。`STORY_LANG=en|zh` 控制回复与新写入 Markdown 的语言，除非你在对话中明确要求某种语言；留空时跟随你自己消息所用的语言（没有用户消息的运行会询问一次），已有文件永远不会被翻译。面向评阅人、委员会或学校的文本使用里程碑或 `degree/requirements.md` 记录的语言，否则使用手稿语言，运行在定稿前会先询问。手稿语言和学位层级仍保存在 `degree/profile.tex`。
 
 随后，只依据正式材料或作者确认过的记录填写 `degree/profile.tex`、`degree/requirements.md` 和 `degree/committee.md`。未知值保持为空；不得根据论文题名或学位名称推断学位层级。
 
@@ -261,19 +263,19 @@ bash execs/scpts/import.sh --source ../my-stage-paper --slug paper-a
 bash execs/scpts/import.sh --source ../earlier-story --slug prior-thesis
 ```
 
-`import.sh` 能识别 STAR、STAGE、STORY 和结构化通用仓库；它选择与写作相关的材料，复制到 `mates/<slug>/`，并在 `mates/MANIFEST.md` 中记录来源类型、来源绝对路径、来源 commit、SHA-256 指纹、导入日期和覆盖范围。省略 `--source` 时使用 `RESEARCH_HOME`。上游工作变化后重新导入，或用只读方式检查：
+`import.sh` 能识别 STAR、STAGE、STORY 和结构化通用仓库；它选择与写作相关的材料，复制到 `mates/<slug>/`，并在 `mates/MANIFEST.md` 中记录来源类型、来源绝对路径、来源 commit、SHA-256 指纹、导入日期和覆盖范围；重新导入会重写每个条目，但保留你整理过的 `covers:` 行。省略 `--source` 时使用 `RESEARCH_HOME`。上游工作变化后重新导入，或用只读方式检查：
 
 ```bash
 bash execs/scpts/import.sh --diff --source ../my-star-project --slug project-a
 ```
 
-上游出现新材料或已有材料过期时，diff 以 `1` 退出。导入证据只能单向流动：在上游修正后重新导入。
+上游出现新材料或已有材料有变化时，diff 以 `2` 退出；快照与来源一致时以 `0` 退出；检查本身无法运行时以 `1` 退出。以 `2` 退出会把该条目标为 `stale`，陈旧快照在你重新导入之前不算已登记证据。导入证据只能单向流动：在上游修正后重新导入。
 
 ### 4. 路径 B：登记独立证据
 
-如果学位论文没有 STAR 或 STAGE 来源仓库，先把已提供的结果、报告、表格或其他研究材料保留在其来源路径，再调用 `story-evid-curator register path=<file>`。curator 会先记录来源、所有者、日期和覆盖范围，再把材料复制到 `mates/manual/`，并在 `mates/MANIFEST.md` 中登记指纹。没有 manifest 条目的文件不是证据。修正后的材料应成为新的登记记录，绝不能在原位置静默修改。
+如果学位论文没有 STAR 或 STAGE 来源仓库，先把已提供的结果、报告、表格或其他研究材料保留在其来源路径，再调用 `story-evid-curator register path=<file>`；一次运行可以登记一批文件。curator 会先记录来源、所有者、日期和覆盖范围，再把材料复制到 `mates/manual/`，并在 `mates/MANIFEST.md` 中登记指纹。没有 manifest 条目的文件不是证据。修正后的材料应成为新的登记记录，绝不能在原位置静默修改。
 
-两条路径可以混用。只要每个来源都有独立命名空间，并且作者贡献边界保持清楚，同一部学位论文可以同时接入多个研究项目、已发表论文、协作记录和人工证据。
+两条路径可以混用。只要每个来源都有独立命名空间，并且作者署名边界保持清楚，同一部学位论文可以同时接入多个研究项目、已发表论文、协作记录和人工证据。
 
 ### 5. 构建与检查
 
@@ -283,9 +285,9 @@ bash execs/scpts/lint.sh
 bash execs/scpts/fmt.sh --check
 ```
 
-`run.sh` 调用 `latexmk`，在 `wkdrs/builds/` 中进行源目录外构建，并在 `pdfinfo` 可用时打印 PDF 路径与页数。`lint.sh` 默认先构建，再把未定义引用或交叉引用、可见 `\todo`、非法或冲突的学位元数据，以及超出已确认页数限制视为失败；占位符、overfull box、格式漂移、未知学位层级、高置信度聊天机器人残留和集中出现的公式化表达会被明确报告。针对正文的检查发现只是建议性复核信号，既不能证明文本由 AI 创作，也不构成硬失败。lint 报红是稿件起草期的预期状态——证据契约要求你写下的 `\todo` 标记在清零之前本身就是硬失败，它们只阻塞归档，不阻塞起草。只有当前 PDF 与日志已经存在时才使用 `--no-build`。
+`run.sh` 调用 `latexmk`，在 `wkdrs/builds/` 中进行源目录外构建（`manus/` 之外的入口文件，例如答辩演示文稿，会构建到其旁边一个被 git 忽略的 `.build/` 中），并在 `pdfinfo` 可用时打印 PDF 路径与页数。`lint.sh` 默认先构建，再把构建失败、未定义引用或交叉引用、可见 `\todo`、非法或冲突的学位元数据，以及超出已确认页数限制视为失败。页数限制取当前里程碑的 `max_pages`（即 supervision 以外、`status: active` 的那个里程碑）；没有这样的里程碑时，取 `notes/story.md` 中旧式键 `active_milestone` 所指里程碑的 `max_pages`；再没有则取 `degree/profile.tex` 中的值；lint 用它与 PDF 的总页数比较。它会就以下情况发出警告：标题页占位符、入口文件加载 class 时的语言与 `% dissertation_language` 不一致、`degree/requirements.md` 中尚未解决的条目、入口文件从未引入的章节文件、多于一个的 active 里程碑、不是正整数的 `max_pages`、比 PDF 更新的源文件、overfull box、格式漂移、未知学位层级、高置信度聊天机器人残留和集中出现的公式化表达。要求条目的计数只包括未勾选的复选框；已勾选的条目是否注明来源，仍由 `story-depo-packer` 逐条阅读，哪些警告会阻塞归档见[规约 §6（Deposit gates）](docs/mds/story-workflow/writing-workflow-conventions.md#deposit-gates)（英文）。针对正文的检查发现只是建议性复核信号，既不能证明文本由 AI 创作，也不构成硬失败。每次运行都以一行 `Result:` 结尾，构建失败时也不例外。lint 报红是稿件起草期的预期状态——证据契约要求你写下的 `\todo` 标记在清零之前本身就是硬失败，它们只阻塞归档，不阻塞起草。`--no-build` 复用上一次构建：该次构建的日志缺失或因错误停止时它会失败，源文件比 PDF 更新时它会警告。
 
-`fmt.sh` 使用仓库的 `latexindent` 配置，在不改变排版文本的前提下维持一句一行。它排除可复用样式和学校正式模板。不带 `--check` 运行即可应用格式化。
+`fmt.sh` 使用仓库的 `latexindent` 配置，在不改变排版文本的前提下维持一句一行。它尚不拆分或检查中文句子，因此中文正文请手动保持一句一行；`--check` 不会对含多句的中文行报错。它排除可复用样式（`manus/stys/`）和学校正式模板（`milestones/*/template/`）。不带 `--check` 运行即可应用格式化。
 
 ### 6. 启动学位论文工作流
 
@@ -299,35 +301,41 @@ bash execs/scpts/fmt.sh --check
 | 论点与贡献已确认，但章节尚未规划 | `story-outl-planner` |
 | 不确定哪些部分已初始化或被阻塞 | `story-flow-status` |
 
-准确的命令前缀取决于 harness：Codex 使用 `$story-*`；Claude Code、Cursor、Pi 与 Qwen Code 使用 `/story-*`；DSH 与 Kimi Code 使用 `/skill:story-*`。通用 `$story` 或 `/story` 分流器接收自然语言请求并选择一个工作流；其中六个涉及论文整体或里程碑的工作流必须显式调用。
+准确的命令前缀取决于 harness：Codex 使用 `$story-*`；Claude Code、Cursor、Pi 与 Qwen Code 使用 `/story-*`；DSH 与 Kimi Code 使用 `/skill:story-*`。通用 `$story` 或 `/story` 分流器接收自然语言请求并选择一个工作流；其中六个涉及论文整体或里程碑的工作流必须显式调用。`/story-auto <目标>`（Codex 中为 `$story-auto`）跨多步朝给定目标推进，自行启动未标记的十个 skill，遇到任何标 † 的 skill 或作者决定时停下。
 
 ## 写作工作流
 
 十六个 skill 组成一条流水线，而不是一套固定不变的顺序。始终使用拥有目标产物的最小 skill。每个 skill 都会先加载共享工作流规范。
-每个 skill 完成后，报告都以唯一一行 `下一步：` 交接结束：指出负责最早剩余关口的 skill 及具体目标或命令；若只能由作者解除关口，则写明作者行动；若请求的工作流已经完成，则明确说明。该交接只建议接下来如何做，不会静默启动另一个 skill。
+每个 skill 完成后，报告都以唯一一行 `下一步：` 交接结束：按[规约 §8（Completion handoff）](docs/mds/story-workflow/writing-workflow-conventions.md#completion-handoff)（英文）的流水线顺序，指出负责最早剩余关口的 skill 及具体目标或命令；若只能由作者解除关口，则写明作者行动；若请求的工作流已经完成，则写 `下一步：无——请求的工作流已完成。`该交接只建议接下来如何做，不会静默启动另一个 skill。
+
+<div align="center">
+  <img src="docs/srcs/story-writing-workflow.png" alt="STORY 学位论文工作流：十六个 skill 分成五条阶段带——建仓、规划、写作、润色与审计、评审与归档——各自写出什么，以及起草循环与修改回流如何闭合" width="100%">
+</div>
 
 | Skill | 适用情形 | 主要产物 |
 | --- | --- | --- |
-| `story-proj-adopt` † | 已有学位论文或 Overleaf 导出需要安全接入 STORY | `notes/adopt.md`、映射后的源文件、无来源论断积压 |
+| `story-proj-adopt` † | 已有学位论文或 Overleaf 导出需要安全接入 STORY | `notes/adopt.md`、复制并映射后的源文件、无来源论断积压 |
 | `story-evid-curator` | 需要导入、登记、刷新或完整性检查证据 | `mates/`、`mates/MANIFEST.md` |
 | `story-syns-coach` † | 需要确认论文问题、中心论点、研究问题、主线或贡献 | `notes/story.md`、`contributions.md`、`publications.md`、`claims.md` |
-| `story-outl-planner` † | 已确认的论文总叙事需要转化为章节结构 | `notes/outline.md`、`notation.md`、章节骨架 |
-| `story-chap-drafter` | 一个章节需要以作者的学术声音依据证据起草或修改 | 一个 `manus/chaps/*.tex` 文件及同步台账 |
-| `story-tabs-builder` | 需要一张结果、比较、映射或综合表格 | 一个带逐行来源锚点的 `manus/tabs/*.tex` 文件 |
+| `story-outl-planner` † | 已确认的论文总叙事需要转化为章节结构 | 带章节简报的 `notes/outline.md`、`notation.md`、尚无文件的章节的骨架 |
+| `story-chap-drafter` | 一个章节或一份前置/后置部分文件需要以作者的学术声音依据证据起草或修改；`trace` 只补充缺失的来源锚点，不重写正文 | 一个 `manus/chaps/`、`manus/fronts/` 或 `manus/backs/` 文件及同步台账 |
+| `story-tabs-builder` | 需要一张结果、比较、映射或综合表格 | 一个 `manus/tabs/*.tex` 文件，每个带数值或比较的行都有来源锚点 |
 | `story-figs-designer` | 需要一张概念、方法、结果或综合图 | `manus/figs/` 下的成图与可编辑源文件 |
 | `story-refs-curator` | 需要添加、核验、阅读、去重或定位一项来源 | 参考文献条目与 `notes/refs/` 阅读笔记 |
-| `story-copy-editor` | 需要润色作者声音、公式化表达、术语、衔接、重复或符号一致性 | 手稿修改、报告或 `notes/style.md` |
-| `story-clms-auditor` | 数值、比较和学位贡献论断需要可追溯性检查 | 论断结论、可再生成发现、持久任务 |
-| `story-cite-auditor` | 引用键、文献断言和参考文献卫生需要检查 | 引用报告与持久任务 |
-| `story-exam-reviewer` | 需要适合当前学位层级的模拟外审或委员会审查 | `milestones/<slug>/simulations/SIM_EXAM_<date>.md` |
-| `story-revs-resolver` † | 收到导师、委员会、外审、答辩、修改或归档反馈 | 逐点台账、回复、跟踪承诺 |
-| `story-defn-builder` † | 适用的预答辩或答辩需要叙事与演示文稿 | 里程碑下的答辩计划和可编辑演示材料 |
-| `story-depo-packer` † | 一个具名归档里程碑已经可以预检和冻结 | 归档包、校验和、记录、可选本地冻结 tag |
+| `story-copy-editor` | 一个章节、一份前置/后置部分文件或整篇论文（`full`）需要润色作者声音、公式化表达、术语、衔接、重复或符号一致性 | 手稿修改、报告、建议性的 `tasks/prose.md` 或 `notes/style.md` |
+| `story-clms-auditor` | 数值、比较和学位贡献论断需要可追溯性检查，或某个数字看起来有误 | 论断与贡献状态、可重新生成的报告、`tasks/audits.md` 中的条目 |
+| `story-cite-auditor` | 引用键、文献断言和参考文献条目规范性需要检查 | 引用报告与 `tasks/audits.md` 中的条目 |
+| `story-exam-reviewer` | 需要适合当前学位层级的模拟评阅人或委员会评审 | `milestones/<slug>/simulations/SIM_EXAM_<date>.md`；没有指定或当前里程碑时为 `wkdrs/reports/SIM_EXAM_<date>.md` |
+| `story-revs-resolver` † | 收到导师、委员会、评阅人、答辩、修改或归档反馈，或收到正式结果 | 逐点台账、回复、`tasks/<slug>_promises.md` 中的承诺、正式结果的 RECORD |
+| `story-defn-builder` † | 适用的预答辩或答辩需要叙事与演示文稿 | `milestones/<slug>/materials/` 下的答辩计划和可编辑演示文稿源文件 |
+| `story-depo-packer` † | 一个具名归档里程碑已经可以预检和冻结 | 关口报告、归档包、带校验和与源 commit 的 RECORD、可选本地冻结 tag |
 | `story-flow-status` | 不清楚下一步做什么 | 只读状态报告与唯一下一步行动 |
 
-标有 † 的六个 skill 控制论文总论点、章节边界、学校里程碑或最终定稿。通用分流器不会直接启动它们，而是返回准确的显式命令并等待确认。这条边界防止 agent 静默改变论文中心论点、整体结构、反馈立场、答辩或归档状态。
+slug 为缩写：`proj` 项目（project），`evid` 证据（evidence），`syns` 综合（synthesis），`outl` 提纲（outline），`chap` 章节（chapter），`tabs` 表格（tables），`figs` 图（figures），`refs` 参考文献（references），`clms` 论断（claims），`cite` 引用（citations），`exam` 评审（examination），`revs` 评审意见（reviews），`defn` 答辩（defense），`depo` 归档（deposit），`flow` 工作流（workflow）。
 
-章节起草、润色、模拟审查和 lint 共用[学术自然写作指南](docs/mds/story-workflow/human-writing-guide.zh-CN.md)。该指南把 Humanizer 模式适配到学术正文，同时保留证据、限定、术语和经作者确认的声音；它不会依据孤立词语或标点判断作者身份。
+标有 † 的六个 skill 控制论文总论点、章节边界、学校里程碑或最终定稿。通用分流器绝不启动它们，只给出供你自己敲下的准确命令；`/story-auto` 目标运行遇到它们也会停下，并打印其命令。这条边界防止 agent 静默改变论文中心论点、整体结构、反馈立场、答辩或归档状态。
+
+章节起草、润色、模拟评审和 lint 共用写作工作流规范 §5 的[学术自然写作契约](docs/mds/story-workflow/writing-workflow-conventions.md#human-writing-contract)（英文）。该契约把 Humanizer 模式适配到学术正文，同时保留证据、限定、术语和经作者确认的声音；它不会依据孤立词语或标点判断作者身份。
 
 ## 从研究到归档的路径
 
@@ -336,18 +344,18 @@ bash execs/scpts/fmt.sh --check
 1. **建立论文实例**——克隆 STORY 或运行 `update.sh --adopt`；依据正式记录确认 `degree/profile.tex`。
 2. **整理证据**——分别导入 STAR、STAGE、STORY 或通用仓库，并登记人工材料；每份证据文件都获得指纹。
 3. **塑造学位论文**——`story-syns-coach` 把研究历史组织成一个适合当前学位层级的问题、中心论点、研究主线、研究问题、贡献、出版/复用映射和候选论断。
-4. **规划章节**——`story-outl-planner` 为每章映射目的、研究问题、贡献、论断、证据、视觉材料、依赖和退出条件。
+4. **规划章节**——作者把总叙事定稿后，`story-outl-planner` 为每一章（包括已起草的章节）映射目的、研究问题、贡献、论断、证据、视觉材料、依赖和退出条件。
 5. **建立文献基础**——`story-refs-curator` 核验书目身份，阅读承载论断的来源，并在 `notes/refs/` 下创建可检查的笔记。
 6. **逐章起草**——`story-chap-drafter` 依据已确认简报和证据写作；`story-tabs-builder` 与 `story-figs-designer` 创建可追溯视觉材料；同一次修改同步更新论断、符号与提纲记录。
-7. **润色而不移动事实**——`story-copy-editor` 删除集中出现的公式化表达，统一术语、作者声音、衔接与跨章节综合，同时保持数值、引用、作者贡献、不确定性和论断范围不变。
-8. **审计**——`story-clms-auditor` 追溯数值和贡献论断；`story-cite-auditor` 检查引用键与文献断言。失败项成为持久任务，而不会埋在报告里消失。
-9. **外审与修改**——`story-exam-reviewer` 模拟适用于当前学位层级的审查；收到的反馈在 `feedback/` 下保持不变；`story-revs-resolver` 为每点记录处理方式和完成证据。
+7. **润色而不改动事实**——`story-copy-editor` 删除集中出现的公式化表达，统一术语、作者声音、衔接与跨章节综合，同时保持数值、引用、归属、不确定性和论断范围不变。
+8. **审计**——`story-clms-auditor` 追溯数值和贡献论断；`story-cite-auditor` 检查引用键与文献断言。失败项成为 `tasks/audits.md` 中未勾选的条目，而不会埋在报告里消失；每项审计都记录最近一次全文运行的日期。
+9. **评审与修改**——`story-exam-reviewer` 模拟适用于当前学位层级的评审；收到的反馈在 `feedback/` 下保持不变；`story-revs-resolver` 为每点记录处理方式和完成证据，记录正式结果，并在开启修改里程碑前先询问。
 10. **准备答辩**——培养项目确认要求答辩时，`story-defn-builder` 依据已核验论断以及已确认时长和格式规则创建叙事与可编辑演示文稿。
-11. **打包并冻结归档**——只有构建和 lint 通过、学校检查与承诺全部解决、复用许可清楚且所需批准已有记录时，`story-depo-packer` 才会生成本地归档包与冻结记录；它绝不会代替作者上传或提交。
+11. **打包并冻结归档**——`story-depo-packer` 检查[规约 §6（Deposit gates）](docs/mds/story-workflow/writing-workflow-conventions.md#deposit-gates)（英文）中的每个关口，其中包括构建与 lint 干净通过、每条要求均已勾选、`tasks/` 下没有未勾选的复选框、两项审计都在最后一次修改之后运行过、复用许可已清楚、没有模板初始文本，以及 Git 工作树干净；之后才生成本地归档包，以及按校验和引用该包的 RECORD。它绝不代替作者提交 commit、上传或递交，只有在你确认后才给记录的 commit 打 tag。
 
-任何阶段都可以运行 `story-flow-status`。它读取学位档案、证据健康度、叙事与贡献就绪情况、章节/论断/参考文献覆盖、出版物作者贡献、里程碑、承诺和最近构建，然后只推荐一个下一步行动。
+任何阶段都可以运行 `story-flow-status`。它读取学位档案、证据完整性（`ok`、`tampered`、`missing`、`unregistered`）、各台账的状态计数、出版物归属、当前里程碑、`tasks/` 下未勾选的复选框、可见 `\todo` 的数量、构建是否为最新、最近一次 lint 的 `Result:` 行，以及遗留的翻译对照文件，然后只推荐一个下一步行动。
 
-## 证据、作者贡献与论断记录表
+## 证据、归属与论断记录表
 
 三份台账让学位论文保持可答辩：
 
@@ -374,7 +382,7 @@ bash execs/scpts/fmt.sh --check
 
 **B. 论断记录表是枢纽。** `notes/claims.md` 使用 `ID | Claim | Contribution | Stated in | Evidence | Status | Notes`。论断 ID 保持稳定（`C001`、`C002`……）；其生命周期是 `proposed` → `drafted` → `verified`，并用 `unsourced`、`weakened`、`retired` 保存失败与决定，而不是删除历史。综合工作提出论断，章节陈述论断，审计核验论断，评审攻击的仍是同一行记录。
 
-**C. 作者贡献与证据相互独立。** `notes/contributions.md` 把学位贡献（`D001`、`D002`……）映射到研究问题、论断、证据、出版物、章节与作者贡献。`notes/publications.md` 另外记录完整作者列表、候选人的贡献、复用材料、重叠及许可或政策状态。出版物不会自动成为学位贡献；证据具有指纹，也绝不意味着 STORY 可以把合作研究描述为候选人独立完成。
+**C. 归属与证据相互独立。** `notes/contributions.md` 把学位贡献（`D001`、`D002`……）映射到研究问题、论断、证据、出版物、章节与归属。`notes/publications.md` 另外记录完整作者署名、候选人本人的贡献、复用材料、重叠及许可或政策状态。出版物不会自动成为学位贡献；证据具有指纹，也绝不意味着 STORY 可以把合作研究描述为候选人独立完成。
 
 关于引用文献的断言遵守同样边界：元数据核验只能确认“这是哪篇论文”；内容核验表示已经阅读来源本身，并且 `notes/refs/` 能支持该断言。公开可访问也绝不等于获得复用许可。
 
@@ -386,28 +394,30 @@ bash execs/scpts/fmt.sh --check
 milestones/<slug>/
 ├── milestone.yml          # 经确认的类型、状态、日期、来源和限制
 ├── feedback/              # 收到的意见，原样保存
+├── simulations/           # 生成的模拟评审（story-exam-reviewer）
 ├── response/              # 逐点台账、处理方式与完成证据
-├── materials/             # 适用的开题、外审或答辩材料
+├── materials/             # 适用的开题、评审或答辩材料
+├── template/              # 原样保存的正式模板，从不重排格式
 └── RECORD_<date>.md        # 冻结结果；status: completed 前必须存在
 ```
 
-`milestone.yml` 的类型可以是 `proposal`、`review`、`annual-review`、`pre-defense`、`external-examination`、`defense`、`correction`、`deposit` 或 `other`；状态可以是 `planned`、`active`、`blocked`、`completed` 或 `cancelled`。日期、页数限制、正式名称和要求来源在确认前保持为空。
+`milestone.yml` 的类型可以是 `proposal`、`review`、`annual-review`、`pre-defense`、`external-examination`、`defense`、`correction`、`deposit`、`supervision` 或 `other`；状态可以是 `planned`、`active`、`blocked`、`completed` 或 `cancelled`。`supervision` 是存放导师或合作者非正式反馈的常设 `milestones/supervision/` 记录：它从不是当前里程碑，不需要 RECORD，只以自己的承诺为关口。日期、页数限制、正式名称和要求来源在确认前保持为空。
 
-收到的反馈永远不在原处编辑。回复为每点记录 `accepted`、`completed`、`planned`、`disagreed` 或 `needs-author`，承诺的修改也会成为 `tasks/` 下的复选框。任何 lint 失败、可见 todo、未勾选学校要求、未完成承诺、缺失的复用许可或尚未记录的必要批准，都会阻塞归档。
+收到的反馈永远不在原处编辑。回复为每点记录 `accepted`、`completed`、`planned`、`disagreed` 或 `needs-author`，承诺的修改也会成为 `tasks/` 下的复选框。只有当 `story-depo-packer` 报告[规约 §6（Deposit gates）](docs/mds/story-workflow/writing-workflow-conventions.md#deposit-gates)（英文）中的每个关口都通过时，归档才算就绪。
 
 ## Agent harness
 
-各 harness 树共用一个事实源。中立 skill 位于 `.agents/skills/`；共享请求名册位于 `.agents/commands/story.md`；每个 harness 只拥有其运行时需要的 frontmatter、prompt、hook、设置和命令适配器。
+各 harness 树共用一个事实源。中立 skill 位于 `.agents/skills/`；共享请求名册位于 `.agents/commands/story.md`，目标运行流程位于同目录的 `story-auto.md`；每个 harness 只拥有其运行时需要的 frontmatter、prompt、hook、设置和命令适配器。
 
 | Harness | Skill 入口 | 项目设置 |
 | --- | --- | --- |
-| Codex | `$story-*`；通用 `$story` 插件 | 用 `/hooks` 批准 `.codex/hooks.json`；按下文安装插件 |
-| Claude Code | `/story-*`；通用 `/story` | 自动加载 `.claude/settings.json` |
-| Cursor | `/story-*`；通用 `/story` | 自动加载 `.cursor/hooks.json` 与 rules |
-| DeepSeek Harness | `/skill:story-*`；通用 `/story` | 安装 `.dsh/commands/story`；每台机器运行一次 `bash .dsh/hooks/install.sh` |
-| Kimi Code | `/skill:story-*`；通用 `/story` | 安装 `.kimi-code/plugins/story`；每台机器运行一次 `bash .kimi-code/hooks/install.sh` |
-| Pi | `/story-*` prompt | 信任项目后才会加载 `.pi/extensions/` |
-| Qwen Code | `/story-*`；通用 `/story` | 自动加载 `.qwen/settings.json` |
+| Codex | `$story-*`；通用 `$story` 与 `$story-auto` 插件 | 用 `/hooks` 批准 `.codex/hooks.json`；按下文安装插件 |
+| Claude Code | `/story-*`；通用 `/story` 与 `/story-auto` | 自动加载 `.claude/settings.json` |
+| Cursor | `/story-*`；通用 `/story` 与 `/story-auto` | 自动加载 `.cursor/hooks.json` 与 rules |
+| DeepSeek Harness | `/skill:story-*`；通用 `/story` 与 `/story-auto` | 安装 `.dsh/commands/story`；每台机器运行一次 `bash .dsh/hooks/install.sh` |
+| Kimi Code | `/skill:story-*`；通用 `/story` 与 `/story-auto` | 安装 `.kimi-code/plugins/story`；每台机器运行一次 `bash .kimi-code/hooks/install.sh` |
+| Pi | `/story-*` prompt；通用 `/story` 与 `/story-auto` | 信任项目后才会加载 `.pi/extensions/` |
+| Qwen Code | `/story-*`；通用 `/story` 与 `/story-auto` | 自动加载 `.qwen/settings.json` |
 
 在仓库根目录安装一次 Codex 仓库内分流器，然后新开会话：
 
@@ -430,15 +440,43 @@ dsh plugin --profile YOUR_PROFILE add ./.dsh/commands/story
 dsh --profile YOUR_PROFILE --dump-config
 ```
 
-不带请求的 `$story` 或 `/story` 显示学位论文状态，也可以传入自然语言请求，例如“审计第 3 章的论断”。所有包装器都从同一份名册分流。维护 STORY 本身时，应修改 `.agents/skills/` 与 `.agents/commands/` 下的中立内容，再运行 `bash .github/scripts/port.sh --write`；一般学位论文实例通过 `execs/update.sh` 获取这些文件。
+不带请求的 `$story` 或 `/story` 显示学位论文状态，也可以传入自然语言请求，例如“审计第 3 章的论断”。所有包装器都从同一份名册分流。
+
+想让 agent 朝一个目标一直推进时，使用 `/story-auto <目标>`（Codex 中为 `$story-auto`；Kimi Code 的显式写法是 `/skill:story-auto`），例如 `/story-auto 第 3 章起草完成并通过审计 involve=low`。它先运行 `story-flow-status`，再接着执行每次运行点名的下一步，自行启动未标记的十个 skill，直到目标的检查通过。遇到任何标 † 的 skill，它停下并交回准确命令；遇到只有你能解除的关口，它停下并交回所需作者行动。确认点和 `AGENTS.md` §1 规定须先询问的选择，在任何参与度下仍交给你决定。目标运行绝不导入或刷新证据，不写 `degree/` 或收到的反馈，不宣布归档就绪，不提交也不推送，也不等待 lint 变绿。参与度取你敲下的 `involve=` token，否则取 `.env` 中的 `INVOLVE`。规则见[写作工作流规范 §8（Goal runs）](docs/mds/story-workflow/writing-workflow-conventions.md#goal-runs)（英文）；所有 harness 读取同一份流程 `.agents/commands/story-auto.md`。Codex 和 Kimi Code 都在安装时复制插件，因此已安装的插件要重新安装一次，才能用上 `/story-auto` 以及插件之后的任何改动。在 Codex 中运行 `codex plugin remove story@story`，再运行 `codex plugin add story@story`，然后新开会话；在 Kimi Code 中把上面的插件安装命令再执行一次。
+
+Claude Code 以 `effort: medium` 运行 `story-flow-status`：生成的 `.claude/skills/story-flow-status/SKILL.md` 带有这个字段，因为只读的状态扫描所需的推理深度低于起草。其他 skill、其他 harness 都不带模型或 effort 设置；由哪个模型运行 skill、推理多深，由你的 harness 决定。
+
+维护 STORY 本身时，应修改 `.agents/skills/` 与 `.agents/commands/` 下的中立内容，再运行 `bash .github/scripts/port.sh --write`；一般学位论文实例通过 `execs/update.sh` 获取这些文件。
+
+### Hook 与权限
+
+每个 harness 在会话开始时都会注入两个 hook 的内容：一个说明写入记忆文件 `model_id` 时应复制的模型 ID（读取顺序见写作工作流规范 §7；各 harness 的解析命令与兜底读取见 [§11 harness 适配](docs/mds/story-workflow/writing-workflow-conventions.md#11-harness-adapters)，hook 事件与注册方式见 [harness 参考](docs/mds/story-workflow/harness-reference.md)，均为英文），另一个把[项目记忆](#项目记忆)索引交给 agent。七个 harness 还都带有 `story_commit_guard.sh`，在任何介入级别下生效：它拒绝全量或强制暂存、改写历史、强制分支操作、整体丢弃未提交的改动、强制推送、移动或删除 tag，以及暂存文件超过 10 MB 的提交。Claude Code、Codex、DSH、Kimi Code 和 Qwen Code 在 shell 命令执行前的 `PreToolUse` 上运行它，Cursor 在 `beforeShellExecution` 上运行，Pi 在其 `tool_call` 事件上运行；Pi 没有权限提示，因此它是 git 命令与仓库之间唯一的检查。
+
+在 `INVOLVE=low` 下，gate hook 会代为回答权限提示，但从不回答确认点：skill 必须提出的问题仍会交给你。在 Claude Code、Codex 和 Qwen Code 中，`story_involve_gate.sh` 放行项目内的编辑；项目根目录下点目录中的路径，以及借 `..` 跳出项目的路径，仍保留提示。Claude Code 还注册了 `story_bash_gate.sh`：在 `low` 下它放行 shell 命令，除非命令越过红线——删除、`sudo`、磁盘与设备写入、系统或 TeX 包安装（包括 `tlmgr`）、进程控制、服务控制、内核模块、计划任务（`crontab`）、会删除文件或执行命令的 `find`、`git push`、`git clean`、`git stash drop`/`clear`、整棵树的 `git restore`/`checkout`、强制 `mv`/`cp`，或向外传输（`gh`、`scp`/`sftp`/`ftp`、`rclone`、传往远程主机的 `rsync`，以及 `curl`/`wget` 上传；普通下载仍然放行）。两个 gate 在任何级别都为写入学位论文受保护记录的操作保留提示：证据库 `mates/`、`degree/` 中已确认的学校事实，以及 `milestones/*/feedback/` 中收到的反馈。bash gate 放行 `bash execs/scpts/import.sh` 写入 `mates/`（这正是它的职责），也放行 `cat`、`grep`、`sed -n` 等只读命令在其中读取。因此 `story-evid-curator` 自己的登记操作在把文件复制进 `mates/manual/` 之前会先询问你。在 Claude Code 中，两个 gate 从你在本会话中最近一次输入的 STORY 命令里的 `involve=` token 取得级别；该命令没有给出级别时回退到 `.env`。agent 写进它所派发 skill 的 token 只能提高级别，不能降低级别。这个级别会延续到运行结束之后：`/story-chap-drafter 3 involve=low` 结束后，同一会话中后续的编辑和 shell 命令仍按 `low` 应答；像“多问我一些”这样的自然语言请求会改变 skill 询问的多少，但不会改变 hook 的应答。输入一条不带参数的 STORY 命令（例如 `/story-flow-status`）即可让 hook 回到 `.env`，输入带新 `involve=` token 的 STORY 命令则设定另一个级别。Codex 和 Qwen Code 只依据 `.env`。Cursor、DSH、Kimi Code 和 Pi 没有编辑 gate，因为它们的 harness 在编辑前不提供可由 hook 回答的提示。
+
+gate 只读取命令中写明的路径，因此只是底线，不是证明。脚本自行打开受保护文件的情况无法被发现，但约定仍然禁止这类写入。
+
+Claude Code 在全新安装后无需其他设置：`.claude/settings.json` 自带三条 allow 规则，一条用于 provenance hook 交给 skill 的只读 model-id resolver，两条用于 `story-flow-status` 的只读收集脚本。`execs/update.sh` 会保留已有的 `settings.json`；它会指出保留文件中未注册的 STORY hook，并报告缺失的 resolver 规则。请自行把这些规则合并进保留的文件：
+
+```json
+"permissions": {
+  "allow": [
+    "Bash(bash .claude/hooks/story_model_id.sh --resolve:*)",
+    "Bash(bash .claude/skills/story-flow-status/scripts/scan.sh)",
+    "Bash(bash .claude/skills/story-flow-status/scripts/scan.sh:*)"
+  ]
+}
+```
+
+保留的文件还需要在 `hooks.PreToolUse` 的 `Bash` 条目中，把 `story_bash_gate.sh` 命令放在 `story_commit_guard.sh` 旁边；guard 的 deny 优先于 gate 的 allow，因此顺序无关紧要。Qwen Code 的 `.qwen/settings.json` 自带 `scan.sh` 规则。其他 harness 在首次询问时批准一次收集脚本即可。
 
 ## 项目记忆
 
-一次会话学到、但没有任何仓库文件认领的知识——本机特有的 TeX 限制、作者的长期偏好、可复用的项目判断，或已经尝试并否决的一种论述方式——可以放在 `.story/memory/` 下。一事一文件，每条在 `.story/memory/MEMORY.md` 中占一行；会话 hook 会在每个受支持 harness 的会话开头把索引交给 agent。
+一次会话学到、但没有任何仓库文件认领的知识——本机特有的 TeX 限制、作者的长期偏好、可复用的项目判断，或已经尝试并否决的一种论述方式——可以放在 `.story/memory/` 下。一事一文件；会话 hook 从这些文件的 frontmatter 生成每条一行的索引，并在所有七个 harness 的每次会话开头把它交给 agent（任一副本加 `--list` 即可打印，例如 `bash .claude/hooks/story_memory.sh --list`）。
 
-四种类型让记忆库保持清楚：`env`、`pref`、`insight` 和 `deadend`。只在本机成立的事实写入 `.story/memory/local/`，Git 会忽略该目录；超过 180 天的 `env` 事实会标为过期。记忆永远不是证据，也不能覆盖已经拥有该事实的文件：数值属于 `mates/`，论断属于 `notes/claims.md`，学校要求属于 `degree/`，出版物复用属于 `notes/publications.md`，反馈属于 `milestones/`，承诺属于 `tasks/`。
+四种类型让记忆库保持清楚：`env`、`pref`、`insight` 和 `deadend`。`.story/memory/local/` 像 `.env` 一样被 git 忽略，存放只在本机成立的事实，以及你不想放进仓库的任何记忆；其余记忆都纳入版本控制，随克隆一起带走。超过 180 天的 `env` 事实会标为过期。记忆永远不是证据，也不能覆盖已经拥有该事实的文件：数值属于 `mates/`，论断属于 `notes/claims.md`，学校要求属于 `degree/`，出版物复用属于 `notes/publications.md`，反馈属于 `milestones/`，承诺属于 `tasks/`。
 
-agent 会先询问是否记录记忆；`INVOLVE=low` 把它改为先记录再说明。文件格式、索引语法、退役规则和来源契约见[项目记忆](docs/mds/story-workflow/memory_spec.zh-CN.md)。
+agent 会先询问是否记录记忆；`INVOLVE=low` 把它改为先记录再说明。文件格式（包括必填的一行 `summary`）、索引行和退役规则见写作工作流规范的 [§10 项目记忆](docs/mds/story-workflow/writing-workflow-conventions.md#10-project-memory)（英文）；记忆的 `model_id` 遵循 [§7](docs/mds/story-workflow/writing-workflow-conventions.md#7-interaction-language-and-provenance) 的来源规则。
 
 ## 更新 STORY 的 skill 与工作流文档
 
@@ -448,7 +486,7 @@ agent 会先询问是否记录记忆；`INVOLVE=low` 把它改为先记录再说
 bash execs/update.sh
 ```
 
-更新器管理共享 agent 指令、中立 skill 与分流器、所选 harness 的入口树与 hook、Codex manifest、分流器包、工作流文档，以及 `execs/` 下的全部脚本。harness 注册文件仅在缺失时安装，除非使用 `--force`，否则已有配置保持不变。实例拥有的学位论文状态不在更新范围内。
+更新器管理共享 agent 指令、中立 skill、`/story` 分流器与 `/story-auto` 流程、所选 harness 的入口树与 hook、Codex manifest、分流器包、工作流文档，以及 `execs/` 下的全部脚本。harness 注册文件仅在缺失时安装，除非使用 `--force`，否则已有配置保持不变。保留的文件若未注册某个 STORY hook，更新器会指出该 hook；保留的 `.claude/settings.json` 若未放行 model-id resolver，更新器也会报告。请从上游手动合并这些条目。保留的 `.codex/hooks.json` 若仍把 `story_memory.sh` 放在带 matcher 的 `SessionStart` 组里（早期版本为 `startup|resume`），更新器同样会报告；请像上游那样把该条目移入一个没有 matcher 的独立 `SessionStart` 组，这样 `/clear` 之后也会加载记忆。实例拥有的学位论文状态不在更新范围内。
 
 命令的通用形式是：
 
@@ -474,7 +512,7 @@ bash execs/update.sh --skill story-flow-status
 - `--force` 允许覆盖受管路径中的本地修改及原本会保留的 harness 配置，但不会扩大路径范围。
 - `--adopt` 只把缺失的骨架文件复制进已有 Git 仓库，绝不覆盖现有路径；它不能与 `--force` 同用。
 
-拉取来源为 `STORY_REPOSITORY`，依次从环境变量、`.env`、官方 GitHub 仓库解析。上游同路径的受管文件会被覆盖，新文件会加入，上游删除的文件不会在本地自动删除，项目专属文件保持不变。更新前先提交当前工作，不确定时先预览，再用 `git status` 与 `git diff` 检查结果。`bash execs/update.sh --help` 是权威参数说明。
+拉取来源为 `STORY_REPOSITORY`，依次从环境变量、`.env`、官方 GitHub 仓库解析。上游同路径的受管文件会被覆盖，新文件会加入。上游已不再提供的 STORY 文件——上游 skill 旁的 `SKILL_zh.md`、上游 Pi prompt 旁的中文 prompt，以及 `RETIRED_FILES` 列出的文件——会被删除，`--diff` 中显示为 `removes`；其余只存在于本地的文件，包括你自己的，都会保留。STORY 已不再提供中文指令对照版：除上述 skill 与 Pi prompt 的中文版外，更新还会删除 `AGENTS.zh-CN.md`、`CLAUDE.zh-CN.md`、`.pi/APPEND_SYSTEM.zh-CN.md`、中文 `/story` 包装命令，以及中文工作流规范。早期版本的 skill 在笔记旁写下的 `notes/**/*.zh-CN.md` 对照文件归你所有：更新会保留它们，但已没有 skill 读取或更新它们；`story-flow-status` 会列出它们，便于你合并或删除。更新还会删除三份独立的工作流规格：学术自然写作指南、项目记忆规格和 model-id 兜底说明，它们的规则已并入写作工作流规范（§5、§10，以及 §7 与 §11）。在这一变更之前的更新脚本会在替换自身之前报错 `Upstream ref is missing AGENTS.zh-CN.md` 并停止。请手动替换它一次：从你所更新的仓库（`STORY_REPOSITORY`）取来 `execs/update.sh`（官方仓库可用 `curl -fsSL https://raw.githubusercontent.com/wanghao9610/STORY/main/execs/update.sh -o execs/update.sh`），提交这次替换，使更新脚本的未提交改动检查能够通过，再重新运行。较早的版本还会放入 `.story/memory/MEMORY.md` 与 `.story/memory/MEMORY.zh-CN.md`，把 `.story/memory/local/MEMORY.md` 当作本机索引读取，并要求每个记忆文件配一个 `<slug>.zh-CN.md` 中文对照版。记忆库属于论文本身，所以更新会保留这些文件，但 hook 已不再读取这些索引文件，而会把每个中文对照版当作另一条记忆再列一次。请把每条索引行写进对应记忆文件的 `summary`，把每个中文对照版的内容并入其英文文件，然后删除这些旧文件；删除之前，更新会一直提示。更新前先提交当前工作，不确定时先预览，再用 `git status` 与 `git diff` 检查结果。`bash execs/update.sh --help` 是权威参数说明。
 
 ## 项目约定
 
@@ -489,7 +527,7 @@ bash execs/update.sh --skill story-flow-status
 9. 手稿源文件保持一句一行，让 diff 显示实际修改的句子，而不是它所在的整段。
 10. 每次修改由最小的适用工作流负责。章节起草请求不会静默改变证据、学位要求、论文总论点或收到的反馈。
 
-完整协作规则见 [`AGENTS.zh-CN.md`](AGENTS.zh-CN.md)；权威工作流规则见[写作工作流规范](docs/mds/story-workflow/writing-workflow-conventions.zh-CN.md)。
+完整协作规则见 [`AGENTS.md`](AGENTS.md)；权威工作流规则见[写作工作流规范](docs/mds/story-workflow/writing-workflow-conventions.md)。二者只有英文版，中文运行同样遵循它们，并用中文回复。
 
 ## 把 STORY 适配到实际学位论文
 
@@ -518,6 +556,13 @@ bash execs/update.sh --skill story-flow-status
 - 用于证据指纹的 `shasum` 或 `sha256sum`
 
 各 agent harness 可能还有自己的运行要求；例如，安装 DSH 本地分流器要求 `PATH` 上有 `pnpm`。
+
+## 更新日志
+
+按日期列出要点，最新在前。STORY 目前还没有给版本打 tag，因此 `bash execs/update.sh` 跟随 `main`；某个版本打了 tag 之后，把 tag 作为 `ref` 传入即可把更新固定到该版本。
+
+- **2026-09-23** —— 谁来设置各台账状态，现由一条规则统一规定，即[规约 §3（Who sets each status）](docs/mds/story-workflow/writing-workflow-conventions.md#who-sets-each-status)（英文）；只有当 `story-depo-packer` 报告[规约 §6（Deposit gates）](docs/mds/story-workflow/writing-workflow-conventions.md#deposit-gates)（英文）中的每个关口都通过时，归档才算就绪，其中包括 Git 工作树干净、两项审计都在最后一次修改之后运行过；它在 RECORD 中记录源 commit，只有在你确认后才打 tag。`story-chap-drafter` 也能起草一份前置或后置部分文件，`trace CHAPTER` 只补充缺失的来源锚点，不改变排版文本。导师或合作者的非正式反馈进入常设的 `milestones/supervision/` 记录；没有指定或当前里程碑时，`story-exam-reviewer` 写入 `wkdrs/reports/SIM_EXAM_<date>.md`，绝不自行创建里程碑。`story-proj-adopt` 在你提交一次检查点之后复制草稿，而不是移动它。模板中的 `degree/profile.tex` 现在让 `% thesis_type:` 留空，不再预填 `monograph`，由 `story-outl-planner` 询问；每个 skill 的参数提示都以 `[involve=LEVEL]` 结尾。
+- **2026-09-23** —— `/story-auto <目标>`（Codex 中为 `$story-auto`）朝一个目标推进：先运行 `story-flow-status`，再启动每次交接点名的未标记 skill（共十个）；遇到 `AGENTS.md` §1 规定须先询问的选择时向你提问，遇到标 † 的 skill 或只有作者能解除的关口就停下；它绝不导入证据，不写 `degree/` 或收到的反馈，不宣布归档就绪，不提交也不推送（[Goal runs](docs/mds/story-workflow/writing-workflow-conventions.md#goal-runs)，英文）。Claude Code 新增 `story_bash_gate.sh`：在 `INVOLVE=low` 下代为回答红线之外的 shell 权限提示，并采用你最近一次敲下的 `involve=` token；所有 gate 在任何级别都为写入 `mates/`、`degree/` 或 `milestones/*/feedback/` 保留提示，Pi 也有了 commit guard。provenance 读取命令已按 zsh 加上引号，并在 `.claude/settings.json` 中预先放行；Codex 增加了写入后的 `--check`。每个记忆文件现在都带一行 `summary`，hook 据此生成索引（`--list` 可打印），模板的记忆库只带 `.story/memory/.gitkeep`。学术自然写作指南、项目记忆规格和 model-id 兜底说明并入[写作工作流规范](docs/mds/story-workflow/writing-workflow-conventions.md)（英文），成为 §5、§10 和新增的 §11 harness 适配——唯一点名 harness 的一节。指令只有英文版：`SKILL_zh.md`、`AGENTS.zh-CN.md` 及其他指令对照版已删除，中文运行仍用中文回复，`execs/update.sh` 会删除上游已退役的文件（`RETIRED_FILES`）。`story-flow-status` 在 Claude Code 中以 `effort: medium` 运行；`lint.sh` 把构建失败视为失败，并从状态为 `active` 的里程碑读取页数限制。旧版更新脚本会报 `Upstream ref is missing AGENTS.zh-CN.md` 并停止：请按[更新 STORY](#更新-story-的-skill-与工作流文档)一节所述，手动替换一次 `execs/update.sh`。已有的论文仓库会保留自己的 `.claude/settings.json` 与 `.codex/hooks.json`：请手动合并 bash gate 的注册和三条 allow 规则（见 [Hook 与权限](#hook-与权限)），以及 Codex 中单独成组的记忆 `SessionStart` 条目（更新器会报告缺失的 gate、缺失的 resolver 规则和旧的分组方式），并重新安装 Codex 或 Kimi Code 插件，才能用上 `/story-auto`。
 
 ## 许可证
 

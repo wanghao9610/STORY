@@ -1,1 +1,0 @@
-../../../.agents/skills/story-copy-editor/SKILL_zh.md

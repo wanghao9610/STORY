@@ -4,7 +4,7 @@
 model="${1:-}"
 
 if [[ -n "${model}" ]]; then
-    printf '%s\n' "STORY provenance: this Pi run's runtime-reported model id is ${model}. When a STORY skill records model_id or model_trail (writing-workflow-conventions section 7), copy this exact string verbatim; do not write 'unrecorded'."
+    printf '%s\n' "STORY provenance: this Pi run's runtime-reported model id is ${model}. When you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), copy this exact string verbatim; do not write 'unrecorded'."
 else
-    printf '%s\n' "STORY provenance: Pi reported no model id for this run. When a STORY skill records model_id or model_trail (writing-workflow-conventions section 7), write 'unrecorded' and do not guess."
+    printf '%s\n' "STORY provenance: Pi reported no model id for this run. When you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), write 'unrecorded' and do not guess."
 fi

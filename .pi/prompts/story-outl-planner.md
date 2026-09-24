@@ -1,9 +1,7 @@
 ---
 description: Run story-outl-planner with its STORY workflow instructions
-argument-hint: "[DESCRIPTION] [involve=high]"
+argument-hint: "[DESCRIPTION] [involve=LEVEL]"
 ---
-
-**Language:** English | [简体中文](story-outl-planner.zh-CN.md)
 
 Read `.pi/skills/story-outl-planner/SKILL.md` in full and follow it as this run's instructions.
 

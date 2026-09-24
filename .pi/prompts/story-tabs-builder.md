@@ -1,9 +1,7 @@
 ---
 description: Run story-tabs-builder with its STORY workflow instructions
-argument-hint: "[TABLE | new] [DESCRIPTION] [involve=low]"
+argument-hint: "[TABLE | new] [DESCRIPTION] [involve=LEVEL]"
 ---
-
-**Language:** English | [简体中文](story-tabs-builder.zh-CN.md)
 
 Read `.pi/skills/story-tabs-builder/SKILL.md` in full and follow it as this run's instructions.
 

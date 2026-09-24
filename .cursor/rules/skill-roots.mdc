@@ -9,4 +9,4 @@ Cursor must always load `.cursor/skills/<name>/SKILL.md`, even when duplicate di
 
 Six skills are explicit-only and carry `disable-model-invocation: true` in the Cursor tree: `story-proj-adopt`, `story-syns-coach`, `story-outl-planner`, `story-revs-resolver`, `story-defn-builder`, and `story-depo-packer`. Do not start one unless the user chose it directly.
 
-`SKILL_zh.md` is the synchronized human-readable Chinese edition; runtime instructions remain in `SKILL.md`.
+`SKILL.md` is the only skill manifest; a run in Chinese follows it and replies in Chinese.

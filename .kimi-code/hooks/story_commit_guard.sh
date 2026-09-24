@@ -30,8 +30,8 @@
 # A floor, not a proof. It reads one shell line at a time and cannot resolve
 # quoting, so a flag written after a commit message (`commit -m x --amend`) is
 # past where it stops reading. Silence means "no decision", so that case, an
-# unfamiliar spelling, and a machine with no JSON parser all fall through to the
-# normal permission flow. What it declines is the user's to run.
+# unfamiliar spelling, and a payload no branch below can read all fall through
+# to the normal permission flow. What it declines is the user's to run.
 set -uo pipefail
 
 # Every harness registers this script by its own path inside the project, so the
@@ -51,6 +51,24 @@ try:
     print((json.load(sys.stdin).get("tool_input") or {}).get("command") or "")
 except Exception:
     print("")' 2>/dev/null
+    else
+        # No parser on PATH, so the field is read out of the raw JSON and its
+        # escapes are decoded by hand: \n and \t, which is how a command typed
+        # over several lines arrives and what the segment split below must see,
+        # then \" and \\. An escaped backslash is parked first, so a `\\n` in
+        # the JSON stays the backslash and n it spells. A \uXXXX escape stays as
+        # written. Without this branch the guard reads an empty command and
+        # declines nothing.
+        local v park=$'\001' nl=$'\n' tab=$'\t'
+        v="$(printf '%s' "${input}" \
+            | grep -oE '"command"[[:space:]]*:[[:space:]]*"([^"\\]|\\.)*"' \
+            | head -1 | sed -E 's/^"command"[[:space:]]*:[[:space:]]*"//; s/"$//')"
+        v="${v//\\\\/${park}}"
+        v="${v//\\n/${nl}}"
+        v="${v//\\t/${tab}}"
+        v="${v//\\\"/\"}"
+        v="${v//${park}/\\}"
+        printf '%s\n' "${v}"
     fi
 }
 
@@ -69,12 +87,12 @@ deny() { # $1 = one-line reason
 # 10 MB. No tex source, note, or bibliography comes near it; a build PDF or a
 # raw figure export clears it easily.
 # ==== STORY shared guard core. Everything from here to the end of the file is
-# byte-identical across the six harness copies, and
+# byte-identical across the seven harness copies, and
 # .github/scripts/check_consistency.sh diffs it against the .claude copy — edit
 # it once, then propagate. ====
 size_limit=$((10 * 1024 * 1024))
 
-# Storyd paths over the limit, as a printable list. Empty when none are.
+# Staged paths over the limit, as a printable list. Empty when none are.
 staged_oversize() {
     local f size out=""
     while IFS= read -r -d '' f; do

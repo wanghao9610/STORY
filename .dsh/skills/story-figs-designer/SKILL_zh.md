@@ -1,1 +1,0 @@
-../../../.agents/skills/story-figs-designer/SKILL_zh.md

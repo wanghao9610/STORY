@@ -1,5 +1,5 @@
 interface:
-  display_name: "Project Adopt"
+  display_name: "Thesis Adopter"
   short_description: "Safely adopt an existing thesis draft"
   brand_color: "#173B57"
   default_prompt: "Use $story-proj-adopt to map this existing thesis into the STORY layout."

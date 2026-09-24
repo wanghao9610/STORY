@@ -15,7 +15,8 @@ usage() {
         'Usage: bash execs/run.sh [--main FILE.tex] [--outdir DIR] [latexmk args...]' \
         '' \
         'Builds the entry point selected by --main, STORY_MAIN, or manus/main.tex' \
-        'out-of-tree in wkdrs/builds/. LATEX_ENGINE may be' \
+        'out-of-tree in wkdrs/builds/; an entry point outside manus/ builds into a' \
+        '.build/ directory beside it, which git ignores. LATEX_ENGINE may be' \
         'pdflatex, xelatex, or lualatex. If it is unset, a % !TeX program line' \
         'in the entry point is honored before falling back to pdflatex.'
 }
@@ -76,6 +77,12 @@ if [[ -z "${BUILD_DIR}" ]]; then
     fi
 fi
 mkdir -p "${BUILD_DIR}"
+# wkdrs/ is ignored by the repository's .gitignore; a .build/ beside an entry
+# point elsewhere (a defense deck, an adopted draft) is not, so it ignores
+# itself and a directory-scoped git add cannot stage the PDF and aux files.
+if [[ "${BUILD_DIR}" == "${MAIN_DIR}/.build" && ! -e "${BUILD_DIR}/.gitignore" ]]; then
+    printf '*\n' > "${BUILD_DIR}/.gitignore"
+fi
 
 export TEXINPUTS="${MAIN_DIR}/stys:${TEXINPUTS:-}"
 export BSTINPUTS="${MAIN_DIR}/stys:${BSTINPUTS:-}"

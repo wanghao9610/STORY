@@ -17,7 +17,12 @@ usage() {
         'Usage: bash execs/scpts/import.sh [--source PATH] [--slug NAME] [--diff]' \
         '' \
         'Snapshots selected evidence from a STAR, STAGE, STORY, or structured' \
-        'generic research repository into mates/<slug>/ and fingerprints it.'
+        'generic research repository into mates/<slug>/ and fingerprints it.' \
+        'A re-import keeps a curated covers: line; the other fields are rewritten.' \
+        '' \
+        '--diff compares the snapshot with the source and writes nothing. It exits' \
+        '0 when they match, 2 when an upstream artifact is new or changed, and 1' \
+        'when the check itself cannot run.'
 }
 
 while (( $# > 0 )); do
@@ -159,6 +164,16 @@ if [[ "${SOURCE_COMMIT}" != n/a ]] && \
     log "WARN: source repository has uncommitted changes; recording source-commit ${SOURCE_COMMIT}."
 fi
 TODAY="$(date +%Y-%m-%d)"
+GENERIC_COVERS='imported graduate-research evidence'
+# What an entry can support is curated after import; a routine re-import must
+# not reset it to the generic line, so an existing curated value is carried over.
+existing_covers() {
+    awk -v key="## $1" '
+        $0 == key { inside = 1; next }
+        /^## / { inside = 0 }
+        inside && /^- covers: / { sub(/^- covers: /, ""); print; exit }
+    ' "${MANIFEST}"
+}
 count=0
 while IFS= read -r rel; do
     dst="${DEST_DIR}/${rel}"
@@ -166,6 +181,8 @@ while IFS= read -r rel; do
     cp -p "${SOURCE_DIR}/${rel}" "${dst}"
     key="${SLUG}/${rel}"
     block="${TEMP_DIR}/block"
+    covers="$(existing_covers "${key}")"
+    covers="${covers:-${GENERIC_COVERS}}"
     {
         printf '## %s\n' "${key}"
         printf -- '- source-type: %s\n' "${SOURCE_TYPE}"
@@ -173,18 +190,25 @@ while IFS= read -r rel; do
         printf -- '- source-commit: %s\n' "${SOURCE_COMMIT}"
         printf -- '- sha256: %s\n' "$(sha256 "${dst}")"
         printf -- '- imported: %s\n' "${TODAY}"
-        printf -- '- covers: imported graduate-research evidence\n'
+        printf -- '- covers: %s\n' "${covers}"
     } > "${block}"
     replace_entry "${key}" "${block}"
     count=$((count + 1))
 done < "${LIST_FILE}"
 
+# A seeded bibliography is a starting point, not a verified one: its entries
+# have no reading-note index rows yet, and the entry point still has its
+# bibliography lines commented out until story-refs-curator activates them.
 for bib in metds/refs/reference.bib manus/bibs/reference.bib; do
-    if [[ ! -f "${ROOT_DIR}/manus/bibs/reference.bib" && -f "${SOURCE_DIR}/${bib}" ]]; then
+    [[ -f "${SOURCE_DIR}/${bib}" ]] || continue
+    if [[ ! -f "${ROOT_DIR}/manus/bibs/reference.bib" ]]; then
+        mkdir -p "${ROOT_DIR}/manus/bibs"
         cp -p "${SOURCE_DIR}/${bib}" "${ROOT_DIR}/manus/bibs/reference.bib"
-        log "seeded manus/bibs/reference.bib from ${bib}."
-        break
+        log "seeded manus/bibs/reference.bib from ${bib}; its entries stay unverified until story-refs-curator indexes and verifies them and activates the bibliography."
+    else
+        log "kept manus/bibs/reference.bib; ${bib} from the source was not merged — add its works through story-refs-curator."
     fi
+    break
 done
 
 log "Imported ${count} ${SOURCE_TYPE} artifact(s) into mates/${SLUG}/ from commit ${SOURCE_COMMIT}."

@@ -1,1 +1,0 @@
-../../../.agents/skills/story-tabs-builder/SKILL_zh.md

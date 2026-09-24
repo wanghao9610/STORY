@@ -2,9 +2,10 @@
 # Register STORY's DSH hooks in DeepSeek Harness's GLOBAL composition; running it again changes nothing.
 #
 # Three hooks: model_id provenance, the project-memory index injected from
-# .story/memory/, and the commit guard that declines the git commands the workflow
-# conventions §1 forbid. The first two inject context on SessionStart; the guard
-# decides instead, so it registers on PreToolUse matching DSH's `bash` tool.
+# .story/memory/, and the commit guard that declines the git commands the STORY
+# git safety policy forbids (see story_commit_guard.sh's header). The first two
+# inject context on SessionStart; the guard decides instead, so it registers on
+# PreToolUse matching DSH's `bash` tool.
 #
 # DSH reads no plugin configuration out of a project, so the row that loads the
 # hook bridge has to live in the machine's own $DSH_HOME/cordis.patch.yml

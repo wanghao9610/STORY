@@ -59,9 +59,9 @@ if [ -f "$cfg" ]; then
 fi
 
 if [ -n "${model:-}" ]; then
-  ctx="STORY provenance: this Kimi session has configured default model ${model} (from config.toml; the active model may differ if it was overridden with kimi -m or /model). When a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 7), record the model actually answering — normally ${model} — verbatim; do not write 'unrecorded'."
+  ctx="STORY provenance: this Kimi session has configured default model ${model} (from config.toml; the active model may differ if it was overridden with kimi -m or /model). When you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), record the model actually answering — normally ${model} — verbatim; do not write 'unrecorded'."
 else
-  ctx="STORY provenance: no Kimi default model could be read from config.toml. When a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 7), record the model you are running if known, otherwise write 'unrecorded'; do not guess."
+  ctx="STORY provenance: no Kimi default model could be read from config.toml. When you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), record the model you are running if known, otherwise write 'unrecorded'; do not guess."
 fi
 
 printf '%s\n' "$ctx"

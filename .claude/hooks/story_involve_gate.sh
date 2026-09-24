@@ -1,24 +1,27 @@
 #!/usr/bin/env bash
 # Skip Claude's permission prompt for file edits while the project runs at
-# INVOLVE=low (.env, writing workflow conventions §7). Confirmation points are
-# untouched: the STOP line, deletions and overwrites, and every institutional-requirement value
-# entering as confirmed are questions a skill asks, not permission prompts a hook
-# can answer.
+# INVOLVE=low (.env, writing workflow conventions §7). Confirmation points
+# (conventions §7) are untouched: they are questions a skill asks, not
+# permission prompts a hook can answer.
 #
+# The level comes from story_involve_level.sh: the `involve=` token of the
+# session's most recent STORY command, or `.env`'s INVOLVE when it carried none.
 # Silence means "no decision", so every other level, every path this declines,
-# and a project with no .env fall through to the normal permission flow. INVOLVE
-# is read on each call, so editing .env takes effect without a restart.
+# and a project that sets none fall through to the normal permission flow. The
+# level is resolved on each call, so a new invocation — or an edit to .env —
+# takes effect without a restart.
 set -uo pipefail
 
 root="${CLAUDE_PROJECT_DIR:-${PWD}}"
 
-line="$(grep -sE '^INVOLVE=' "${root}/.env" | tail -1)"
-value="${line#INVOLVE=}"
-value="${value%%#*}"
-involve="$(printf '%s' "${value}" | tr -cd '[:alpha:]')"
-[[ "${involve}" == "low" ]] || exit 0
-
+# The payload is read before the level is tested: it carries the transcript path
+# the level is resolved from, and a hook that exits without reading stdin leaves
+# the runtime's write to fail.
 input=$(cat)
+
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/story_involve_level.sh"
+involve="$(story_involve_level "${input}" "${root}")"
+[[ "${involve}" == "low" ]] || exit 0
 
 # The edited path, from Edit/Write (file_path) or NotebookEdit (notebook_path).
 edited_path() {
@@ -44,8 +47,14 @@ esac
 # the milestone files a run is writing. A `..` component keeps its prompt too:
 # the root-prefix match above is textual, so without this a path spelled
 # `<root>/manus/../..` would read as inside the project while pointing out of it.
+#
+# So do the thesis's protected records, at every level: the evidence store
+# mates/ (AGENTS.md §1 — written only through execs/scpts/import.sh and
+# story-evid-curator, whose edits you approve here), the confirmed institutional
+# facts in degree/, and received committee feedback in milestones/*/feedback/.
 case "${path#"${root}"/}" in
     .*|*/..|*/../*) exit 0 ;;
+    mates|mates/*|degree|degree/*|milestones/*/feedback|milestones/*/feedback/*) exit 0 ;;
 esac
 
-printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow","permissionDecisionReason":"INVOLVE=low"}}\n'
+printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow","permissionDecisionReason":"involve=low"}}\n'

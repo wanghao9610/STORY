@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # STORY PermissionRequest hook (Codex CLI) — skip the approval prompt for a file
 # edit while the project runs at INVOLVE=low (.env, writing workflow conventions
-# §7). Confirmation points are untouched: the STOP line, deletions and
-# overwrites, and every institutional-requirement value entering as confirmed are questions a
+# §7). Confirmation points (conventions §7) are untouched: they are questions a
 # skill asks, not prompts a hook can answer.
 #
 # Codex's counterpart to Claude's PreToolUse gate, written to Codex's own shapes.
@@ -20,13 +19,15 @@ set -uo pipefail
 
 root="${PWD}"
 
+# The payload is read before the level is tested: the runtime writes it to this
+# hook's stdin, and a hook that exits without reading leaves that write to fail.
+input=$(cat)
+
 line="$(grep -sE '^INVOLVE=' "${root}/.env" | tail -1)"
 value="${line#INVOLVE=}"
 value="${value%%#*}"
 involve="$(printf '%s' "${value}" | tr -cd '[:alpha:]')"
 [[ "${involve}" == "low" ]] || exit 0
-
-input=$(cat)
 
 # apply_patch arrives as the shell command that carries the patch envelope, so
 # the paths are the envelope's own headers rather than a field. Decoding a
@@ -46,7 +47,11 @@ except Exception:
 # Every path the patch names must sit in the project, outside the dot-directories
 # at its root — .git, .codex, .story, the other tool trees — whose contents are
 # project machinery rather than the manuscript, the notes, or the milestone files a
-# run is writing.
+# run is writing. It must also sit outside the thesis's protected records, which
+# keep their prompt at every level: the evidence store mates/ (AGENTS.md §1 —
+# written only through execs/scpts/import.sh and story-evid-curator, whose edits
+# you approve here), the confirmed institutional facts in degree/, and received
+# committee feedback in milestones/*/feedback/.
 path_ok() { # $1 = path as the header writes it, relative to cwd or absolute
     local rel="$1"
     case "$1" in
@@ -57,6 +62,7 @@ path_ok() { # $1 = path as the header writes it, relative to cwd or absolute
     esac
     case "${rel}" in
         .*|*/..|*/../*) return 1 ;;
+        mates|mates/*|degree|degree/*|milestones/*/feedback|milestones/*/feedback/*) return 1 ;;
     esac
     return 0
 }

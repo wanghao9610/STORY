@@ -7,7 +7,7 @@
           {
             "type": "command",
             "command": ".codex/hooks/story_commit_guard.sh",
-            "statusMessage": "Checking the git command against conventions §1"
+            "statusMessage": "Checking the git command against the STORY git safety policy"
           }
         ]
       }
@@ -32,7 +32,11 @@
             "type": "command",
             "command": ".codex/hooks/story_model_id.sh",
             "statusMessage": "Recording session model id for STORY provenance"
-          },
+          }
+        ]
+      },
+      {
+        "hooks": [
           {
             "type": "command",
             "command": ".codex/hooks/story_memory.sh",

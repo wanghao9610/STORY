@@ -2,6 +2,6 @@ interface:
   display_name: "Evidence Curator"
   short_description: "Import and integrity-check thesis evidence"
   brand_color: "#173B57"
-  default_prompt: "Use $story-evid-curator to import and audit evidence from my research repositories."
+  default_prompt: "Use $story-evid-curator check to reconcile mates/ with its manifest."
 policy:
   allow_implicit_invocation: true

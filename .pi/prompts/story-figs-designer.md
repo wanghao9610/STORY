@@ -1,9 +1,7 @@
 ---
 description: Run story-figs-designer with its STORY workflow instructions
-argument-hint: "[FIGURE | new] [DESCRIPTION] [involve=low]"
+argument-hint: "[FIGURE | new] [DESCRIPTION] [involve=LEVEL]"
 ---
-
-**Language:** English | [简体中文](story-figs-designer.zh-CN.md)
 
 Read `.pi/skills/story-figs-designer/SKILL.md` in full and follow it as this run's instructions.
 

@@ -107,19 +107,28 @@ except Exception:
 }
 
 transcript=$(payload_field transcript_path)
-# CLAUDE_PROJECT_DIR is the bridge's own variable, set from its projectDir config
-# and defaulting to the session cwd — which is the project root, because dsh
-# takes the invoking directory as the workspace.
-self="${CLAUDE_PROJECT_DIR:-.}/.dsh/hooks/story_model_id.sh"
+# The path the injected command carries is relative to the project root, not
+# the bridge's CLAUDE_PROJECT_DIR: dsh takes the invoking directory as the
+# workspace, every STORY skill runs its commands from that root (`bash
+# execs/...`), and a project directory with a space in it would split an
+# absolute path into two words. The transcript path goes through the shell the
+# agent runs the command in, often zsh, where a space would split it the same
+# way and leave the resolver reading a file that does not exist; so it is
+# quoted for the shell.
+self=".dsh/hooks/story_model_id.sh"
+printf -v transcript_arg '%q' "${transcript:-}"
 
 if [ -n "${transcript:-}" ]; then
-    ctx="STORY provenance: read this session's model id when you record it, not from memory — DSH states no model at session start, and the route can change afterwards without saying so. Before a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 7), run: bash ${self} --resolve ${transcript} — then copy what it prints verbatim. Write 'unrecorded' only if it prints nothing, and do not guess."
+    ctx="STORY provenance: read this session's model id when you record it, not from memory — DSH states no model at session start, and the route can change afterwards without saying so. Before you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), run: bash ${self} --resolve ${transcript_arg} — then copy what it prints verbatim. Write 'unrecorded' only if it prints nothing, and do not guess."
 else
-    ctx="STORY provenance: DSH named no session log for this session, so the model id cannot be recovered from it. Before a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 7), try: bash ${self} --resolve — with no argument it reads DSH_SESSION_JSONL from the shell environment. Write 'unrecorded' if it prints nothing, and do not guess."
+    ctx="STORY provenance: DSH named no session log for this session, so the model id cannot be recovered from it. Before you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), try: bash ${self} --resolve — with no argument it reads DSH_SESSION_JSONL from the shell environment. Write 'unrecorded' if it prints nothing, and do not guess."
 fi
 
-# ctx embeds a filesystem path, so encode it as JSON rather than assuming it is
-# quote-free; the last branch sanitizes instead, having no encoder to hand.
+# ctx embeds a filesystem path and the backslashes that quote a command's
+# arguments for the shell, so encode it as JSON rather than assuming it is
+# quote-free. The last branch, having no encoder to hand, escapes the two
+# characters a one-line JSON string cannot hold bare; stripping them instead
+# would undo the quoting the injected command relies on.
 if command -v jq >/dev/null 2>&1; then
     jq -cn --arg c "${ctx}" \
         '{hookSpecificOutput: {hookEventName: "SessionStart", additionalContext: $c}}'
@@ -128,5 +137,5 @@ elif command -v python3 >/dev/null 2>&1; then
 print(json.dumps({"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": sys.argv[1]}}))' "${ctx}"
 else
     printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"%s"}}\n' \
-        "$(printf '%s' "${ctx}" | tr -d '"\\')"
+        "$(printf '%s' "${ctx}" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g')"
 fi

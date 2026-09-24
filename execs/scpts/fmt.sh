@@ -13,7 +13,8 @@ set -euo pipefail
 # Exit codes:
 #   0  every file already reads one sentence per line (or was just made to)
 #   1  --check: at least one file would be reformatted
-#   2  at least one file was refused — the rewrite would have altered the text
+#   2  at least one file was left untouched: its rewrite would have altered the
+#      text, or latexindent failed on it
 #   3  cannot run: no latexindent, no config, or a path this script may not touch
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
@@ -246,6 +247,9 @@ if [[ -n "${BROKE}" ]]; then
     log "warn: latexindent failed on $(count "${BROKE}") file(s), left untouched:"
     show "${BROKE}"
     log "      reproduce with: latexindent -m -l=.latexindent.yaml -s <file>"
+    # Unchecked is not clean: without this a broken latexindent install would
+    # turn every --check into a silent pass.
+    STATUS=2
 fi
 
 if [[ -n "${UNSAFE}" ]]; then

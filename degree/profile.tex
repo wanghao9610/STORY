@@ -26,7 +26,7 @@
 
 %% Allowed values: any confirmed official term as free text.（合法值：任意经确认的学校正式文种名称，使用自由文本。）
 %% Common terms: monograph | publication-based | hybrid. Leave empty if unconfirmed.（常见值：monograph | publication-based | hybrid。尚未确认时留空。）
-% thesis_type: monograph
+% thesis_type:
 
 %% Allowed values: empty | stable https:// URL | repository-relative path to the supplied file.（合法值：留空 | 稳定的 https:// URL | 指向已提供文件的仓库相对路径。）
 % official_template:
@@ -42,7 +42,8 @@
 % confirmed_on:
 
 %% Allowed values: empty | a positive integer without units, for example 120.（合法值：留空 | 不带单位的正整数，例如 120。）
-%% Put inclusions, exclusions, or separate page limits in degree/requirements.md.（页数统计范围、排除项或分设的页数限制写入 degree/requirements.md。）
+%% Lint compares this value with the built PDF's total page count when the active milestone sets no max_pages.（当前里程碑，即状态为 active 的里程碑，未设置 max_pages 时，lint 将此值与生成 PDF 的总页数比较。）
+%% Leave it empty when the confirmed limit excludes pages; record that limit, its counting rule, and any separate limits in degree/requirements.md.（经确认的页数限制若排除部分页面，此处留空；该限制、其计数规则及其他分设限制写入 degree/requirements.md。）
 % max_pages:
 
 %% Value: \storylocalized{<confirmed English title>}{<confirmed Chinese title>}.（值格式：\storylocalized{<经确认的英文题名>}{<经确认的中文题名>}。）
@@ -67,11 +68,13 @@
 
 %% Value: \storylocalized{<advisor's required English form>}{<required Chinese form>}.（值格式：\storylocalized{<导师姓名的规定英文形式>}{<规定中文形式>}。）
 %% Include titles or credentials only when the official template requires them.（只有正式模板要求时才加入职称或学衔。）
+%% Use only names and roles from rows marked Confirmed: yes in degree/committee.md.（只使用 degree/committee.md 中标为 Confirmed: yes 的行中的姓名与角色。）
 \advisor{\storylocalized{Advisor Name}{导师姓名}}
 
 %% Allowed values: \committee{} to omit it, or the localized form shown below.（合法值：用 \committee{} 省略，或使用下方双语格式。）
 %% \committee{\storylocalized{<English names and roles>}{<Chinese names and roles>}}.（\committee{\storylocalized{<英文姓名和角色>}{<中文姓名和角色>}}。）
 %% If used, follow the institution's required order, separators, names, and roles.（使用时须遵守学校规定的顺序、分隔符、姓名和角色写法。）
+%% Use only names and roles from rows marked Confirmed: yes in degree/committee.md.（只使用 degree/committee.md 中标为 Confirmed: yes 的行中的姓名与角色。）
 \committee{}
 
 %% Value: \storylocalized{<required English date>}{<required Chinese date>}.（值格式：\storylocalized{<规定英文日期>}{<规定中文日期>}。）

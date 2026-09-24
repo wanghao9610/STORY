@@ -1,9 +1,7 @@
 ---
 description: Run story-evid-curator with its STORY workflow instructions
-argument-hint: "[check | import source=PATH [slug=NAME] | register path=FILE] [DESCRIPTION] [involve=low]"
+argument-hint: "[check | import source=PATH [slug=NAME] | register path=FILE...] [DESCRIPTION] [involve=LEVEL]"
 ---
-
-**Language:** English | [简体中文](story-evid-curator.zh-CN.md)
 
 Read `.pi/skills/story-evid-curator/SKILL.md` in full and follow it as this run's instructions.
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Materialize the six harness-owned skill trees from the neutral source under
 # .agents/skills. Byte-identical files are relative symlinks back to .agents;
-# SKILL.md/SKILL_zh.md frontmatter stays harness-owned wherever a tree needs the
-# slash-only guard or the argument-hint only .claude and .qwen read.
+# SKILL.md frontmatter stays harness-owned wherever a tree needs the slash-only
+# guard, the argument-hint only .claude and .qwen read, or a Claude-only field.
 set -euo pipefail
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd -P)"
@@ -56,29 +56,43 @@ takes_argument_hint() { # $1 = tree
 
 # One shape for the whole roster: <skill> [TARGET] [DESCRIPTION] [involve=<level>]
 # (writing workflow conventions §7). Uppercase placeholders are values the author
-# supplies, lowercase words are literal modes, and only the free-text placeholder
-# is translated — targets, modes, and tokens stay English everywhere.
-argument_hint() { # $1 = skill, $2 = en|zh
-    local description="DESCRIPTION"
-    [[ "$2" == "zh" ]] && description="描述"
+# supplies and lowercase words are literal modes; the manifest is English only, so
+# the hint is too. Every hint ends in `[involve=LEVEL]`, never one literal level:
+# the default comes from INVOLVE in .env. This table holds only the target part.
+argument_hint() { # $1 = skill
+    local target
     case "$1" in
-        story-chap-drafter)  printf 'CHAPTER [%s] [involve=low]' "${description}" ;;
-        story-cite-auditor)  printf '[CHAPTER | full] [%s]' "${description}" ;;
-        story-clms-auditor)  printf '[CHAPTER | CLAIM_ID | full] [%s]' "${description}" ;;
-        story-copy-editor)   printf '[CHAPTER | full | style] [%s] [involve=low]' "${description}" ;;
-        story-defn-builder)  printf '[MILESTONE] [%s] [involve=high]' "${description}" ;;
-        story-depo-packer)   printf 'MILESTONE [%s] [involve=high]' "${description}" ;;
-        story-evid-curator)  printf '[check | import source=PATH [slug=NAME] | register path=FILE] [%s] [involve=low]' "${description}" ;;
-        story-exam-reviewer) printf '[MILESTONE] [%s]' "${description}" ;;
-        story-figs-designer) printf '[FIGURE | new] [%s] [involve=low]' "${description}" ;;
-        story-flow-status)   printf '[%s]' "${description}" ;;
-        story-outl-planner)  printf '[%s] [involve=high]' "${description}" ;;
-        story-proj-adopt)    printf 'SOURCE_PATH [%s] [involve=low]' "${description}" ;;
-        story-refs-curator)  printf 'PAPER... [%s] [involve=low]' "${description}" ;;
-        story-revs-resolver) printf '[MILESTONE] [%s] [involve=high]' "${description}" ;;
-        story-syns-coach)    printf '[%s] [involve=high]' "${description}" ;;
-        story-tabs-builder)  printf '[TABLE | new] [%s] [involve=low]' "${description}" ;;
+        story-chap-drafter)  target='CHAPTER | FRONT_OR_BACK_FILE | trace CHAPTER' ;;
+        story-cite-auditor)  target='[CHAPTER | full]' ;;
+        story-clms-auditor)  target='[CHAPTER | CLAIM_ID[,CLAIM_ID...] | full]' ;;
+        story-copy-editor)   target='[CHAPTER | FILE | full | style]' ;;
+        story-defn-builder)  target='[MILESTONE]' ;;
+        story-depo-packer)   target='MILESTONE' ;;
+        story-evid-curator)  target='[check | import source=PATH [slug=NAME] | register path=FILE...]' ;;
+        story-exam-reviewer) target='[MILESTONE]' ;;
+        story-figs-designer) target='[FIGURE | new]' ;;
+        story-flow-status)   target='' ;;
+        story-outl-planner)  target='' ;;
+        story-proj-adopt)    target='[SOURCE_PATH]' ;;
+        story-refs-curator)  target='[PAPER... | CHAPTER | reconcile]' ;;
+        story-revs-resolver) target='[MILESTONE]' ;;
+        story-syns-coach)    target='' ;;
+        story-tabs-builder)  target='[TABLE | new]' ;;
         *) return 1 ;;
+    esac
+    printf '%s[DESCRIPTION] [involve=LEVEL]' "${target:+${target} }"
+}
+
+# Frontmatter only Claude Code reads, one table per skill like argument_hint():
+# `key: value` lines, rendered into .claude/skills alone, right after the name
+# (and the guard, where there is one). The neutral source cannot carry them —
+# .agents is Codex's discovery root, whose validator rejects unknown keys — and
+# no other tree reads them. story-flow-status runs a read-only scan, so its
+# Claude copy asks for medium reasoning effort (conventions §11).
+claude_frontmatter() { # $1 = skill
+    case "$1" in
+        story-flow-status) printf 'effort: medium' ;;
+        *) ;;
     esac
 }
 
@@ -114,19 +128,27 @@ install_link() { # $1 = destination, $2 = source
     fi
 }
 
-render_manifest() { # $1 = neutral manifest, $2 = destination, $3 = true|false guard, $4 = argument hint
+render_manifest() { # $1 = neutral manifest, $2 = destination, $3 = true|false guard, $4 = argument hint, $5 = Claude-only lines
     local source="$1"
     local destination="$2"
     local guard="$3"
     local hint="$4"
+    local extra="${5:-}"
     local temporary wanted
     temporary="$(mktemp)"
-    if ! awk -v guard="${guard}" -v hint="${hint}" '
+    # The Claude-only lines travel through the environment, which keeps their
+    # newlines and backslashes literal where awk -v would expand them.
+    if ! PORT_EXTRA="${extra}" awk -v guard="${guard}" -v hint="${hint}" '
+        BEGIN { extra = ENVIRON["PORT_EXTRA"] }
         /^---[[:space:]]*$/ { boundary++ }
         { print }
         boundary == 1 && guard == "true" && !guarded && /^name:[[:space:]]*story-/ {
             print "disable-model-invocation: true"
             guarded = 1
+        }
+        boundary == 1 && extra != "" && !extended && /^name:[[:space:]]*story-/ {
+            print extra
+            extended = 1
         }
         boundary == 1 && hint != "" && !hinted && /^description:/ {
             printf "argument-hint: \"%s\"\n", hint
@@ -135,6 +157,7 @@ render_manifest() { # $1 = neutral manifest, $2 = destination, $3 = true|false g
         END {
             if (guard == "true" && !guarded) exit 3
             if (hint != "" && !hinted) exit 4
+            if (extra != "" && !extended) exit 5
         }
     ' "${source}" > "${temporary}"; then
         rm -f "${temporary}"
@@ -145,6 +168,7 @@ render_manifest() { # $1 = neutral manifest, $2 = destination, $3 = true|false g
     wanted="the neutral manifest"
     [[ "${guard}" == "true" ]] && wanted="${wanted} plus the slash-only guard"
     [[ -n "${hint}" ]] && wanted="${wanted} plus its argument-hint"
+    [[ -n "${extra}" ]] && wanted="${wanted} plus its Claude-only frontmatter"
 
     if [[ -f "${destination}" && ! -L "${destination}" ]] && cmp -s "${temporary}" "${destination}"; then
         rm -f "${temporary}"
@@ -161,24 +185,14 @@ render_manifest() { # $1 = neutral manifest, $2 = destination, $3 = true|false g
     fi
 }
 
-render_pi_prompt() { # $1 = skill name, $2 = language (en|zh)
+render_pi_prompt() { # $1 = skill name
     local skill="$1"
-    local language="$2"
-    local destination counterpart description hint skill_file temporary
-    if [[ "${language}" == "zh" ]]; then
-        destination=".pi/prompts/${skill}.zh-CN.md"
-        counterpart="${skill}.md"
-        description="使用 STORY 工作流指令运行 ${skill}"
-        skill_file="SKILL_zh.md"
-    else
-        destination=".pi/prompts/${skill}.md"
-        counterpart="${skill}.zh-CN.md"
-        description="Run ${skill} with its STORY workflow instructions"
-        skill_file="SKILL.md"
-    fi
+    local destination=".pi/prompts/${skill}.md"
+    local description="Run ${skill} with its STORY workflow instructions"
+    local hint temporary
     # argument-hint is a prompt-template field in Pi even though it is not a skill
     # one, so the per-skill hint belongs here rather than in .pi/skills.
-    if ! hint="$(argument_hint "${skill}" "${language}")"; then
+    if ! hint="$(argument_hint "${skill}")"; then
         fail "no argument-hint is defined for ${skill}"
         return 0
     fi
@@ -188,17 +202,9 @@ render_pi_prompt() { # $1 = skill name, $2 = language (en|zh)
         printf 'description: %s\n' "${description}"
         printf 'argument-hint: "%s"\n' "${hint}"
         printf '%s\n' '---' ''
-        if [[ "${language}" == "zh" ]]; then
-            printf '**语言：** [English](%s) | 简体中文\n\n' "${counterpart}"
-            printf '完整阅读 `.pi/skills/%s/%s`，并将其作为本次运行的指令执行。\n\n' "${skill}" "${skill_file}"
-            printf '本次运行的参数位于方括号之间：[$@]\n\n'
-            printf '空方括号表示未提供参数；使用该 skill 所规定的无参数行为。\n'
-        else
-            printf '**Language:** English | [简体中文](%s)\n\n' "${counterpart}"
-            printf 'Read `.pi/skills/%s/%s` in full and follow it as this run\x27s instructions.\n\n' "${skill}" "${skill_file}"
-            printf 'This run\x27s argument, between the brackets: [$@]\n\n'
-            printf 'Empty brackets mean no argument was given; use the skill\x27s documented no-argument behavior.\n'
-        fi
+        printf 'Read `.pi/skills/%s/SKILL.md` in full and follow it as this run\x27s instructions.\n\n' "${skill}"
+        printf 'This run\x27s argument, between the brackets: [$@]\n\n'
+        printf 'Empty brackets mean no argument was given; use the skill\x27s documented no-argument behavior.\n'
     } > "${temporary}"
     if [[ -f "${destination}" ]] && cmp -s "${temporary}" "${destination}"; then
         rm -f "${temporary}"
@@ -253,25 +259,25 @@ while IFS= read -r skill; do
             rel="${source#${SOURCE_ROOT}/${skill}/}"
             [[ "${rel}" == agents/* ]] && continue
             destination="${tree}/${skill}/${rel}"
-            case "${rel}" in
-                SKILL.md) language=en ;;
-                SKILL_zh.md) language=zh ;;
-                *) install_link "${destination}" "${source}"; continue ;;
-            esac
+            if [[ "${rel}" != SKILL.md ]]; then
+                install_link "${destination}" "${source}"
+                continue
+            fi
             hint=""
-            if takes_argument_hint "${tree}" && ! hint="$(argument_hint "${skill}" "${language}")"; then
+            if takes_argument_hint "${tree}" && ! hint="$(argument_hint "${skill}")"; then
                 fail "no argument-hint is defined for ${skill}"
                 continue
             fi
-            if [[ "${guard}" == "true" || -n "${hint}" ]]; then
-                render_manifest "${source}" "${destination}" "${guard}" "${hint}"
+            extra=""
+            [[ "${tree}" == .claude/skills ]] && extra="$(claude_frontmatter "${skill}")"
+            if [[ "${guard}" == "true" || -n "${hint}" || -n "${extra}" ]]; then
+                render_manifest "${source}" "${destination}" "${guard}" "${hint}" "${extra}"
             else
                 install_link "${destination}" "${source}"
             fi
         done < <(find -L "${SOURCE_ROOT}/${skill}" -type f | sort)
     done
-    render_pi_prompt "${skill}" en
-    render_pi_prompt "${skill}" zh
+    render_pi_prompt "${skill}"
 done <<< "${skills}"
 
 if (( FAILURES > 0 )); then

@@ -93,18 +93,30 @@ except Exception:
 
 model=$(payload_field model)
 transcript=$(payload_field transcript_path)
-self="${QWEN_PROJECT_DIR:-.}/.qwen/hooks/story_model_id.sh"
+# The path the injected command carries is relative to the project root, not
+# QWEN_PROJECT_DIR: every STORY skill runs its commands from the project root
+# (`bash execs/...`), and a project directory with a space in it would split an
+# absolute path into two words. The arguments go through the shell the agent
+# runs the command in, which is often zsh: a transcript path with a space would
+# split the same way, and a bare `[...]` suffix on a model id is a glob there,
+# whose failed match aborts the whole command. So each is quoted for the shell.
+self=".qwen/hooks/story_model_id.sh"
+printf -v transcript_arg '%q' "${transcript:-}"
+printf -v model_arg '%q' "${model:-}"
 
 if [ -n "${transcript:-}" ]; then
-    ctx="STORY provenance: read this session's model id when you record it, not from memory — the runtime states it at session start only, and /model changes it afterwards without saying so. Before a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 7), run: bash ${self} --resolve ${transcript}${model:+ ${model}} — then copy what it prints verbatim. Write 'unrecorded' only if it prints nothing, and do not guess."
+    ctx="STORY provenance: read this session's model id when you record it, not from memory — the runtime states it at session start only, and /model changes it afterwards without saying so. Before you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), run: bash ${self} --resolve ${transcript_arg}${model:+ ${model_arg}} — then copy what it prints verbatim. Write 'unrecorded' only if it prints nothing, and do not guess."
 elif [ -n "${model:-}" ]; then
-    ctx="STORY provenance: this session's runtime-reported model id is ${model}, and the runtime named no transcript to check it against later. When a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 7), copy this exact string verbatim; do not write 'unrecorded'. If you switch models mid-session, this string is the one you started with, not the one writing."
+    ctx="STORY provenance: this session's runtime-reported model id is ${model}, and the runtime named no transcript to check it against later. When you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), copy this exact string verbatim; do not write 'unrecorded'. If you switch models mid-session, this string is the one you started with, not the one writing."
 else
-    ctx="STORY provenance: the runtime stated no model id for this session and named no transcript to recover it from. When a STORY skill records a model_id or a model_trail entry (writing-workflow-conventions section 7), write 'unrecorded' and do not guess."
+    ctx="STORY provenance: the runtime stated no model id for this session and named no transcript to recover it from. When you write a \`model_id\` (in STORY, a \`.story/memory/\` file's frontmatter; writing-workflow-conventions section 7), write 'unrecorded' and do not guess."
 fi
 
-# ctx now embeds a filesystem path, so encode it as JSON rather than assuming it
-# is quote-free; the last branch sanitizes instead, having no encoder to hand.
+# ctx embeds a filesystem path and the backslashes that quote a command's
+# arguments for the shell, so encode it as JSON rather than assuming it is
+# quote-free. The last branch, having no encoder to hand, escapes the two
+# characters a one-line JSON string cannot hold bare; stripping them instead
+# would undo the quoting the injected command relies on.
 if command -v jq >/dev/null 2>&1; then
     jq -cn --arg c "${ctx}" \
         '{hookSpecificOutput: {hookEventName: "SessionStart", additionalContext: $c}}'
@@ -113,5 +125,5 @@ elif command -v python3 >/dev/null 2>&1; then
 print(json.dumps({"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": sys.argv[1]}}))' "${ctx}"
 else
     printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"%s"}}\n' \
-        "$(printf '%s' "${ctx}" | tr -d '"\\')"
+        "$(printf '%s' "${ctx}" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g')"
 fi

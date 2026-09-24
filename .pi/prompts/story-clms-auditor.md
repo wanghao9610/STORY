@@ -1,9 +1,7 @@
 ---
 description: Run story-clms-auditor with its STORY workflow instructions
-argument-hint: "[CHAPTER | CLAIM_ID | full] [DESCRIPTION]"
+argument-hint: "[CHAPTER | CLAIM_ID[,CLAIM_ID...] | full] [DESCRIPTION] [involve=LEVEL]"
 ---
-
-**Language:** English | [简体中文](story-clms-auditor.zh-CN.md)
 
 Read `.pi/skills/story-clms-auditor/SKILL.md` in full and follow it as this run's instructions.
 

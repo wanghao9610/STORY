@@ -2,9 +2,10 @@
 set -euo pipefail
 
 # execs/update.sh — sync STORY-managed content from the upstream template (the
-# shared skill source, six harness entry trees, the Codex $story plugin, the
-# Kimi and DSH /story router entries, all hook trees,
-# docs/mds/story-workflow/, the shared agent instructions, and
+# shared skill source, the shared /story router and /story-auto procedure with
+# their harness commands and prompts, six harness entry trees, the Codex $story
+# and $story-auto plugin, the Kimi and DSH /story and /story-auto entries, all
+# hook trees, docs/mds/story-workflow/, the shared agent instructions, and
 # every script under execs/ — both entrypoints, this one included, and the three
 # utilities in execs/scpts/), or install the STORY skeleton into an existing
 # thesis repo with --adopt.
@@ -34,6 +35,11 @@ SKILL_ROOTS=(
     ".qwen/skills"
 )
 CODEX_MANIFEST_ROOT=".codex/skills"
+# The shared command files and the harness wrappers that read them: the /story
+# router and the /story-auto goal-run procedure under .agents/commands, the
+# Claude, Cursor and Qwen commands wrapping both, and Pi's prompt templates (one
+# per skill, plus /story and /story-auto). Each tree syncs whole, so a command
+# added upstream ships without a change to this list.
 HARNESS_ASSET_TREES=(
     ".agents/commands"
     ".claude/commands"
@@ -46,14 +52,15 @@ DOCS_TREE="docs/mds/story-workflow"
 # STORY-owned hook assets. Two inject at the start of a session: the script that
 # puts the project-memory index (.story/memory/) in front of the agent, and the
 # one that states the runtime's model id so an artifact records who wrote it
-# (conventions §7). Two decide instead: the commit guard that declines the git
-# commands the STORY git safety policy forbids (its own header states the
-# policy), in every tree, and the involve gate that
-# answers a file-edit permission prompt at INVOLVE=low (§7), in the two trees
-# whose harness lets a hook decide one. One copy of each per harness, because
-# every runtime spells the event and the output field differently. Overwritten
-# on update like the skills — the memory store itself is the thesis's and is
-# never synced.
+# (conventions §7). The rest decide instead: the commit guard that declines the
+# git commands the STORY git safety policy forbids (its own header states the
+# policy), in every tree; the involve gate that answers a file-edit permission
+# prompt at INVOLVE=low (§7), in the three trees whose harness lets a hook decide
+# one (Claude, Codex, Qwen Code); and, in Claude's tree alone, the bash gate that
+# answers its shell prompt at low, with the level resolver both Claude gates
+# source. One copy of each per harness, because every runtime spells the event
+# and the output field differently. Overwritten on update like the skills — the
+# memory store itself is the thesis's and is never synced.
 HOOK_TREES=(
     ".claude/hooks"
     ".codex/hooks"
@@ -65,16 +72,15 @@ HOOK_TREES=(
 )
 
 # Single STORY-managed files an update overwrites alongside the trees above.
-# execs/run.sh is here because the skills call it by name and by flag — a thesis
-# repo that syncs a skill using `run.sh --main` while keeping a run.sh that
-# predates the flag gets a run that fails at its build step. The three utilities
-# under execs/scpts/ are here for the same reason and it is not weaker: sixteen
-# skills call `import.sh --diff` and five call `lint.sh --no-build` by name and
-# by flag, `lint.sh` calls `fmt.sh --check` the same way, and a caller reading an
-# exit code means the one its own version documents. No script here carries
-# project configuration: everything an instance sets lives in .env, which is
-# git-ignored and never synced (conventions §3.1) — so all five are safe to
-# replace wholesale.
+# Each is called by name and by flag from something the update also syncs:
+# story-clms-auditor runs `import.sh --diff`, story-copy-editor and
+# story-flow-status's scan.sh run `lint.sh --no-build` (scan.sh with `--main`),
+# and lint.sh runs `run.sh --main` and `fmt.sh --check`. A thesis repo that
+# syncs a caller while keeping a script that predates the flag it passes gets a
+# run that fails at that step, and a caller reading an exit code means the one
+# its own version documents. No script here carries project configuration:
+# everything an instance sets lives in .env, which is git-ignored and never
+# synced (AGENTS.md §6) — so all five are safe to replace wholesale.
 #
 # execs/update.sh syncs itself, so a repo never strands on an update mechanism
 # too old to fetch its successor. A running shell script must not be rewritten
@@ -93,7 +99,6 @@ SYNC_FILES=(
     ".kimi-code/hooks.example.toml"
     ".dsh/cordis.patch.yml"
     ".pi/APPEND_SYSTEM.md"
-    ".pi/APPEND_SYSTEM.zh-CN.md"
     "${SELF_PATH}"
 )
 
@@ -101,8 +106,8 @@ SYNC_FILES=(
 # sits in, so pinning an older ref is a legitimate reason for it to be missing,
 # and that is a skipped line rather than a stopped update: the session hooks,
 # which arrived after the skills; fmt.sh, which arrived after the other two
-# utilities; and the Kimi and DSH /story router entries, which arrived after
-# their harness entry trees. Anything else missing is a broken ref and still
+# utilities; and the Kimi and DSH /story and /story-auto entries, which arrived
+# after their harness entry trees. Anything else missing is a broken ref and still
 # fatal.
 is_optional_path() {
     case "$1" in
@@ -114,13 +119,47 @@ is_optional_path() {
     return 1
 }
 
-# The shared agent instructions, their Chinese counterpart, the Chinese Claude
-# pointer, and the Cursor rule that copies the English body: upstream-managed
-# like the skills and overwritten by an update. A project's own conventions
-# belong in a section the update does not own or in .env, not in an edited copy
-# of these.
-AGENT_DOCS=("AGENTS.md" "AGENTS.zh-CN.md" "CLAUDE.zh-CN.md")
+# The shared agent instructions and the Cursor rule that copies their body:
+# upstream-managed like the skills and overwritten by an update. A project's own
+# conventions belong in a section the update does not own or in .env, not in an
+# edited copy of these.
+AGENT_DOCS=("AGENTS.md")
 AGENT_RULES_TREE=".cursor/rules"
+
+# STORY files that upstream shipped and no longer does. The extract below only
+# adds and overwrites, so these are deleted by name — and so, by rule, is a
+# SKILL_zh.md beside any SKILL.md upstream ships and a .pi/prompts/<name>.zh-CN.md
+# beside any prompt upstream ships (retired_files below). Every entry was
+# STORY's: AGENTS.zh-CN.md and CLAUDE.zh-CN.md were overwritten on every update
+# like AGENTS.md, so no project ever owned its own copy. The three English specs
+# beside the conventions (the human-writing guide, the memory spec, and the
+# model-id fallbacks) were folded into writing-workflow-conventions.md, which
+# ships in the same synced directory. The two index files an earlier release
+# seeded into the memory store, .story/memory/MEMORY.md and MEMORY.zh-CN.md, are
+# not here: the store is the thesis's, and a thesis may have written its own
+# lines into them. The hooks no longer read either file (they build the index
+# from each memory's frontmatter), so a kept one is inert, and
+# report_legacy_memory_index says so, as it does for the local/ index and for a
+# memory's leftover Chinese twin. Nor is .github/CONTRIBUTING.zh-CN.md: nothing
+# under .github/ is synced (it is the template's maintainer CI, which a thesis
+# removes), so an update never shipped it and does not own a thesis's copy.
+RETIRED_FILES=(
+    "AGENTS.zh-CN.md"
+    "CLAUDE.zh-CN.md"
+    ".claude/commands/story.zh-CN.md"
+    ".cursor/commands/story.zh-CN.md"
+    ".pi/APPEND_SYSTEM.zh-CN.md"
+    ".pi/prompts/story.zh-CN.md"
+    ".qwen/commands/story.zh-CN.md"
+    "docs/mds/story-workflow/human-writing-guide.md"
+    "docs/mds/story-workflow/human-writing-guide.zh-CN.md"
+    "docs/mds/story-workflow/mates-MANIFEST.zh-CN.md"
+    "docs/mds/story-workflow/memory_spec.md"
+    "docs/mds/story-workflow/memory_spec.zh-CN.md"
+    "docs/mds/story-workflow/model_id_spec.md"
+    "docs/mds/story-workflow/model_id_spec.zh-CN.md"
+    "docs/mds/story-workflow/writing-workflow-conventions.zh-CN.md"
+)
 
 # Harness configuration a project may have edited: installed when it is missing
 # — by --adopt and by an update alike — and never overwritten unless --force
@@ -257,8 +296,8 @@ harness_rels() {
 
 # A kept registration config that does not name one of the hooks: the script is
 # installed, nothing errors, and either no memory reaches a session, or every
-# artifact it writes records "unrecorded", or a git command §1 forbids meets no
-# floor. Reported, not repaired — merging into a file the project may have
+# artifact it writes records "unrecorded", or a git command the STORY git safety
+# policy forbids (see story_commit_guard.sh's header) meets no floor. Reported, not repaired — merging into a file the project may have
 # extended is the user's.
 report_unregistered_hooks() {
     local cfg missing hook label hooks
@@ -270,13 +309,18 @@ report_unregistered_hooks() {
         # harness can express — Claude and Codex on PreToolUse, Cursor on
         # beforeShellExecution — so every config carries it. The involve gate
         # answers a permission prompt, so it applies only where a hook can
-        # decide one: Cursor has no event that gates a file edit.
+        # decide one: Cursor has no event that gates a file edit. The bash gate
+        # answers Claude's shell prompt at low, and only Claude's PreToolUse
+        # allow is honored for it, so only Claude's config carries it.
         hooks=("story_memory.sh|project-memory" "story_model_id.sh|model-id provenance"
                "story_commit_guard.sh|commit guard")
         case "${cfg}" in
             .claude/settings.json|.codex/hooks.json|.qwen/settings.json)
                 hooks+=("story_involve_gate.sh|involve gate") ;;
         esac
+        if [[ "${cfg}" == ".claude/settings.json" ]]; then
+            hooks+=("story_bash_gate.sh|bash gate")
+        fi
         for hook in "${hooks[@]}"; do
             label="${hook#*|}"
             grep -q "${hook%%|*}" "${ROOT_DIR}/${cfg}" 2>/dev/null || missing+="${missing:+, }${label}"
@@ -284,7 +328,18 @@ report_unregistered_hooks() {
         if [[ -n "${missing}" ]]; then
             log "NOTE: ${cfg} was kept and registers no STORY hook for: ${missing}."
             log "      Merge the hook entries from upstream ${cfg} to enable them."
-        elif [[ "${cfg}" == ".codex/hooks.json" ]]; then
+        fi
+        # A kept Claude config can register every hook and still lack the allow
+        # rule for the read-only command the provenance line hands a skill. The
+        # main session then asks before each provenance read, and a delegate,
+        # which cannot answer a prompt, is denied it and records "unrecorded". A
+        # missing permission is not a missing hook, so it gets a note of its own.
+        if [[ "${cfg}" == ".claude/settings.json" ]] && \
+           ! grep -q 'story_model_id\.sh --resolve' "${ROOT_DIR}/${cfg}" 2>/dev/null; then
+            log "NOTE: ${cfg} was kept and does not allow the read-only model-id resolver, so each provenance read asks first and a delegate's model_id reads unrecorded."
+            log "      Copy \"Bash(bash .claude/hooks/story_model_id.sh --resolve:*)\" from upstream ${cfg} into its permissions.allow."
+        fi
+        if [[ -z "${missing}" && "${cfg}" == ".codex/hooks.json" ]]; then
             # Registering them is not enough on Codex: a project hook runs only
             # once the project is trusted and the hook itself approved, and a
             # changed hook needs approving again. Nothing reports the gap — the
@@ -293,7 +348,78 @@ report_unregistered_hooks() {
             log "NOTE: ${cfg} is registered, but Codex runs a project hook only after you approve it."
             log "      Run /hooks in the Codex CLI and approve it — re-approve whenever it changes."
         fi
+        # A grep cannot see which SessionStart group names the memory hook. A
+        # kept config from before upstream gave it a group of its own still
+        # loads memory only where that group's matcher fires (startup|resume),
+        # so not after /clear. Read as JSON where python3 is at hand.
+        if [[ "${cfg}" == ".codex/hooks.json" ]] && command -v python3 >/dev/null 2>&1 && \
+           python3 -c 'import json, sys
+groups = json.load(open(sys.argv[1])).get("hooks", {}).get("SessionStart", [])
+sys.exit(0 if any(g.get("matcher") and any("story_memory.sh" in h.get("command", "") for h in g.get("hooks", [])) for g in groups) else 1)' \
+               "${ROOT_DIR}/${cfg}" 2>/dev/null; then
+            log "NOTE: ${cfg} was kept and loads project memory only on the SessionStart sources its matcher names."
+            log "      Move the story_memory.sh entry into a SessionStart group of its own with no matcher, as upstream ${cfg} does."
+        fi
     done
+}
+
+# What an earlier release left in the memory store that the hooks now read
+# differently. The hand-written index files, one in the versioned store and one
+# under local/, each with the Chinese twin the old pairing rule required: the
+# hooks now build the index from each memory file's frontmatter and read none
+# of them, so a line kept only there no longer reaches a session. And the
+# <slug>.zh-CN.md twin that rule put beside every memory file: the hooks read it
+# as a memory of its own, listed a second time beside its English file, and it
+# keeps its own `verified` date when the English one is re-verified. Reported,
+# not removed — the store is the thesis's.
+report_legacy_memory_index() {
+    local rel path found="" twins=""
+    for rel in .story/memory/MEMORY.md .story/memory/MEMORY.zh-CN.md \
+               .story/memory/local/MEMORY.md .story/memory/local/MEMORY.zh-CN.md; do
+        [[ -f "${ROOT_DIR}/${rel}" ]] && found+="${found:+, }${rel}"
+    done
+    for path in "${ROOT_DIR}"/.story/memory/*.zh-CN.md "${ROOT_DIR}"/.story/memory/local/*.zh-CN.md; do
+        [[ "${path##*/}" != MEMORY.zh-CN.md && -f "${path}" && -f "${path%.zh-CN.md}.md" ]] || continue
+        twins+="${twins:+, }${path#"${ROOT_DIR}/"}"
+    done
+    if [[ -n "${found}" ]]; then
+        log "NOTE: the session hooks no longer read ${found}; they build the memory index from each memory file's frontmatter."
+        log "      Give every memory file a one-line \`summary:\` in its frontmatter (docs/mds/story-workflow/writing-workflow-conventions.md §10); a file without one is listed by its first body line, and one without frontmatter is not listed. Then delete the old index."
+    fi
+    if [[ -n "${twins}" ]]; then
+        log "NOTE: the session hooks list a memory's Chinese twin as a second memory beside its English file: ${twins}."
+        log "      Memory files take no Chinese twin any more: fold what a twin adds into its English file, then delete the twin."
+    fi
+}
+
+# The retired STORY files this run deletes, one project-relative path per line:
+# on a full update each RETIRED_FILES entry the harness selection covers, and in
+# any mode the SKILL_zh.md beside every SKILL.md, and the .zh-CN.md prompt beside
+# every Pi prompt, that the fetched ref ships under a synced path. A file the
+# fetched ref still carries is not retired, so an older ref keeps it. Needs
+# SYNCED and SOURCE_DIR.
+retired_files() {
+    local rel path
+    {
+        if [[ -z "${SKILL_NAME}" ]]; then
+            for rel in "${RETIRED_FILES[@]}"; do
+                path_selected "${rel}" || continue
+                if [[ ( -e "${ROOT_DIR}/${rel}" || -L "${ROOT_DIR}/${rel}" ) && ! -e "${SOURCE_DIR}/${rel}" ]]; then
+                    printf '%s\n' "${rel}"
+                fi
+            done
+        fi
+        while IFS= read -r path; do
+            case "${path}" in
+                */SKILL.md)       rel="$(dirname -- "${path}")/SKILL_zh.md" ;;
+                .pi/prompts/*.md) rel="${path%.md}.zh-CN.md" ;;
+                *) continue ;;
+            esac
+            if [[ ( -e "${ROOT_DIR}/${rel}" || -L "${ROOT_DIR}/${rel}" ) && ! -e "${SOURCE_DIR}/${rel}" ]]; then
+                printf '%s\n' "${rel}"
+            fi
+        done < <(cd "${SOURCE_DIR}" && find -L "${SYNCED[@]}" -type f \( -name SKILL.md -o -path '.pi/prompts/*.md' \) ! -name '*.zh-CN.md' 2>/dev/null | sort)
+    } | awk '!seen[$0]++'
 }
 
 usage() {
@@ -305,12 +431,18 @@ Usage: bash execs/update.sh [ref] [--harnesses LIST] [--skill NAME] [--force]
 Overwrite the STORY-managed content — the shared agent instructions (AGENTS.md
 and the Cursor rule that copies its body), the neutral skill source plus six
 harness entry trees (.agents, .claude, .cursor, .dsh, .kimi-code, .pi, .qwen),
-Codex's per-skill manifests and $story router plugin, Kimi Code's /story router
-plugin, DSH's /story command bundle, harness commands/prompts,
-the session hooks that inject project memory and model provenance,
+Codex's per-skill manifests and $story / $story-auto plugin, Kimi Code's /story
+and /story-auto plugin, DSH's /story and /story-auto command bundle, the shared
+/story router and /story-auto procedure (.agents/commands) with the harness
+commands and prompts that read them,
+the hooks (the session hooks that inject project memory and model provenance,
+the commit guard, and the gates that answer permission prompts at INVOLVE=low),
 docs/mds/story-workflow/, and every script under execs/ — the two entrypoints,
 run.sh and this one, and the three utilities in execs/scpts/: import.sh,
-lint.sh, fmt.sh — with files from upstream.
+lint.sh, fmt.sh — with files from upstream. The STORY files upstream has
+retired (RETIRED_FILES, a SKILL_zh.md beside any SKILL.md upstream ships, and a
+.zh-CN.md Pi prompt beside any prompt upstream ships) are deleted; every other
+local-only file, the project's own included, is kept.
 The default ref is main; a branch or tag may be supplied instead. Local edits to
 those paths are replaced, AGENTS.md included; the manuscript, evidence, notes,
 and the memory store under .story/memory/ are never touched. Use --skill to
@@ -330,31 +462,38 @@ one discovery link under .agents/plugins follows the same selection.
 
 No script under execs/ holds project configuration — everything an instance sets
 lives in .env, which is git-ignored and never synced — so all five are safe to
-replace. They are synced because they are called by name and by
-flag: run.sh --main, lint.sh --no-build and import.sh --diff from the skills,
-fmt.sh --check from lint.sh. A repo that syncs a skill while keeping a script
-that predates the flag it passes gets a run that fails at that step. execs/update.sh syncs itself, so no repo strands on an
-update mechanism too old to fetch its successor: it is installed by rename,
-which leaves this running process on the old file and gives the next invocation
-the new one.
+replace. They are synced because they are called by name and by flag:
+import.sh --diff from story-clms-auditor, lint.sh --no-build from
+story-copy-editor and story-flow-status's scan.sh, and run.sh --main and
+fmt.sh --check from lint.sh. A repo that syncs a caller while keeping a script
+that predates the flag it passes gets a run that fails at that step.
+execs/update.sh syncs itself, so no repo strands on an update mechanism too old
+to fetch its successor: it is installed by rename, which leaves this running
+process on the old file and gives the next invocation the new one.
 
 Harness configuration an instance may have edited — .cursorignore plus hook
 registrations and harness settings under .claude, .codex, .cursor, .dsh, .pi,
 and .qwen — is installed when it is absent and otherwise kept, however far it has drifted
 from upstream; only --force overwrites it. A kept registration that does not name
-a hook is reported, since a hook nobody registers never fires.
+a hook is reported, since a hook nobody registers never fires, and so are a kept
+.claude/settings.json without the model-id resolver's allow rule and a kept
+.codex/hooks.json whose memory hook sits behind a SessionStart matcher.
+After a full update, leftovers of the old memory index in the thesis's own
+.story/memory/ (a MEMORY.md or MEMORY.zh-CN.md index there or under local/,
+and a memory's Chinese twin) are reported, never removed.
 
 --diff previews an update without changing anything: it lists upstream files
-that are new or differ from the local copies, harness configuration that
-differs but would be kept, and project-local files an update would keep. It
-exits 0 when everything already matches, 2 when an update would change files,
-and 1 on error — so a script can tell "an update is available" from "the check
-itself failed".
+that are new or differ from the local copies, retired STORY files an update
+would delete, harness configuration that differs but would be kept, and
+project-local files an update would keep. It exits 0 when everything already
+matches, 2 when an update would change files, and 1 on error — so a script can
+tell "an update is available" from "the check itself failed".
 
 --force updates the same paths with both refusals lifted: uncommitted changes
 under them are overwritten instead of stopping the command, and the harness
 configuration above is overwritten instead of kept. It widens nothing — the
-path list is unchanged, and a file upstream does not have is still left alone.
+path list is unchanged, and a local file upstream does not have is still kept
+unless it is one of the retired STORY files above.
 Combined with --diff it previews that scope without changing anything.
 
 --adopt installs the STORY skeleton into an already-started thesis repo instead
@@ -508,12 +647,13 @@ if [[ "${ADOPT}" == true ]]; then
     ADOPT_TREES=(
         "${SKILL_ROOTS[@]}"
         "${CODEX_MANIFEST_ROOT}"
-        # Codex owns the repo-local $story router plugin. Its .agents discovery
-        # entry is installed separately as one narrow file link.
+        # Codex owns the repo-local $story / $story-auto plugin. Its .agents
+        # discovery entry is installed separately as one narrow file link.
         ".codex/plugins"
-        # Kimi Code owns the repo-local /story router plugin.
+        # Kimi Code owns the repo-local /story and /story-auto plugin.
         ".kimi-code/plugins"
-        # DSH owns the profile bundle that registers its /story command.
+        # DSH owns the profile bundle that registers its /story and /story-auto
+        # commands.
         ".dsh/commands"
         "${HARNESS_ASSET_TREES[@]}"
         "${HOOK_TREES[@]}"
@@ -533,12 +673,10 @@ if [[ "${ADOPT}" == true ]]; then
         ".kimi-code/hooks.example.toml"
         ".dsh/cordis.patch.yml"
         ".pi/APPEND_SYSTEM.md"
-        ".pi/APPEND_SYSTEM.zh-CN.md"
-        # The memory store's index. The store is the thesis's own from here on;
-        # only this seed file, which documents the line format, comes from
-        # upstream.
-        ".story/memory/MEMORY.md"
-        ".story/memory/MEMORY.zh-CN.md"
+        # The memory store ships empty: .gitkeep is the only file the template
+        # tracks there, and the session hooks build the index from each
+        # memory's frontmatter. The store is the thesis's own from here on.
+        ".story/memory/.gitkeep"
         ".env.example"
         ".gitignore"
         # The line-break rule fmt.sh applies and .vscode/settings.json points
@@ -714,9 +852,15 @@ if [[ "${ADOPT}" == false ]]; then
         fi
     done
 
+    # Computed once, before anything is written: whether a file is retired is
+    # decided by the fetched ref alone, so the preview, the dirty check, and the
+    # deletion after the extract all act on the same list.
+    RETIRED="$(retired_files)"
+
     if [[ "${DIFF}" == true ]]; then
         changed=0
         added=0
+        removed=0
         kept=0
 
         # Upstream files that an update would overwrite or add.
@@ -730,9 +874,16 @@ if [[ "${ADOPT}" == false ]]; then
             fi
         done < <(cd "${SOURCE_DIR}" && find -L "${SYNCED[@]}" -type f | sort)
 
+        # STORY files upstream no longer ships; an update deletes them.
+        while IFS= read -r rel; do
+            [[ -n "${rel}" ]] || continue
+            printf '  removes  %s (no longer shipped upstream)\n' "${rel}"
+            removed=$(( removed + 1 ))
+        done <<<"${RETIRED}"
+
         # Project-local files under the same paths; an update keeps them.
         while IFS= read -r rel; do
-            if [[ ! -e "${SOURCE_DIR}/${rel}" ]]; then
+            if [[ ! -e "${SOURCE_DIR}/${rel}" ]] && ! grep -qxF -- "${rel}" <<<"${RETIRED}"; then
                 printf '  extra    %s (not in upstream ref; update keeps it)\n' "${rel}"
                 kept=$(( kept + 1 ))
             fi
@@ -757,13 +908,13 @@ if [[ "${ADOPT}" == false ]]; then
             done < <(harness_rels)
         fi
 
-        if (( changed + added > 0 )); then
+        if (( changed + added + removed > 0 )); then
             hint="bash execs/update.sh"
             [[ "${REF_SET}" == false ]] || hint="${hint} ${STORY_REF}"
             [[ -z "${SKILL_NAME}" ]] || hint="${hint} --skill ${SKILL_NAME}"
             [[ -z "${HARNESSES_ARG}" ]] || hint="${hint} --harnesses ${HARNESSES_ARG}"
             [[ "${FORCE}" == false ]] || hint="${hint} --force"
-            log "${changed} differ, ${added} new upstream, ${kept} extra local."
+            log "${changed} differ, ${added} new upstream, ${removed} dropped upstream, ${kept} extra local."
             log "'differs' is direction-blind: it includes files you edited yourself."
             log "Run '${hint}' to apply the upstream versions."
             # 2, not 1: fail() uses 1 for every hard error, so a caller could not
@@ -780,8 +931,15 @@ if [[ "${ADOPT}" == false ]]; then
     # anywhere.
     if git -C "${ROOT_DIR}" rev-parse --git-dir >/dev/null 2>&1; then
         # --force also overwrites the harness configuration, so it belongs in
-        # what gets reported as about to be lost.
+        # what gets reported as about to be lost. So do the retired files: the
+        # deletion below has no way back either, and a top-level one such as
+        # AGENTS.zh-CN.md sits under no synced path.
         DIRTY_PATHS=("${SYNCED[@]}")
+        while IFS= read -r rel; do
+            if [[ -n "${rel}" ]]; then
+                DIRTY_PATHS+=("${rel}")
+            fi
+        done <<<"${RETIRED}"
         if [[ "${FORCE}" == true && -z "${SKILL_NAME}" ]]; then
             filter_paths "${HARNESS_FILES[@]}"
             # FILTERED is empty under --harnesses none, and bash 3.2 treats an
@@ -825,8 +983,35 @@ if [[ "${ADOPT}" == false ]]; then
     case "${TAR_HELP}" in
         *--hard-dereference*) TAR_CREATE_ARGS+=(--hard-dereference) ;;
     esac
+    # Codex and Kimi Code copy their plugin when it is installed, so a changed
+    # plugin tree reaches neither harness until the author installs it again.
+    # Compared before the extract, which makes the trees match.
+    PLUGIN_REINSTALL=()
+    if [[ -z "${SKILL_NAME}" ]]; then
+        for plugin_harness in codex kimi; do
+            is_selected "${plugin_harness}" || continue
+            case "${plugin_harness}" in
+                codex) plugin_tree=".codex/plugins/story" ;;
+                kimi)  plugin_tree=".kimi-code/plugins/story" ;;
+            esac
+            [[ -d "${SOURCE_DIR}/${plugin_tree}" ]] || continue
+            if [[ ! -d "${ROOT_DIR}/${plugin_tree}" ]]; then
+                PLUGIN_REINSTALL+=("${plugin_harness}-new")
+            elif ! diff -rq "${SOURCE_DIR}/${plugin_tree}" "${ROOT_DIR}/${plugin_tree}" >/dev/null 2>&1; then
+                PLUGIN_REINSTALL+=("${plugin_harness}")
+            fi
+        done
+    fi
+
     tar -C "${SOURCE_DIR}" "${TAR_CREATE_ARGS[@]}" -f "${ARCHIVE_FILE}" "${TAR_PATHS[@]}"
     tar -C "${ROOT_DIR}" -xf "${ARCHIVE_FILE}"
+
+    # The extract never deletes, so a file upstream dropped goes here, by name.
+    while IFS= read -r rel; do
+        [[ -n "${rel}" ]] || continue
+        rm -f -- "${ROOT_DIR}/${rel}"
+        log "Removed ${rel}: upstream no longer ships it."
+    done <<<"${RETIRED}"
 
     if [[ -z "${SKILL_NAME}" ]] && is_selected codex; then
         link_codex_marketplace
@@ -868,9 +1053,18 @@ if [[ "${ADOPT}" == false ]]; then
             log "      See which with 'bash execs/update.sh --diff'; take upstream's with --force."
         fi
         report_unregistered_hooks
+        report_legacy_memory_index
     fi
 
     log "Updated: ${SYNCED[*]}"
+    for plugin_harness in ${PLUGIN_REINSTALL[@]+"${PLUGIN_REINSTALL[@]}"}; do
+        case "${plugin_harness}" in
+            codex) log "NOTE: .codex/plugins/story changed. Codex runs the copy made at install: run 'codex plugin remove story@story' then 'codex plugin add story@story', and start a new session." ;;
+            kimi)  log "NOTE: .kimi-code/plugins/story changed. Kimi Code runs the copy made at install: run '/plugins install ./.kimi-code/plugins/story' in its prompt again, then '/reload'." ;;
+            codex-new) log "NOTE: .codex/plugins/story arrived. Codex only: run 'codex plugin marketplace add .' then 'codex plugin add story@story', and start a new session." ;;
+            kimi-new)  log "NOTE: .kimi-code/plugins/story arrived. Kimi Code only: run '/plugins install ./.kimi-code/plugins/story' in its prompt, then '/reload'." ;;
+        esac
+    done
     log "Review the changes with git status and git diff before committing them."
     exit 0
 fi

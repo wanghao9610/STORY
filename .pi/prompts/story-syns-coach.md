@@ -1,9 +1,7 @@
 ---
 description: Run story-syns-coach with its STORY workflow instructions
-argument-hint: "[DESCRIPTION] [involve=high]"
+argument-hint: "[DESCRIPTION] [involve=LEVEL]"
 ---
-
-**Language:** English | [简体中文](story-syns-coach.zh-CN.md)
 
 Read `.pi/skills/story-syns-coach/SKILL.md` in full and follow it as this run's instructions.
 

@@ -1,9 +1,10 @@
 # STORY's /story command bundle patch. Applied when this package is a profile
 # bundle: one row inserting the host-only command plugin that registers the
-# `/story` slash command. The plugin is a zero-dependency shim — the routing
-# logic lives in <project>/.agents/commands/story.md and the skills it routes
-# to live in <project>/.dsh/skills/, both discovered relative to the project
-# dsh is launched in.
+# `/story` and `/story-auto` slash commands. The plugin is a zero-dependency
+# shim — the routing logic lives in <project>/.agents/commands/story.md, the
+# goal-run procedure in story-auto.md beside it, and the skills they start live
+# in <project>/.dsh/skills/, all discovered relative to the project dsh is
+# launched in.
 - insert:
     - id: story
       name: 'story'

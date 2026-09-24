@@ -1,1 +1,0 @@
-../../../.agents/skills/story-chap-drafter/SKILL_zh.md

@@ -1,9 +1,7 @@
 ---
 description: Run story-defn-builder with its STORY workflow instructions
-argument-hint: "[MILESTONE] [DESCRIPTION] [involve=high]"
+argument-hint: "[MILESTONE] [DESCRIPTION] [involve=LEVEL]"
 ---
-
-**Language:** English | [简体中文](story-defn-builder.zh-CN.md)
 
 Read `.pi/skills/story-defn-builder/SKILL.md` in full and follow it as this run's instructions.
 

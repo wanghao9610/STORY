@@ -1,22 +1,29 @@
 ---
 name: story-depo-packer
 disable-model-invocation: true
-description: Preflight, package, and freeze a final master's or doctoral thesis deposit from confirmed institutional requirements; use only for a named deposit milestone, never to upload, submit, push, or silently change the manuscript.
-argument-hint: "MILESTONE [DESCRIPTION] [involve=high]"
+description: Use only for a named deposit milestone of a finished thesis. Preflights every deposit gate against confirmed institutional requirements, packages the final PDF with a checksummed inventory, and writes the freeze record; never uploads, submits, pushes, commits, or silently changes the manuscript. For a read-only progress report, use story-flow-status.
+argument-hint: "MILESTONE [DESCRIPTION] [involve=LEVEL]"
 ---
 
 # Package the thesis deposit
 
-Read `docs/mds/story-workflow/writing-workflow-conventions.md` first. Resolve the degree level and a named, institutionally applicable `deposit` milestone; require author confirmation before freezing anything.
+**Shared conventions.** Read `docs/mds/story-workflow/writing-workflow-conventions.md` in full before acting. Read `.env` once for the `STORY_LANG`, `INVOLVE`, and `STORY_MAIN` values this run needs, and reuse them. Resolve the language of replies and new Markdown under conventions §7: an explicit author request first, then a valid `STORY_LANG`, then the dialogue language, or the invocation language when there is no user turn. Manuscript prose follows `degree/profile.tex`, and an existing file keeps its language. A clear instruction may select the target and scope and authorize the corresponding action within this skill's documented paths, and work already authorized in this run is not asked for again; it never replaces a confirmation point or an `AGENTS.md` §1 ask-first choice (conventions §7).
 
-Preflight all hard gates:
+Resolve the degree level and the named, institutionally applicable `deposit` milestone; create a missing `milestone.yml` or change its status only per conventions §6 (Milestone lifecycle).
 
-1. `bash execs/run.sh` and `bash execs/scpts/lint.sh` pass;
-2. every required box in `degree/requirements.md` is checked with a source;
-3. every approval required for this degree level and all milestone facts are recorded;
-4. no open promise remains under `tasks/`;
-5. claim and citation audits have no unresolved hard failures;
-6. publication reuse, attribution, and permissions are resolved;
-7. the official format, naming, accessibility, file-size, embargo, and license rules are confirmed.
+Preflight every gate of conventions §6 (Deposit gates), reporting each as pass or fail with its evidence: the command and its `Result:` line, the file and row, or the path read. Check gate 8 first, recording `git rev-parse HEAD` as the source commit, then run `bash execs/scpts/lint.sh`, which builds first. Beyond the list:
 
-Copy the final PDF and required sources into `wkdrs/builds/deposit/<slug>/`, create checksums and a file inventory, then write `milestones/<slug>/RECORD_<date>.md`. Create a freeze tag only after explicit confirmation. Never upload to a portal, push a tag, or edit the thesis in this skill.
+- gate 1: if the milestone is not active, ask the author to confirm making it `active` before lint runs, or compare its `max_pages` with the PDF's page count yourself as the evidence; match each unwired-chapter warning against that chapter's `notes/outline.md` row;
+- gate 2: read every checked row too, since lint and the status scan count only unchecked boxes, for its applicability and source, including a page limit's recorded counting rule, and check the format against any `official_template` in `degree/profile.tex`;
+- gate 5: compare each `Last full run:` date in `tasks/audits.md` with `git log -1 --format=%cs -- manus mates`; on the same date, ask whether the audit followed that change, and at `low` count the gate as failing;
+- gate 7: no script checks it, so read the entry point and every front- and back-matter file it inputs.
+
+This skill fixes nothing: after reporting every gate, route the earliest failure to its owner or name the author action (conventions §7, Ownership; §8, Completion handoff), and do not freeze. A failed preflight is reported and routed, never recorded as `blocked`.
+
+When every gate passes, ask the author to confirm the freeze and whether to tag it; both are confirmation points at every level (conventions §7). Then:
+
+1. copy the final PDF and required sources into `wkdrs/builds/deposit/<slug>/`;
+2. create a confirmed tag with `git tag -a <name> <source commit>`, never on an implicit `HEAD`;
+3. write `milestones/<slug>/RECORD_<date>.md` as conventions §6 (Deposit gates) lists, and set `status: completed` in `milestone.yml` in the same change.
+
+Institution-facing text, such as a cover note, follows conventions §7 (Language and profile). Never commit: ask the author to commit the RECORD and `milestone.yml` and to archive the deposited files outside the repository. Never upload, submit, publish, or push anything, or edit the thesis (conventions §7, Git and outward transfer).

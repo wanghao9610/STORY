@@ -1,4 +1,11 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(bash .claude/hooks/story_model_id.sh --resolve:*)",
+      "Bash(bash .claude/skills/story-flow-status/scripts/scan.sh)",
+      "Bash(bash .claude/skills/story-flow-status/scripts/scan.sh:*)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
@@ -16,6 +23,10 @@
           {
             "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/story_commit_guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/story_bash_gate.sh"
           }
         ]
       }

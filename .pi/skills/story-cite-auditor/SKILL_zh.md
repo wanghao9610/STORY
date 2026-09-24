@@ -1,1 +1,0 @@
-../../../.agents/skills/story-cite-auditor/SKILL_zh.md

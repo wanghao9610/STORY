@@ -2,7 +2,8 @@
 #
 # Three hooks: model_id provenance, the project-memory index injected from
 # .story/memory/ at the start of a session, and the commit guard that declines
-# the git commands the writing STORY git safety policy blocks.
+# the git commands the STORY git safety policy forbids (see
+# story_commit_guard.sh's header).
 #
 # EASIEST: run `bash .kimi-code/hooks/install.sh` once — it writes all three
 # blocks below into your global config for you (safe to run again, backs up first). The
@@ -26,7 +27,8 @@
 # inject once per session (keyed on session_id), so they do not repeat every
 # turn. The commit guard is the odd one out: it decides rather than injects, so
 # it runs on PreToolUse matching Bash — the event whose return value can still
-# stop a shell command — and it answers only for the git commands §1 forbids.
+# stop a shell command — and it answers only for the git commands the STORY git
+# safety policy forbids.
 #
 # Note: [[hooks]] accepts only event / matcher / command / timeout — any extra
 # field makes the whole config fail to load.

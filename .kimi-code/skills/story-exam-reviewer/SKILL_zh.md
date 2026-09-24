@@ -1,1 +1,0 @@
-../../../.agents/skills/story-exam-reviewer/SKILL_zh.md

@@ -1,14 +1,16 @@
 ---
 name: story-tabs-builder
-description: Build or revise one master's or doctoral thesis table from fingerprinted evidence, with source anchors for every data row and synchronized claim/outline records; use for results, comparisons, mappings, and synthesis tables.
+description: Use to build or revise one thesis table (results, comparisons, mappings, synthesis) from fingerprinted evidence, with a source anchor on every quantitative or comparative row and synchronized claim, outline, and notation records. For a design whose message depends on visual encoding, use story-figs-designer.
 ---
 
 # Build one evidence-backed table
 
-Read `docs/mds/story-workflow/writing-workflow-conventions.md` first. Resolve one table from `notes/outline.md`. For a new table, confirm its purpose and chapter before adding a `planned` row under the outline status contract in conventions §3.
+**Shared conventions.** Read `docs/mds/story-workflow/writing-workflow-conventions.md` in full before acting. Read `.env` once for the `STORY_LANG`, `INVOLVE`, and `STORY_MAIN` values this run needs, and reuse them. Resolve the language of replies and new Markdown under conventions §7: an explicit author request first, then a valid `STORY_LANG`, then the dialogue language, or the invocation language when there is no user turn. Manuscript prose follows `degree/profile.tex`, and an existing file keeps its language. A clear instruction may select the target and scope and authorize the corresponding action within this skill's documented paths, and work already authorized in this run is not asked for again; it never replaces a confirmation point or an `AGENTS.md` §1 ask-first choice (conventions §7).
 
-Read every source value from registered `mates/` files in this run. Generate `manus/tabs/<slug>.tex` as editable LaTeX with accessible headings, stated units, meaningful precision, and a `% src:` comment for each claim-bearing row. Missing values remain `\todo{...}`; never transcribe from chat or memory.
+Resolve one table by its `T` ID or file in `notes/outline.md`, or `new`; without `notes/outline.md` or `notes/notation.md`, route to `story-outl-planner` (conventions §1). For `new`, confirm its purpose, chapter, and claim IDs, then add its `planned` row with them in `Purpose`, `Chapter`, and `Claims` (conventions §3); confirming is a judgment call, and `low` adds the row with the recommended values and reports them.
 
-Check that comparisons use compatible datasets, splits, metrics, and directions. Record any necessary caveat in the caption or nearby prose instead of hiding it in formatting. Update the table row and linked claims, include the table only in its owning chapter, then build and lint.
+Generate `manus/tabs/<slug>.tex` as editable LaTeX with accessible headings, stated units, and meaningful precision from registered evidence read in this run, with a source anchor (conventions §2) on every row that carries a number or comparison and `\todo{...}` for a missing value. Use `notes/notation.md` symbols and terms, adding a row (`First use`: the chapter path) for a new one. Without a `cleared` row in `notes/publications.md` (conventions §3), route adapted published material to `story-syns-coach`.
 
-Do not invent a visual encoding or alter evidence. Route figure-like designs to `story-figs-designer`.
+Check that comparisons use compatible datasets, splits, metrics, and directions; put a caveat in the caption or table notes, and route a sentence the chapter text must carry to `story-chap-drafter`. Formatting that marks a value (bold best result, shading, arrows) follows a rule the caption states, computed from the same evidence; a design whose message depends on visual encoding goes to `story-figs-designer`. Never alter evidence.
+
+Include the table only in its owning chapter, and handle `\listoftables` as conventions §7 (Ownership) assigns. In the same change, update the outline row and the claims the table states (conventions §3, Who sets each status), and tick any `tasks/` line the change resolves (§6); then build and lint (§8).

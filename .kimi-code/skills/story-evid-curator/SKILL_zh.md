@@ -1,1 +1,0 @@
-../../../.agents/skills/story-evid-curator/SKILL_zh.md

@@ -1,1 +1,0 @@
-../../../.agents/skills/story-refs-curator/SKILL_zh.md

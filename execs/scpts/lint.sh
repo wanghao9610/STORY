@@ -192,13 +192,30 @@ fi
 LOG_FILE="${BUILD_DIR}/${MAIN_BASE}.log"
 PDF_FILE="${BUILD_DIR}/${MAIN_BASE}.pdf"
 log "Entry point: ${MAIN_TEX}."
+# A failed or missing build still gets a Result line, but every check that reads
+# the log or the PDF is skipped: an older PDF left by an earlier successful build
+# would otherwise pass for this manuscript.
+BUILD_USABLE=true
 if [[ "${NO_BUILD}" == false ]]; then
-    bash execs/run.sh --main "${MAIN_TEX}"
+    if ! bash execs/run.sh --main "${MAIN_TEX}"; then
+        hard "the build failed (see ${LOG_FILE}); log and page checks were skipped."
+        BUILD_USABLE=false
+    fi
 elif [[ ! -f "${LOG_FILE}" || ! -f "${PDF_FILE}" ]]; then
     hard "--no-build requested but ${LOG_FILE} or ${PDF_FILE} is absent."
+    BUILD_USABLE=false
+elif grep -q '^!' "${LOG_FILE}"; then
+    hard "the last build stopped on a LaTeX error (see ${LOG_FILE}); rebuild with bash execs/run.sh."
+    BUILD_USABLE=false
+else
+    STALE_SOURCES="$(find manus degree -type f \( -name '*.tex' -o -name '*.bib' -o -name '*.cls' -o -name '*.sty' -o -name '*.bst' \) \
+        -newer "${PDF_FILE}" 2>/dev/null | wc -l | tr -d '[:space:]')"
+    if (( ${STALE_SOURCES:-0} > 0 )); then
+        warn "${STALE_SOURCES} source file(s) under manus/ or degree/ are newer than the PDF; rebuild before trusting its page and reference checks."
+    fi
 fi
 
-if [[ -f "${LOG_FILE}" ]]; then
+if [[ "${BUILD_USABLE}" == true && -f "${LOG_FILE}" ]]; then
     if grep -Eqi 'undefined citations|Citation .* undefined|There were undefined references|Reference .* undefined' "${LOG_FILE}"; then
         hard 'undefined citation or cross-reference reported by LaTeX.'
     fi
@@ -250,36 +267,131 @@ elif [[ "${DEGREE_LEVEL}" == doctoral ]] && grep -Eqi 'Master([^a-z]|$)|硕士' 
     hard 'doctoral degree_level conflicts with master wording in the title or degree field.'
 fi
 
-if [[ -s degree/profile.tex ]] && grep -Eq 'Untitled Thesis|Degree Name|未命名学位论文|学位名称|University Name|Author Name|Advisor Name|Graduation Date' degree/profile.tex; then
-    warn 'title-page placeholders remain in degree/profile.tex.'
+# Placeholders are read from compiled lines only: the profile's own comments name
+# the fields they describe, and matching those would warn on every profile.
+if [[ -s degree/profile.tex ]]; then
+    PLACEHOLDERS="$(awk '
+        BEGIN { n = split("Untitled Thesis|未命名学位论文|Author Name|作者姓名|University Name|学校名称|Department or Program|院系或培养单位|Degree Name|学位名称|Advisor Name|导师姓名|Graduation Date|完成日期", p, "|") }
+        /^[[:space:]]*%/ { next }
+        { for (i = 1; i <= n; i++) if (index($0, p[i])) seen[i] = 1 }
+        END { for (i = 1; i <= n; i++) if (i in seen) printf "%s%s", (c++ ? ", " : ""), p[i] }
+    ' degree/profile.tex)"
+    if [[ -n "${PLACEHOLDERS}" ]]; then
+        warn "title-page placeholders remain in degree/profile.tex: ${PLACEHOLDERS}."
+    fi
+
+    # Manuscript language and entry point must agree: a zh profile built by an
+    # English entry point (or the reverse) typesets the wrong title page.
+    DISSERTATION_LANG="$(awk '/^[[:space:]]*%[[:space:]]*dissertation_language:/ { sub(/.*dissertation_language:/, ""); gsub(/[[:space:]]/, ""); print; exit }' degree/profile.tex)"
+    CLASS_OPTIONS="$(awk '{ line = $0; sub(/(^|[^\\])%.*/, "", line) } line ~ /\\documentclass/ { if (match(line, /\[[^]]*\]/)) print substr(line, RSTART, RLENGTH); exit }' "${MAIN_TEX}")"
+    case "${DISSERTATION_LANG}" in
+        zh) [[ "${CLASS_OPTIONS}" =~ (^|[^a-z])(zh|chinese)([^a-z]|$) ]] || \
+                warn "dissertation_language is zh but ${MAIN_TEX#"${ROOT_DIR}"/} does not load the class with the zh option." ;;
+        en) [[ ! "${CLASS_OPTIONS}" =~ (^|[^a-z])(zh|chinese)([^a-z]|$) ]] || \
+                warn "dissertation_language is en but ${MAIN_TEX#"${ROOT_DIR}"/} loads the class with the zh option." ;;
+    esac
 fi
 
 if [[ ! -s degree/profile.tex ]]; then
     warn 'degree/profile.tex is absent or empty.'
 fi
 
-limit=''
-active=''
-if [[ -f notes/story.md ]]; then
-    active="$(sed -nE 's/^active_milestone:[[:space:]]*"?([^"[:space:]]*)"?.*/\1/p' notes/story.md | head -1)"
-fi
-if [[ -n "${active}" && -f "milestones/${active}/milestone.yml" ]]; then
-    limit="$(sed -nE 's/^max_pages:[[:space:]]*([0-9]+).*/\1/p' "milestones/${active}/milestone.yml" | head -1)"
-fi
-if [[ -z "${limit}" && -s degree/profile.tex ]]; then
-    limit="$(sed -nE 's/^[[:space:]]*%?[[:space:]]*max_pages:[[:space:]]*([0-9]+).*/\1/p' degree/profile.tex | head -1)"
-fi
-if [[ -n "${limit}" && -f "${PDF_FILE}" ]] && command -v pdfinfo >/dev/null 2>&1; then
-    pages="$(pdfinfo "${PDF_FILE}" 2>/dev/null | awk '/^Pages:/ {print $2}')"
-    if [[ -n "${pages}" ]] && (( pages > limit )); then
-        hard "${pages} pages exceeds the confirmed limit ${limit}."
-    else
-        log "Page limit: ${pages:-?}/${limit}."
+if [[ -f degree/requirements.md ]]; then
+    OPEN_ROWS="$(grep -cE '^[[:space:]]*- \[ \]' degree/requirements.md || true)"
+    if (( ${OPEN_ROWS:-0} > 0 )); then
+        warn "${OPEN_ROWS} unresolved row(s) in degree/requirements.md; a deposit needs every row resolved."
     fi
 fi
 
-# fmt.sh --check distinguishes drift (1) from a refused rewrite (2) and a
-# missing tool (3); only drift is fixable by running fmt.sh again.
+# A chapter file the entry point never inputs is drafted but absent from the
+# PDF, and nothing else notices: the build succeeds and every count looks fine.
+if [[ "${MAIN_DIR}" == "${ROOT_DIR}/manus" ]]; then
+    for chapter in manus/chaps/*.tex; do
+        [[ -f "${chapter}" ]] || continue
+        if ! awk -v base="$(basename -- "${chapter}" .tex)" '
+            { line = $0; sub(/(^|[^\\])%.*/, "", line) }
+            line ~ ("\\\\(input|include)[[:space:]]*\\{[[:space:]]*chaps/" base "(\\.tex)?[[:space:]]*\\}") { found = 1; exit }
+            END { exit !found }
+        ' "${MAIN_TEX}"; then
+            warn "${MAIN_TEX#"${ROOT_DIR}"/} does not \\input ${chapter}; the built PDF omits it."
+        fi
+    done
+fi
+
+# The page limit comes from the active milestone — the one milestone.yml whose
+# status is active, a standing supervision record aside — and otherwise from
+# the profile. A thesis from before milestone status carried this may still name
+# it as active_milestone in notes/story.md, which is read only as a fallback.
+max_pages_of() {
+    awk '{
+        line = $0
+        sub(/^[[:space:]]*%?[[:space:]]*/, "", line)
+        if (line !~ /^max_pages:/) next
+        sub(/^max_pages:[[:space:]]*/, "", line)
+        sub(/[[:space:]]*#.*$/, "", line)
+        gsub(/["\047[:space:]]/, "", line)
+        print line
+        exit
+    }' "$1"
+}
+yml_value() {
+    awk -v key="$2" '{
+        line = $0
+        if (line !~ ("^" key ":")) next
+        sub("^" key ":[[:space:]]*", "", line)
+        sub(/[[:space:]]*#.*$/, "", line)
+        gsub(/["\047[:space:]]/, "", line)
+        print line
+        exit
+    }' "$1"
+}
+limit=''
+limit_source=''
+take_limit() {
+    local raw
+    raw="$(max_pages_of "$1")"
+    [[ -n "${raw}" ]] || return 1
+    if [[ "${raw}" =~ ^[1-9][0-9]*$ ]]; then
+        limit="${raw}"
+        limit_source="$1"
+        return 0
+    fi
+    warn "max_pages '${raw}' in $1 is not a positive integer; the page-limit check ignores it."
+    return 1
+}
+active=''
+active_count=0
+for yml in milestones/*/milestone.yml; do
+    [[ -f "${yml}" ]] || continue
+    [[ "$(yml_value "${yml}" status)" == active ]] || continue
+    [[ "$(yml_value "${yml}" kind)" != supervision ]] || continue
+    active_count=$((active_count + 1))
+    active="$(basename -- "$(dirname -- "${yml}")")"
+done
+if (( active_count > 1 )); then
+    warn "${active_count} milestones have status: active; exactly one may be active, so none of their page limits is applied."
+    active=''
+elif (( active_count == 0 )) && [[ -f notes/story.md ]]; then
+    active="$(awk '/^active_milestone:/ { sub(/^active_milestone:[[:space:]]*/, ""); gsub(/["\047[:space:]]/, ""); print; exit }' notes/story.md)"
+fi
+if [[ -n "${active}" && -f "milestones/${active}/milestone.yml" ]]; then
+    take_limit "milestones/${active}/milestone.yml" || true
+fi
+if [[ -z "${limit}" && -s degree/profile.tex ]]; then
+    take_limit degree/profile.tex || true
+fi
+if [[ "${BUILD_USABLE}" == true && -n "${limit}" && -f "${PDF_FILE}" ]] && command -v pdfinfo >/dev/null 2>&1; then
+    # An unreadable PDF must not end lint under pipefail before its Result line.
+    pages="$(pdfinfo "${PDF_FILE}" 2>/dev/null | awk '/^Pages:/ {print $2}' || true)"
+    if [[ -n "${pages}" ]] && (( pages > limit )); then
+        hard "${pages} pages exceeds the confirmed limit ${limit} (${limit_source}); it counts every PDF page, so a limit with exclusions belongs in degree/requirements.md instead."
+    else
+        log "Page limit: ${pages:-?}/${limit} (${limit_source})."
+    fi
+fi
+
+# fmt.sh --check distinguishes drift (1) from a refused rewrite or a latexindent
+# failure (2) and a missing tool (3); only drift is fixable by running fmt.sh again.
 FMT_RC=0
 bash execs/scpts/fmt.sh --check >/dev/null 2>&1 || FMT_RC=$?
 case "${FMT_RC}" in

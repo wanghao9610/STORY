@@ -1,15 +1,17 @@
 ---
 name: story-figs-designer
-description: Plan, create, or revise one master's or doctoral thesis figure with an editable source, evidence mappings for claim-bearing marks and captions, and a rendered PDF under manus/figs/; use for conceptual, method, result, and synthesis figures.
-argument-hint: "[FIGURE | new] [DESCRIPTION] [involve=low]"
+description: Use to plan, create, or revise one thesis figure (conceptual, method, result, synthesis) with an editable source, a rendered PDF under manus/figs/, and evidence mappings for every data mark, numeric label, and comparative caption statement. For a table of values, use story-tabs-builder.
+argument-hint: "[FIGURE | new] [DESCRIPTION] [involve=LEVEL]"
 ---
 
 # Design one traceable figure
 
-Read `docs/mds/story-workflow/writing-workflow-conventions.md` first. Resolve one figure from `notes/outline.md`. For a new figure, confirm its purpose, chapter, and claim IDs before adding it as `planned` under the outline status contract in conventions §3.
+**Shared conventions.** Read `docs/mds/story-workflow/writing-workflow-conventions.md` in full before acting. Read `.env` once for the `STORY_LANG`, `INVOLVE`, and `STORY_MAIN` values this run needs, and reuse them. Resolve the language of replies and new Markdown under conventions §7: an explicit author request first, then a valid `STORY_LANG`, then the dialogue language, or the invocation language when there is no user turn. Manuscript prose follows `degree/profile.tex`, and an existing file keeps its language. A clear instruction may select the target and scope and authorize the corresponding action within this skill's documented paths, and work already authorized in this run is not asked for again; it never replaces a confirmation point or an `AGENTS.md` §1 ask-first choice (conventions §7).
 
-Choose the simplest visual form that makes the intended relationship clear. Keep its editable source in `manus/figs/srcs/` and the rendered publication artifact in `manus/figs/`. Store a grep-readable source map beside or inside the editable source.
+Resolve one figure by its `F` ID or file in `notes/outline.md`, or `new`; without `notes/outline.md` or `notes/notation.md`, route to `story-outl-planner` (conventions §1). For `new`, confirm its purpose, chapter, and claim IDs, then add its `planned` row with them in `Purpose`, `Chapter`, and `Claims` (conventions §3); confirming is a judgment call, and `low` adds the row with the recommended values and reports them.
 
-Every data mark, numeric label, and comparative caption claim must map to registered evidence read in this run. Generated or decorative pixels are never evidence. Keep the figure accessible: legible type, non-color-only distinctions, suitable contrast, and an informative caption.
+Choose the simplest visual form that makes the intended relationship clear. Keep the editable source in `manus/figs/srcs/` and the rendered artifact in `manus/figs/`, never replacing the source with a flattened or rasterized export. Beside or inside the source, keep a grep-readable map anchoring every data mark, numeric label, and comparative caption statement (conventions §2) to registered evidence read in this run; generated or decorative pixels are never evidence. Without a `cleared` row in `notes/publications.md` (conventions §3), route adapted published material to `story-syns-coach`.
 
-Update the outline and linked claims, include the rendered figure in its owning chapter, then build and lint. Do not flatten away the only editable source.
+Keep the figure accessible: legible type, non-color-only distinctions, suitable contrast, and an informative caption. Use `notes/notation.md` symbols and terms in labels and captions, adding a row (`First use`: the chapter path) for a new one. Route a caveat the chapter text must carry to `story-chap-drafter`.
+
+Include the rendered figure only in its owning chapter, and handle `\listoffigures` as conventions §7 (Ownership) assigns. In the same change, update the outline row and the claims the figure states (conventions §3, Who sets each status), and tick any `tasks/` line the change resolves (§6); then build and lint (§8).

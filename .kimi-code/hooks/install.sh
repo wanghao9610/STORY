@@ -2,10 +2,10 @@
 # Register STORY's Kimi hooks in Kimi's GLOBAL config; running it again changes nothing.
 #
 # Three hooks: model_id provenance, the project-memory index injected from
-# .story/memory/, and the commit guard that declines the git commands the writing
-# STORY git safety policy blocks. The first two inject context on
-# UserPromptSubmit; the guard decides instead, so it registers on PreToolUse
-# matching Bash.
+# .story/memory/, and the commit guard that declines the git commands the STORY
+# git safety policy forbids (see story_commit_guard.sh's header). The first two
+# inject context on UserPromptSubmit; the guard decides instead, so it registers
+# on PreToolUse matching Bash.
 #
 # Kimi has no project-level hook config, so the [[hooks]] entries must live in
 # the global config at $KIMI_CODE_HOME/config.toml (default ~/.kimi-code/config.toml).

@@ -1,23 +1,26 @@
 ---
 name: story-proj-adopt
 disable-model-invocation: true
-description: Safely adopt an existing master's or doctoral thesis draft or Overleaf export into STORY by inventorying it, confirming a file map, preserving the source, recording unsourced claims, and verifying the resulting build.
+description: Use when an existing thesis draft or Overleaf export should come under STORY. Inventories the draft, confirms a file map, copies (never moves) the source after the author commits a pre-adoption checkpoint, records the draft's claims, and verifies the resulting build without redesigning chapters. After adoption, story-syns-coach frames the thesis story.
 ---
 
 # Adopt an existing thesis
 
-Read `docs/mds/story-workflow/writing-workflow-conventions.md` first.
+**Shared conventions.** Read `docs/mds/story-workflow/writing-workflow-conventions.md` in full before acting. Read `.env` once for the `STORY_LANG`, `INVOLVE`, and `STORY_MAIN` values this run needs, and reuse them. Resolve the language of replies and new Markdown under conventions §7: an explicit author request first, then a valid `STORY_LANG`, then the dialogue language, or the invocation language when there is no user turn. Manuscript prose follows `degree/profile.tex`, and an existing file keeps its language. A clear instruction may select the target and scope and authorize the corresponding action within this skill's documented paths, and work already authorized in this run is not asked for again; it never replaces a confirmation point or an `AGENTS.md` §1 ask-first choice (conventions §7).
 
-Read `degree_level` from `degree/profile.tex`. If it is absent or invalid, inventory may continue, but ask the author to confirm `master` or `doctoral` before mapping level-specific front matter, milestones, or requirements. Never infer the level from the imported title page.
+If `% degree_level` in `degree/profile.tex` is unknown, inventory may continue, but ask the author to confirm `master` or `doctoral` before mapping level-specific front matter, milestones, or requirements (conventions §1).
 
-1. Inventory the draft read-only: entry points, chapter inputs, front/back matter, figures, tables, bibliography, styles, build commands, institutional-template signals, and candidate evidence.
-2. Determine whether the source is inside this repository or external. Never modify an external source tree; copy from it.
-3. Propose a complete mapping into `manus/fronts/`, `manus/chaps/`, `manus/backs/`, `manus/figs/`, `manus/tabs/`, `manus/bibs/`, and `manus/stys/`. Name every path and reference rewrite.
-4. Get author confirmation before moving, overwriting, or changing the main entry point.
-5. Apply only the confirmed map and create `notes/adopt.md` when recording the first approved adoption; on a rerun, update the existing record without replacing it with a scaffold.
-6. Add the draft's quantitative or comparative statements to `notes/claims.md` as `unsourced` unless their evidence is already registered. If the ledger is absent, initialize it with `ID | Claim | Contribution | Stated in | Evidence | Status | Notes` immediately before adding the first row. Route candidate evidence to `story-evid-curator`.
-7. Build with `bash execs/run.sh`; report unresolved mappings and compilation failures without guessing fixes.
+1. Inventory the draft read-only: entry points, chapter inputs, front and back matter, figures, tables, bibliography files and their package (natbib or biblatex), document class and styles, build engine and commands, institutional-template signals (compared with `% official_template` in `degree/profile.tex`), and candidate evidence.
+2. Copy from the source (the path the author names, else this repository) into the confirmed targets; never move or modify it, inside this repository or outside. Originals stay in place; removing one later is a deletion (conventions §7).
+3. Propose a complete map into `manus/fronts/`, `manus/chaps/`, `manus/backs/`, `manus/figs/`, `manus/tabs/`, `manus/bibs/`, and `manus/stys/`, naming every path and reference rewrite. In it:
+   - map the draft's bibliography file or files to `manus/bibs/reference.bib`, merging several without dropping a citekey the manuscript uses, and rewrite the entry point's bibliography lines; a biblatex draft is an unresolved template decision, because the STORY class loads natbib;
+   - map an institutional class the draft builds with into `manus/stys/` as its build layer, keep the draft's title-page macros, load `stys/story` only if it compiles with that class (otherwise keep the draft's `\todo` or define one), and set a non-pdflatex engine with a `% !TeX program = <engine>` line in the entry point;
+   - name the file that becomes the active entry point: `manus/main.tex`, or another file the author then selects with `STORY_MAIN` in `.env`.
+4. Copying files into `manus/` and changing the entry point are a confirmation point: show the complete map and wait. Before applying it, run `git status --short` on every repository path the map reads or rewrites; if any is modified or untracked, or the repository has no commit, ask the author to commit first, and never commit yourself. Record `git rev-parse HEAD` as the pre-adoption commit.
+5. Apply only the confirmed map. Create `notes/adopt.md` for the first approved adoption, or update it in place on a rerun, spelling keys, headings, and tokens exactly as here (conventions §1): frontmatter `source`, `source_kind: internal | external`, `pre_adoption_commit`, and `adopted: <system date>`; headings `File map` (a `Source | Target | Action | Status` table, `Action` `copy | rewrite`, `Status` `applied | pending | unresolved`), `Entry point and engine` (with the class, the `degree/profile.tex` fields the entry point typesets, and whether lint's `dissertation_language` class-option warning is expected under an institutional class), `Bibliography`, `Unresolved mappings`, and `Build`.
+6. Add the draft's quantitative or comparative statements to `notes/claims.md` with `Stated in` filled, as `unsourced`, or as `drafted` with `Evidence` filled when their evidence is already registered (conventions §3); an absent ledger takes the conventions §3 columns. List candidate evidence for `story-evid-curator`; this skill registers nothing.
+7. Build, then lint (conventions §8), recording both results under `Build`. Report unresolved mappings and compilation failures without guessing fixes: mark each unresolved row in `notes/adopt.md`, list it under `Unresolved mappings`, and add a `tasks/adopt.md` checkbox line keyed by its source path. After a failed build, leave the applied copies in place. If the author asks to roll back, restore only the rewritten files, by name, from the pre-adoption commit (`git restore --source=<commit> -- <paths>`), and list the new target paths for the author to confirm removing.
 
-Create the paired `notes/adopt.zh-CN.md` and, when the ledger is initialized here, `notes/claims.zh-CN.md` in the same change. Do not create any other `notes/*.md` artifact during adoption.
+During adoption, create no `notes/*.md` artifact but `notes/adopt.md` and `notes/claims.md`, and do not redesign the chapter architecture.
 
-Do not redesign the chapter architecture during adoption. Route that work to `story-outl-planner` after the imported thesis builds.
+Once the imported thesis builds, the `Next action:` is, while candidate evidence remains unregistered, the exact command for the author to type (`story-evid-curator import source=<path>` or `story-evid-curator register path=<file>`); otherwise it is `story-syns-coach`, which frames the story before `story-outl-planner` maps the adopted chapters.

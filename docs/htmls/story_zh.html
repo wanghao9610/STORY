@@ -794,7 +794,7 @@
     作为 <strong><a class="inline-link" href="https://wanghao9610.github.io/STAR/" target="_blank" rel="noopener">STAR</a></strong> 与
     <strong><a class="inline-link" href="https://wanghao9610.github.io/STAGE/" target="_blank" rel="noopener">STAGE</a></strong> 配套的硕士/博士学位论文工具——STORY
     把研究生阶段的研究、相关的发表论文和带指纹的证据组织成<strong>一部经得起答辩、可直接归档的学位论文</strong>：
-    每个数字都能追溯到证据文件，或显式标记为缺失；复用已发表内容时保留作者贡献说明；
+    每个数字都能追溯到证据文件，或显式标记为缺失；复用已发表内容时保留署名与归属说明；
     委员会意见和学位要求都记录在案。
   </p>
   <div class="hero-ctas">
@@ -866,7 +866,7 @@
     <p class="kicker reveal">为什么选择 STORY</p>
     <h2 class="reveal">多年研究积累。<br>一部经得起答辩的论文。</h2>
     <p class="section-lead reveal">
-      当证据散落在旧仓库、数字留在聊天记录、作者贡献留在脑子里时，学位论文就会腐烂。
+      当证据散落在旧仓库、数字留在聊天记录、归属只存在于某人脑中时，学位论文就会腐烂。
       STORY 把整条保管链——证据、论断、发表记录、里程碑——搬进仓库本身。
     </p>
     <div class="bento">
@@ -878,7 +878,7 @@
       <div class="card reveal" style="--card-glow: rgba(139,147,255,0.16); --card-c: #8b93ff">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
         <h3>只读证据层</h3>
-        <p>STAR 研究成果、STAGE 论文材料或人工登记的文件，都以逐文件指纹快照存入 <code>mates/</code>。证据只进不出——绝不就地修改。</p>
+        <p>STAR 研究成果、STAGE 论文材料或人工登记的文件，都以逐文件指纹快照存入 <code>mates/</code>。证据单向流动——绝不就地修改。</p>
       </div>
       <div class="card reveal" style="--card-glow: rgba(76,195,255,0.16); --card-c: #4cc3ff">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
@@ -888,12 +888,12 @@
       <div class="card wide reveal" style="--card-glow: rgba(62,230,192,0.14); --card-c: #3ee6c0">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 11.5l2 2 4-4"/></svg></div>
         <h3>反虚构边界</h3>
-        <p><code>manus/</code> 中每项定量论断要么追溯到 <code>mates/</code> 中带指纹的条目，要么写成 <code>\todo{...}</code>——没有第三种状态。学校规则只能作为作者确认的事实写入 <code>degree/</code>；已发表论文是证据，不自动等于学位论文的最终表述。显式的 <code>\todo</code> 是一种状态；看似合理的虚构数字是缺陷。</p>
+        <p><code>manus/</code> 中每项定量论断要么追溯到 <code>mates/</code> 中带指纹的条目，要么写成 <code>\todo{...}</code>——没有第三种状态。学校规则与 <code>degree_level: master|doctoral</code> 只能作为作者确认的事实写入 <code>degree/</code>；已发表论文是证据，不自动等于学位论文的最终表述。显式的 <code>\todo</code> 是一种状态；看似合理的虚构数字是缺陷。</p>
       </div>
       <div class="card wide reveal" style="--card-glow: rgba(255,126,182,0.14); --card-c: #ff7eb6">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-        <h3>追溯之外，还有署名</h3>
-        <p><code>notes/publications.md</code> 记录哪些章节复用了已发表内容、每位合作者贡献了什么、涉及哪些许可与文本重叠。证据可追溯不能替代作者贡献说明——STORY 两者都要，合作成果绝不会被说成独立完成。</p>
+        <h3>追溯之外，还有归属</h3>
+        <p><code>notes/publications.md</code> 记录哪些章节复用了已发表内容、每位合作者贡献了什么、涉及哪些许可与文本重叠。证据可追溯不能替代署名与归属边界——STORY 两者都要，合作成果绝不会被说成独立完成。</p>
       </div>
       <div class="card wide reveal" style="--card-glow: rgba(245,166,35,0.14); --card-c: #f5a623">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></div>
@@ -903,7 +903,7 @@
       <div class="card wide reveal" style="--card-glow: rgba(139,147,255,0.14); --card-c: #8b93ff">
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="9" width="14" height="11" rx="2"/><path d="M12 9V5"/><circle cx="12" cy="3.5" r="1.2"/><path d="M2.5 14v2"/><path d="M21.5 14v2"/><path d="M9.5 13.5v2"/><path d="M14.5 13.5v2"/></svg></div>
         <h3>原生 AI 协作，与 STAR、STAGE 联动</h3>
-        <p>十六个 skill 同时供给 <strong>Codex</strong>、<strong>Claude Code</strong>、<strong>Cursor</strong>、<strong>DeepSeek Harness</strong>、<strong>Kimi Code</strong>、<strong>Pi</strong> 和 <strong>Qwen Code</strong>——英文与中文双语，出自同一份共享 skill 源。一条命令即可从配套的 STAR 或 STAGE 仓库导入证据，也可以完全独立使用、人工登记材料。</p>
+        <p>十六个 skill 同时供给 <strong>Codex</strong>、<strong>Claude Code</strong>、<strong>Cursor</strong>、<strong>DeepSeek Harness</strong>、<strong>Kimi Code</strong>、<strong>Pi</strong> 和 <strong>Qwen Code</strong>，出自同一份共享 skill 源，运行时可用中文或英文回复并撰写文档。一条命令即可从配套的 STAR 或 STAGE 仓库导入证据，也可以完全独立使用、人工登记材料。</p>
       </div>
     </div>
   </div>
@@ -955,7 +955,7 @@
         <div class="legend-row"><code>mates/</code><span><strong>材料</strong> — 带指纹的证据快照，只读</span></div>
         <div class="legend-row"><code>degree/</code><span><strong>学位事实</strong> — 经作者确认的学校档案</span></div>
         <div class="legend-row"><code>notes/</code><span><strong>写作元数据</strong> — 总叙事、提纲与论断记录表</span></div>
-        <div class="legend-row"><code>milestones/</code><span><strong>里程碑</strong> — 每次考核事件一个目录</span></div>
+        <div class="legend-row"><code>milestones/</code><span><strong>里程碑</strong> — 每次评审事件一个目录</span></div>
         <div class="legend-row"><code>tasks/</code><span><strong>待办</strong> — 持久化未决事项与反馈承诺</span></div>
         <div class="legend-row"><code>wkdrs/</code><span><strong>工作目录</strong> — 构建产物与临时报告，绝不提交</span></div>
         <div class="legend-row"><code>scpts/</code><span><strong>脚本</strong> — 证据导入与确定性检查</span></div>
@@ -967,7 +967,7 @@
 <!-- ==================== WORKFLOW ==================== -->
 <section id="workflow">
   <div class="wrap">
-    <p class="kicker reveal">论文工作流</p>
+    <p class="kicker reveal">学位层级感知的论文工作流</p>
     <h2 class="reveal">十六个 skill。<br>全程留痕。</h2>
     <p class="section-lead reveal">
       从导入证据到冻结归档——每个 skill 都把自己的状态写进项目文件，
@@ -1004,8 +1004,8 @@
           <h3>写作<small>依据证据写作，绝不凭记忆。</small></h3>
         </div>
         <div class="skills">
-          <div class="skill"><code>$story-chap-drafter</code><p>每次起草一章，依据确认的章节简报、论文主线与映射好的证据——缺失的数字写成 <em>\todo{}</em>。</p></div>
-          <div class="skill"><code>$story-tabs-builder</code><p>表格只取自 <em>mates/</em> 证据——每个数据行一条 <em>% src:</em> 指纹锚点。</p></div>
+          <div class="skill"><code>$story-chap-drafter</code><p>每次运行针对一章或一份前置/后置部分文件，依据确认的章节简报、论文主线与映射好的证据——缺失的数字写成 <em>\todo{}</em>。</p></div>
+          <div class="skill"><code>$story-tabs-builder</code><p>表格只取自 <em>mates/</em> 证据——每个含数字或比较的行一条 <em>% src:</em> 指纹锚点。</p></div>
           <div class="skill"><code>$story-figs-designer</code><p>每张图端到端完成：用途、可编辑源文件、渲染 PDF、映射到证据的图注。</p></div>
         </div>
       </div>
@@ -1016,7 +1016,7 @@
           <h3>打磨与审计<small>统一文字。追溯每个数字。</small></h3>
         </div>
         <div class="skills">
-          <div class="skill"><code>$story-copy-editor</code><p>清晰度、文风、术语与跨章衔接——事实、数字与论断范围不可动。</p></div>
+          <div class="skill"><code>$story-copy-editor</code><p>清晰度、作者声音、术语与跨章衔接——事实、数字与论断范围不可动。</p></div>
           <div class="skill"><code>$story-clms-auditor</code><p>每个数字与比较都追溯到指纹：匹配 / 不符 / 无来源。</p></div>
           <div class="skill"><code>$story-cite-auditor</code><p>每个 <em>\cite</em> 都能解析；每条文献断言都能对照阅读笔记核验。</p></div>
         </div>
@@ -1025,12 +1025,12 @@
       <div class="phase reveal" style="--phase-c: var(--rose); --phase-glow: rgba(255,126,182,0.45)">
         <div class="phase-head">
           <div class="phase-star">✦</div>
-          <h3>考核<small>审查、回应、答辩、归档。</small></h3>
+          <h3>评审<small>审查、回应、答辩、归档。</small></h3>
         </div>
         <div class="skills">
-          <div class="skill"><code>$story-exam-reviewer</code><p>对构建好的论文做与学位层级相称的模拟审查——贡献范围、连贯性、证据与答辩准备度。</p></div>
+          <div class="skill"><code>$story-exam-reviewer</code><p>对构建好的论文做与学位层级相称的模拟评审——贡献范围、连贯性、证据与答辩准备度。</p></div>
           <div class="skill"><code>$story-revs-resolver</code><p>逐点跟踪并处理委员会反馈——收到的意见绝不就地修改。</p></div>
-          <div class="skill"><code>$story-defn-builder</code><p>准备答辩演示文稿，并对照论文逐一检查。</p></div>
+          <div class="skill"><code>$story-defn-builder</code><p>在适用时准备答辩演示文稿，并对照其呈现的论文逐一检查。</p></div>
           <div class="skill"><code>$story-depo-packer</code><p>对照 <em>degree/</em> 要求预检归档包，并冻结最终记录。</p></div>
         </div>
       </div>
@@ -1048,12 +1048,12 @@
 
     <p class="flow-note reveal">
       每个 skill 都同时供给 <code>Codex</code>、<code>Claude Code</code>、<code>Cursor</code>、
-      <code>DeepSeek Harness</code>、<code>Kimi Code</code>、<code>Pi</code> 和 <code>Qwen Code</code>——
-      英文与中文双语——出自 <code>.agents/skills/</code> 下的同一份共享源。
+      <code>DeepSeek Harness</code>、<code>Kimi Code</code>、<code>Pi</code> 和 <code>Qwen Code</code>，
+      出自 <code>.agents/skills/</code> 下的同一份共享源，可用中文或英文回复并撰写文档。
     </p>
 
     <figure class="workflow-map reveal">
-      <img src="./srcs/story-writing-workflow.svg" alt="STORY 硕士与博士学位论文工作流：带指纹的证据经过综合与章节写作，流向适用的考核、答辩与归档阶段" loading="lazy">
+      <img src="./srcs/story-writing-workflow.svg" alt="STORY 学位论文工作流：十六个 skill 分布在五个阶段带中 —— 搭建、规划、写作、打磨与审计、审查与归档 —— 每个 skill 的产出，以及起草回路和修改回路如何闭合" loading="lazy">
       <figcaption>完整主线——证据进，学位出，以及每个阶段把状态写到哪里。</figcaption>
     </figure>
   </div>

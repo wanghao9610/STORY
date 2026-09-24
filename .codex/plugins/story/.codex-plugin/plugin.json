@@ -1,6 +1,6 @@
 {
   "name": "story",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Route master's and doctoral STORY requests to the project's evidence-bound thesis workflow skills.",
   "author": {
     "name": "STORY"
@@ -20,7 +20,7 @@
   "interface": {
     "displayName": "STORY",
     "shortDescription": "Route a request to one STORY thesis workflow.",
-    "longDescription": "Adds the $story router for selecting and running one degree-aware, evidence-bound STORY thesis workflow skill in the current project.",
+    "longDescription": "Adds the $story router for selecting and running one degree-aware, evidence-bound STORY thesis workflow skill in the current project, and $story-auto for pursuing a stated thesis goal across the unmarked skills, stopping at any explicit-only one.",
     "developerName": "STORY",
     "category": "Productivity",
     "capabilities": [

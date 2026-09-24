@@ -1,16 +1,19 @@
 ---
 name: story-defn-builder
 disable-model-invocation: true
-description: Plan, build, and check a master's or doctoral defense narrative and slide deck from verified thesis claims, confirmed timing/rules, and editable assets; use for an applicable pre-defense or final defense.
-argument-hint: "[MILESTONE] [DESCRIPTION] [involve=high]"
+description: Use for an applicable pre-defense or final defense. Plans, builds, and checks the thesis defense narrative, an editable slide deck, and a question bank from `verified` thesis claims, registered evidence, and confirmed timing and rules. For a mock examination report, use story-exam-reviewer.
+argument-hint: "[MILESTONE] [DESCRIPTION] [involve=LEVEL]"
 ---
 
 # Build the degree defense
 
-Read `docs/mds/story-workflow/writing-workflow-conventions.md` first. Resolve the degree level and a `pre-defense` or `defense` milestone confirmed to apply to it. Timing, required sections, template, aspect ratio, and submission rules must come from its confirmed `milestone.yml` or the author.
+**Shared conventions.** Read `docs/mds/story-workflow/writing-workflow-conventions.md` in full before acting. Read `.env` once for the `STORY_LANG`, `INVOLVE`, and `STORY_MAIN` values this run needs, and reuse them. Resolve the language of replies and new Markdown under conventions §7: an explicit author request first, then a valid `STORY_LANG`, then the dialogue language, or the invocation language when there is no user turn. Manuscript prose follows `degree/profile.tex`, and an existing file keeps its language. A clear instruction may select the target and scope and authorize the corresponding action within this skill's documented paths, and work already authorized in this run is not asked for again; it never replaces a confirmation point or an `AGENTS.md` §1 ask-first choice (conventions §7).
 
-Create a defense plan under `milestones/<slug>/materials/` that states the audience, one central message, timing budget, degree-appropriate contribution sequence, evidence for each major slide, transitions, limitations, and closing claims. Build the deck with editable sources, and reuse thesis figures only when they remain legible in presentation conditions.
+Resolve the degree level and the milestone: the one the invocation names, else the active one, when it is a `pre-defense` or `defense` milestone the confirmed program requires; otherwise ask. Create a missing `milestone.yml` or change its status only per conventions §6 (Milestone lifecycle). Timing, required sections, aspect ratio, deck format, and submission rules come only from `milestone.yml` or the author; an official template only from the author's copy in `template/`; the rubric only from the milestone's `requirements_source`; and the audience from the milestone and the `Confirmed: yes` rows of `degree/committee.md`. Label any other audience or rubric as assumed.
 
-Every numeric or comparative slide claim must trace to a verified claim and registered evidence. Include an appendix/question bank covering methods, assumptions, ablations where applicable, limitations, attribution, and future work. Check timing, type size, contrast, source visibility, and consistency with the thesis and the confirmed examination rubric.
+1. Write a defense plan under `milestones/<slug>/materials/`: audience, one central message, timing budget, degree-appropriate contribution sequence, evidence for each major slide, transitions, limitations, and closing claims.
+2. Keep the editable deck source at `materials/deck.<ext>`. Build a LaTeX deck with `bash execs/run.sh --main milestones/<slug>/materials/deck.tex` (into a self-ignoring `.build/` beside it) and report its slide count against the timing budget; for another format, report the build as `not applicable` (conventions §8) and name the exported file checked.
+3. Trace every numeric or comparative slide claim to a `verified` claim and its registered evidence (conventions §2); report any other as a defense risk, not a slide. Reuse a thesis figure or table only if it stays legible in presentation conditions; a slide may simplify or redraw it but keeps every value, scale, baseline, and comparison of its evidence.
+4. Cover methods, assumptions, ablations where applicable, limitations, attribution, and future work in an appendix or question bank, then check timing, type size, contrast, source visibility, and consistency with the thesis and the rubric.
 
-Do not invent committee requirements or redesign evidence. Report unresolved defense risks explicitly.
+Plan, slides, and speaker notes are committee-facing text (conventions §7). Write only under `milestones/<slug>/`, and report unresolved defense risks explicitly.

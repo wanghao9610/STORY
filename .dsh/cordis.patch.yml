@@ -17,8 +17,8 @@
 #
 # WHAT IT WIRES. Three hooks, one copy per harness tree, the same three
 # everywhere: model-id provenance and the project-memory index on SessionStart,
-# and the commit guard on PreToolUse, declining the git commands the workflow
-# conventions §1 forbid.
+# and the commit guard on PreToolUse, declining the git commands the STORY git
+# safety policy forbids (see story_commit_guard.sh's header).
 #
 # WHAT IT DELIBERATELY DOES NOT WIRE: the involve gate. That hook exists to
 # answer the permission prompt before a file edit while .env reads INVOLVE=low,
