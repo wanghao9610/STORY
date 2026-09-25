@@ -25,7 +25,7 @@ Green lint is never the check, even when the goal mentions lint. A visible `\tod
 
 A goal that cannot be turned into such a check is asked about, not pursued. A goal that only an action outside the grant could meet (What a goal run never does, below), such as confirming the thesis argument, importing evidence, or a deposit being ready, is not pursued either: name the command or author action that owns it as the `Next action:`, and stop.
 
-Open with one line stating the check and the resolved level.
+Open with one line stating the check and the resolved level, and repeat it as the first line of the final reply, since text written between tool calls may never reach the author.
 
 ## The loop
 
@@ -65,6 +65,7 @@ Report and stop at the first of:
 
 The final reply lists:
 
+- first, the goal's check and the resolved level;
 - the runs, and the files each one wrote;
 - the build path and page count, and the lint verdict, from the last run that built; red lint is a remaining gate, not a failure (conventions §8);
 - the ledger rows that changed;

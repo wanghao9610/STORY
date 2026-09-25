@@ -16,7 +16,7 @@ Strictly read-only. From the repository root, run `scripts/scan.sh` in this skil
 - from `Status counts`: outline, claim, contribution, publication (open means `candidate` or `in-scope`), and reference statuses;
 - `integrity:` (`ok`, `tampered`, `missing`, `unregistered`; conventions §3); the scan does not check upstream `stale`, so route it to `story-evid-curator check`;
 - `bibliography entries:` against index rows (an entry without a row is `unverified`) and reading-note coverage;
-- each milestone's kind and status and the `active milestone:` line, reporting a `supervision` record only through its open promises;
+- each milestone's kind and status, except `supervision`, and the `active milestone:` line; a `supervision` record is reported only through its open promises, never by its status;
 - only the milestone gates the confirmed degree applies, with the state of each deposit gate the scan can see (conventions §6, Deposit gates), never declaring readiness, which only `story-depo-packer` does;
 - `Open tasks` by file (`tasks/prose.md` is advisory), and each `Last full run:` date, read from `tasks/audits.md`, which the scan does not print;
 - the entry point, page count, `build: current|stale`, `todo markers:`, and `lint:` (the `Result:` of `lint.sh --no-build` when the build is current, otherwise `not run`);
