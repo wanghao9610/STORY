@@ -39,7 +39,9 @@ done
 env_value() {
     local key="$1" val
     [[ -f "${ENV_FILE}" ]] || return 0
-    val="$(sed -n "s/^[[:space:]]*${key}=//p" "${ENV_FILE}" | tail -1)"
+    # The patterns are ASCII: under a UTF-8 locale a byte that is not UTF-8 would
+    # stop sed (illegal byte sequence) and, under pipefail, the build with it.
+    val="$(LC_ALL=C sed -n "s/^[[:space:]]*${key}=//p" "${ENV_FILE}" | tail -1)"
     val="${val%$'\r'}"; val="${val%\"}"; val="${val#\"}"; val="${val%\'}"; val="${val#\'}"
     printf '%s' "${val}"
 }
@@ -53,7 +55,7 @@ fi
 
 LATEX_ENGINE="${LATEX_ENGINE:-$(env_value LATEX_ENGINE)}"
 if [[ -z "${LATEX_ENGINE}" ]]; then
-    LATEX_ENGINE="$(sed -nE \
+    LATEX_ENGINE="$(LC_ALL=C sed -nE \
         '1,20{s/^[[:space:]]*%[[:space:]]*![Tt][Ee][Xx][[:space:]]+program[[:space:]]*=[[:space:]]*(pdflatex|xelatex|lualatex)[[:space:]]*$/\1/p;}' \
         "${MAIN_TEX}" | head -1)"
 fi

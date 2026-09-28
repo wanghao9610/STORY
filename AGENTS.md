@@ -40,9 +40,9 @@ This repository uses STORY — **Systematic Toolchain for Organizing Research ov
 ## 5. File ownership
 
 - `manus/fronts/`: abstract, acknowledgements, declarations, and other front matter.
-- `manus/chaps/`: numbered chapters `<n>_<slug>.tex`.
-- `manus/backs/`: appendices and other back matter.
-- `manus/figs/`, `manus/tabs/`, `manus/bibs/`, `manus/stys/`: figures, tables, bibliography, and template layers.
+- `manus/chaps/`: numbered chapters `<nn>_<slug>.tex`, a two-digit key in outline order.
+- `manus/backs/`: appendices and other back matter, `<letter>_<slug>.tex`.
+- `manus/figs/`, `manus/tabs/`, `manus/bibs/`, `manus/stys/`: figures, tables, bibliography, and template layers. A figure, its source under `figs/srcs/`, and a table are `<owner>_<slug>.<ext>`, keyed by the one file that includes them; `manus/fronts/` stays unprefixed (conventions §5).
 - `degree/`: profile, committee record, and institutional checklist.
 - `notes/`: thesis story, outline, claims, contribution/publication maps, notation, style, adoption record, and reading notes.
 - A fresh clone keeps only `notes/.gitkeep` and `notes/refs/.gitkeep`; the owning workflow skill creates each `notes/*.md` artifact on first use. Treat absence as an uninitialized stage and route consumers to the skill that creates it.
@@ -72,7 +72,7 @@ This repository uses STORY — **Systematic Toolchain for Organizing Research ov
 - Replies and new Markdown follow an explicit author request, then a valid `.env` `STORY_LANG=en|zh`, then the dialogue language — that of the author's latest message in their own prose, never of a bare command, pasted text, tool output, or the English manifests a run loads (conventions §7, Language and profile). Committee-facing text follows the language the milestone or `degree/requirements.md` records, else the manuscript language. An existing file keeps its language, including text a run adds to it; nothing is silently translated.
 - Write new Markdown once, with no translated twin, keeping its structural keys in English exactly as the schema spells them (conventions §1). A Chinese twin a thesis already has is the author's: no skill deletes it, and a run names its deletion as an author action instead of offering to do it (conventions §1).
 - Instructions are English only: this file, every `SKILL.md`, the `story-auto` procedure, and the conventions. A run in Chinese follows them and replies in Chinese.
-- `degree/*.zh-CN.md` are reading guides; degree facts are recorded only in the English files. `manus/main-zh.tex` and the Chinese front and back matter it inputs (`fronts/*-zh.tex`, `backs/*_zh.tex`) are the Chinese thesis starter, not translations. In the STORY template repository itself, en/zh pairs and landing pages are maintained per `.github/CONTRIBUTING.md`.
+- `degree/*.zh-CN.md` are reading guides; degree facts are recorded only in the English files. `manus/main-zh.tex` and the Chinese front and back matter it inputs (`fronts/*-zh.tex`, `backs/*-zh.tex`) are the Chinese thesis starter, not translations. In the STORY template repository itself, en/zh pairs and landing pages are maintained per `.github/CONTRIBUTING.md`.
 - Store session knowledge in `.story/memory/` only when no repository file already owns it. The versioned `.story/memory/` travels with the thesis; a `machine:` scoped fact, or any memory the author keeps off the repository, goes to the git-ignored `.story/memory/local/`.
 - One file per memory, with a one-line `summary` in its frontmatter from which the session hooks build the index; types, format, and retirement: conventions §10.
 - Offer, never assume: make at most two memory offers per session, counting every skill a `story-auto` goal run starts, and write only after the author agrees. `INVOLVE=low` skips the question but not the cap: it records at most two and names each.

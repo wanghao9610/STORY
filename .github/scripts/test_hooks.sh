@@ -153,7 +153,7 @@ expect_edit() { # $1 = allow|prompt, $2 = path relative to the project
         prompt) [[ -z "${out}" ]] || fail "Codex edit gate at low answers the prompt for $2" ;;
     esac
 }
-expect_edit allow manus/chaps/1_intro.tex
+expect_edit allow manus/chaps/01_intro.tex
 expect_edit allow miles/defense/response/points.md
 expect_edit prompt mates/MANIFEST.md
 expect_edit prompt degree/profile.tex

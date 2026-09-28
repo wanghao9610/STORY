@@ -14,27 +14,140 @@ log() { printf '[STORY lint] %s\n' "$*"; }
 hard() { printf '[STORY lint] FAIL: %s\n' "$*" >&2; HARD=$((HARD + 1)); }
 warn() { printf '[STORY lint] WARN: %s\n' "$*"; WARNS=$((WARNS + 1)); }
 
+# Awk functions every check that reads TeX puts in front of its program.
+# strip_comment drops a line's comment: a % starts one after an even run of
+# backslashes, none included, so \\% is a line break and then a comment, and \%
+# a percent sign. A \verb|...| span on the line becomes one space, since a % or
+# an include inside it is typeset as it stands; it sets comment_cut when it
+# dropped a comment. tex_line is what TeX reads of one input line: its leading
+# spaces and tabs skipped, and its end joining it to the next line with nothing
+# when a comment was stripped, and otherwise, trailing spaces dropped, with one
+# space. physical_lines splits a record at a lone CR as well, since TeX ends a
+# line at CR, LF, or CRLF, and awk splits only at LF. Other verbatim text (a
+# verbatim environment, a % inside \url) is still read as TeX.
+TEX_AWK='
+function strip_comment(text,    kept, piece, delimiter, rest, end) {
+    comment_cut = 0
+    kept = ""
+    while (1) {
+        if (substr(text, 1, 1) == "%") { comment_cut = 1; return kept }
+        if (!match(text, /(^|[^\\])(\\\\)*(%|\\verb[*]?[^*[:alpha:][:space:]])/)) return kept text
+        piece = substr(text, RSTART, RLENGTH)
+        if (piece !~ /\\verb[*]?[^*[:alpha:][:space:]]$/) {
+            comment_cut = 1
+            return kept substr(text, 1, RSTART + RLENGTH - 2)
+        }
+        delimiter = substr(piece, length(piece), 1)
+        kept = kept substr(text, 1, RSTART + index(piece, "\\verb") - 2) " "
+        rest = substr(text, RSTART + RLENGTH)
+        end = index(rest, delimiter)
+        if (!end) return kept
+        text = substr(rest, end + 1)
+    }
+}
+function tex_line(text,    kept) {
+    sub(/\r$/, "", text)
+    sub(/^[ \t]+/, "", text)
+    kept = strip_comment(text)
+    if (comment_cut) return kept
+    sub(/[ \t]+$/, "", kept)
+    return kept " "
+}
+function physical_lines(text, parts,    count) {
+    sub(/\r$/, "", text)
+    count = split(text, parts, "\r")
+    if (count == 0) { parts[1] = ""; count = 1 }
+    return count
+}
+'
+
+# Under a UTF-8 locale a byte that is not UTF-8 stops macOS awk (towc:
+# multibyte conversion failure) and sed (illegal byte sequence), and makes grep
+# skip its line, so lint would end without a verdict or miss what it counts. A
+# check of TeX syntax or of the build log matches ASCII only and reads with
+# LC_ALL=C. A check of a value the author typed (the profile, a milestone
+# record) keeps the caller's locale for a valid file, whose [[:space:]] also
+# takes a full-width space, and reads any other file byte by byte (meta_lc),
+# with one warning. The prose review matches Chinese on purpose, so it skips,
+# by name, a file that is not UTF-8. utf8_valid asks iconv, when iconv rejects
+# a byte that is not UTF-8, else perl, and then awk and sed in the caller's
+# locale: macOS iconv takes a sequence past U+10FFFF that macOS awk and sed
+# reject, and with neither iconv nor perl the two probes alone decide.
+UTF8_TOOL=none
+if command -v iconv >/dev/null 2>&1 \
+    && printf 'caf\303\251\n' | iconv -f UTF-8 -t UTF-8 >/dev/null 2>&1 \
+    && ! printf 'caf\351\n' | iconv -f UTF-8 -t UTF-8 >/dev/null 2>&1; then
+    UTF8_TOOL=iconv
+elif command -v perl >/dev/null 2>&1; then
+    UTF8_TOOL=perl
+fi
+utf8_valid() {
+    case "${UTF8_TOOL}" in
+        iconv)
+            iconv -f UTF-8 -t UTF-8 2>/dev/null < "$1" >/dev/null || return 1 ;;
+        perl)
+            perl -MEncode -e 'local $/; my $s = <STDIN>; $s = "" unless defined $s;
+                    eval { Encode::decode("UTF-8", $s, Encode::FB_CROAK); 1 } or exit 1' 2>/dev/null < "$1" || return 1 ;;
+    esac
+    awk '{ sub(/^[[:space:]]+/, "") }' 2>/dev/null < "$1" >/dev/null \
+        && sed -nE 's/^[[:space:]]*x(.*)$/\1/p' 2>/dev/null < "$1" >/dev/null
+}
+# has_nul FILE — whether FILE holds a NUL byte, as UTF-16 and UTF-32 text does:
+# its ASCII letters are NUL-separated, so no TeX check can match them.
+has_nul() {
+    local count
+    count="$(LC_ALL=C tr -cd '\000' 2>/dev/null < "$1" | LC_ALL=C wc -c | LC_ALL=C tr -d '[:space:]' || true)"
+    (( ${count:-0} > 0 ))
+}
+# meta_lc FILE — sets META_LC to the LC_ALL to read FILE with: the caller's own
+# for valid UTF-8 (empty when unset, which every program reads as unset), C for
+# any other file, which draws one warning the first time. It runs in lint's own
+# shell, never inside $(...), so the warning counts.
+META_WARNED=$'\n'
+META_LC=''
+meta_lc() {
+    if utf8_valid "$1"; then
+        META_LC="${LC_ALL-}"
+        return 0
+    fi
+    META_LC=C
+    case "${META_WARNED}" in
+        *$'\n'"$1"$'\n'*) return 0 ;;
+    esac
+    META_WARNED="${META_WARNED}$1"$'\n'
+    warn "$1 is not valid UTF-8, so lint read it byte by byte; save it as UTF-8."
+}
+
 check_prose_patterns() {
-    local file prose_output location patterns snippet
-    local prose_count=0
+    local file file_output prose_output='' location patterns snippet program
+    local prose_count=0 prose_rc stopped=0 skipped=0
     local -a prose_files=()
 
+    # A file the \todo count could not read is named there already. The
+    # Chinese patterns need the UTF-8 locale, so a file that is not UTF-8 is
+    # left out of the scan, by name, rather than read as bytes.
     while IFS= read -r file; do
-        prose_files+=("${file}")
+        [[ -n "${file}" ]] || continue
+        case "${UNREAD_TEX}" in
+            *$'\n'"${file}"$'\n'*) skipped=$((skipped + 1)); continue ;;
+        esac
+        if [[ ! -r "${file}" ]]; then
+            warn "${file} cannot be read, so its prose went unreviewed."
+            skipped=$((skipped + 1))
+        elif utf8_valid "${file}"; then
+            prose_files+=("${file}")
+        else
+            warn "${file} is not valid UTF-8, so its prose went unreviewed; save it as UTF-8."
+            skipped=$((skipped + 1))
+        fi
     done < <(find manus/fronts manus/chaps manus/backs -type f -name '*.tex' -print 2>/dev/null | sort)
 
     if (( ${#prose_files[@]} == 0 )); then
-        log 'Prose review: no front-matter, chapter, or back-matter TeX files found.'
+        (( skipped > 0 )) || log 'Prose review: no front-matter, chapter, or back-matter TeX files found.'
         return
     fi
 
-    prose_output="$(awk '
-        function strip_comment(text, start) {
-            start = match(text, /(^|[^\\])%/)
-            if (!start) return text
-            if (substr(text, start, 1) == "%") return substr(text, 1, start - 1)
-            return substr(text, 1, start)
-        }
+    program="${TEX_AWK}"'
         function add_pattern(name) {
             if (patterns != "") patterns = patterns ","
             patterns = patterns name
@@ -128,10 +241,21 @@ check_prose_patterns() {
             paragraph = paragraph " " clean
         }
         END { flush_paragraph() }
-    ' "${prose_files[@]}")"
+    '
+    # One awk per file, so a byte no validator caught, or a locale that is not
+    # UTF-8, stops the review of that file alone, and the warning names it.
+    for file in "${prose_files[@]}"; do
+        prose_rc=0
+        file_output="$(awk "${program}" "${file}")" || prose_rc=$?
+        if (( prose_rc != 0 )); then
+            warn "the prose review of ${file} stopped early (awk exit ${prose_rc}), so part of it went unreviewed."
+            stopped=$((stopped + 1))
+        fi
+        [[ -z "${file_output}" ]] || prose_output="${prose_output}${file_output}"$'\n'
+    done
 
     if [[ -z "${prose_output}" ]]; then
-        log 'Prose review: no high-confidence chatbot residue or clustered formulaic prose found.'
+        (( stopped > 0 )) || log 'Prose review: no high-confidence chatbot residue or clustered formulaic prose found.'
         return
     fi
 
@@ -144,6 +268,317 @@ check_prose_patterns() {
         prose_count=$((prose_count + 1))
     done <<< "${prose_output}"
     log "Prose review: ${prose_count} passage(s) need human review; findings are advisory, not proof of AI authorship."
+}
+
+# A directory lists identically in git/ls (byte order) and in VS Code, Overleaf and Finder
+# (numeric collation) iff  LC_ALL=C sort  ==  natural_key_sort  over its names, PROVIDED the
+# names follow the grammar and no two differ only in a number's leading zeros (validated
+# against the real collators; an underscore inside a slug is the one grammar case this model
+# misses, and the grammar check catches it; natural_key_ties catches the leading zeros,
+# 03_seed1.pdf beside 03_seed01.pdf, which the two sorts agree on and Finder orders the
+# other way). Every awk, grep, and sed in these checks runs with LC_ALL=C: under a UTF-8
+# locale, macOS awk aborts on a byte that is not UTF-8 (towc: multibyte conversion failure),
+# and the includes after it would go unchecked without a word.
+natural_key_sort() {
+    LC_ALL=C awk '{
+        s = $0; k = ""
+        while (match(s, /[0-9]+/)) {
+            d = substr(s, RSTART, RLENGTH)
+            while (length(d) < 20) d = "0" d
+            k = k substr(s, 1, RSTART - 1) d
+            s = substr(s, RSTART + RLENGTH)
+        }
+        printf "%s%s\t%s\n", k, s, $0
+    }' | LC_ALL=C sort -t "$(printf '\t')" -k1,1 -k2,2 | LC_ALL=C cut -f2
+}
+
+# Names on stdin, one per line; prints the first two whose natural_key_sort keys
+# are equal, tab-separated: names that differ only in a number's leading zeros.
+natural_key_ties() {
+    LC_ALL=C awk '{
+        s = $0; k = ""
+        while (match(s, /[0-9]+/)) {
+            d = substr(s, RSTART, RLENGTH)
+            while (length(d) < 20) d = "0" d
+            k = k substr(s, 1, RSTART - 1) d
+            s = substr(s, RSTART + RLENGTH)
+        }
+        k = k s
+        if (k in seen) { print seen[k] "\t" $0; exit }
+        seen[k] = $0
+    }'
+}
+
+# Names in one managed directory, byte-sorted. A symlink lists as a file does,
+# since git tracks it and a file browser shows it. Hidden files (.gitkeep,
+# .DS_Store) are skipped, and so, in a git work tree, is every name git ignores
+# (a latexindent backup, an in-tree .aux), since git never lists it. $2 is
+# "files", or "all" where a directory is also an entry. The caller has checked
+# that the directory can be read.
+manuscript_names() {
+    local listed ignored
+    [[ -d "$1" ]] || return 0
+    if [[ "$2" == files ]]; then
+        listed="$(find "$1" -mindepth 1 -maxdepth 1 \( -type f -o -type l \) ! -name '.*' 2>/dev/null | LC_ALL=C sort || true)"
+    else
+        listed="$(find "$1" -mindepth 1 -maxdepth 1 \( -type f -o -type d -o -type l \) ! -name '.*' 2>/dev/null | LC_ALL=C sort || true)"
+    fi
+    [[ -n "${listed}" ]] || return 0
+    if [[ "${IN_GIT_TREE:-false}" == true ]]; then
+        ignored="$(printf '%s\n' "${listed}" | LC_ALL=C tr '\n' '\0' | git check-ignore -z --stdin 2>/dev/null | LC_ALL=C tr '\0' '\n' || true)"
+        if [[ -n "${ignored}" ]]; then
+            listed="$(printf '%s\n' "${listed}" | LC_ALL=C grep -vxF -f <(printf '%s\n' "${ignored}") || true)"
+        fi
+    fi
+    [[ -n "${listed}" ]] || return 0
+    printf '%s\n' "${listed}" | LC_ALL=C sed 's#.*/##' | LC_ALL=C sort
+}
+
+# readable_sources FIND-ARGS... — the paths find prints for FIND-ARGS that name
+# a readable regular file, a symlink to one included, one per line, byte-sorted.
+# A broken link or a file lint may not read would stop the one awk that reads
+# them all, and every file after it would go unchecked without a word.
+readable_sources() {
+    local path
+    while IFS= read -r path; do
+        if [[ -n "${path}" && -f "${path}" && -r "${path}" ]]; then
+            printf '%s\n' "${path}"
+        fi
+    done <<< "$(find "$@" 2>/dev/null | LC_ALL=C sort || true)"
+}
+
+# Conventions §5 (Manuscript file names): every file under the directories below
+# is <key>_<slug>.<ext>, and a figure, its source, and a table take the key of
+# the one chapter or appendix file that includes them, or the zero key for front
+# matter. Names are directory facts, so this needs no build and reads manus/
+# whatever the entry point; lint runs it before the build, so neither a failed
+# or missing build nor a later check that stops lint hides what it found.
+check_file_names() {
+    local slug='[a-z][a-z0-9]*(-[a-z0-9]+)*'
+    local warns_before="${WARNS}" dir pattern expected name names natural diverge pair mixed
+    local chapter_keys=' ' appendix_keys=' ' zero_key='00' one_digit_keys='^ ([0-9] )+$'
+    local key includer includer_key kind target base asset candidate matches
+    local seen_includes=$'\n'
+    local width first_name first_width graphicspath_figs=false IN_GIT_TREE=false
+    local -a dirs=(manus/chaps manus/backs manus/figs manus/figs/srcs manus/tabs)
+    local -a modes=(files files files all files)
+    local -a readable=(true true true true true)
+    local -a patterns=(
+        "^[0-9]{1,2}_${slug}\\.tex\$"
+        "^[a-z]_${slug}\\.tex\$"
+        "^([0-9]{1,2}|[a-z])_${slug}(\\.[a-z0-9]+)+\$"
+        "^([0-9]{1,2}|[a-z])_${slug}(\\.[a-z0-9]+)*\$"
+        "^([0-9]{1,2}|[a-z])_${slug}\\.tex\$"
+    )
+    local -a expects=('<nn>_<slug>.tex' '<letter>_<slug>.tex' '<owner>_<slug>.<ext>' '<owner>_<slug> or <owner>_<slug>.<ext>' '<owner>_<slug>.tex')
+    local -a listings=() includers=() sources=()
+    local i
+
+    if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        IN_GIT_TREE=true
+    fi
+    # A directory lint cannot list draws one warning, and the keys it would
+    # hold are unknown rather than missing: no asset is called ownerless, and
+    # no front-matter include is judged, for want of a chapter directory.
+    for i in 0 1 2 3 4; do
+        dir="${dirs[i]}"
+        if [[ -d "${dir}" && ! ( -r "${dir}" && -x "${dir}" ) ]]; then
+            warn "${dir} cannot be read, so its file names went unchecked (conventions §5)."
+            readable[i]=false
+            listings[i]=''
+            continue
+        fi
+        listings[i]="$(manuscript_names "${dir}" "${modes[i]}" || true)"
+    done
+    if [[ -d manus/fronts && ! ( -r manus/fronts && -x manus/fronts ) ]]; then
+        warn "manus/fronts cannot be read, so the keys of the assets it includes went unchecked (conventions §5)."
+    fi
+
+    # 1. Grammar.
+    for i in 0 1 2 3 4; do
+        dir="${dirs[i]}"; pattern="${patterns[i]}"; expected="${expects[i]}"
+        while IFS= read -r name; do
+            [[ -n "${name}" ]] || continue
+            if [[ "${name}" =~ ${pattern} ]]; then
+                continue
+            fi
+            warn "file name ${dir}/${name} is not ${expected} (conventions §5): one '_' after the key, a slug of lowercase letters and digits that starts with a letter and joins its words with '-', and lowercase extensions."
+        done <<< "${listings[i]}"
+    done
+
+    # 2. Order: git and ls sort bytes, VS Code, Overleaf, and Finder sort numbers.
+    # Where the two orders agree, keys of two widths still break the one-width
+    # rule (1_intro.tex beside 01_intro.tex), and two names that differ only in
+    # a leading zero inside a slug (03_seed1.pdf, 03_seed01.pdf) list
+    # differently in Finder.
+    for i in 0 1 2 3 4; do
+        dir="${dirs[i]}"; names="${listings[i]}"
+        [[ -n "${names}" ]] || continue
+        natural="$(printf '%s\n' "${names}" | natural_key_sort)"
+        if [[ "${names}" != "${natural}" ]]; then
+            diverge="$(LC_ALL=C awk 'NR == FNR { a[FNR] = $0; next } a[FNR] != $0 { print a[FNR] "\t" $0; exit }' \
+                <(printf '%s\n' "${names}") <(printf '%s\n' "${natural}"))"
+            warn "file names in ${dir}/ sort differently: git and ls list ${diverge%%$'\t'*} before ${diverge#*$'\t'}, but VS Code, Overleaf, and Finder list ${diverge#*$'\t'} first; give every key in the directory one width and zero-pad digit runs inside slugs (conventions §5)."
+            continue
+        fi
+        first_name=''; first_width=''; mixed=false
+        while IFS= read -r name; do
+            [[ "${name}" =~ ^([0-9]+)_ ]] || continue
+            width="${#BASH_REMATCH[1]}"
+            if [[ -z "${first_width}" ]]; then
+                first_name="${name}"; first_width="${width}"
+            elif [[ "${width}" != "${first_width}" ]]; then
+                warn "file names in ${dir}/ mix key widths: ${first_name} has a ${first_width}-digit key and ${name} a ${width}-digit key; give every key in the directory one width (conventions §5)."
+                mixed=true
+                break
+            fi
+        done <<< "${names}"
+        [[ "${mixed}" == false ]] || continue
+        pair="$(printf '%s\n' "${names}" | natural_key_ties)"
+        if [[ -n "${pair}" ]]; then
+            warn "file names in ${dir}/ sort differently in Finder than in git and ls: ${pair%%$'\t'*} and ${pair#*$'\t'} differ only in a number's leading zeros; zero-pad every digit run inside a slug to one width across the directory (conventions §5)."
+        fi
+    done
+
+    # 3. Owner exists: a chapter's numeric key, an appendix's letter, or the
+    # zero key of front matter, 0 in a thesis whose chapter keys are one digit.
+    while IFS= read -r name; do
+        if [[ "${name}" =~ ^([0-9]{1,2})_.*\.tex$ ]]; then
+            chapter_keys="${chapter_keys}${BASH_REMATCH[1]} "
+        fi
+    done <<< "${listings[0]}"
+    while IFS= read -r name; do
+        if [[ "${name}" =~ ^([a-z])_.*\.tex$ ]]; then
+            appendix_keys="${appendix_keys}${BASH_REMATCH[1]} "
+        fi
+    done <<< "${listings[1]}"
+    if [[ "${chapter_keys}" =~ ${one_digit_keys} ]]; then
+        zero_key='0'
+    fi
+    for i in 2 3 4; do
+        dir="${dirs[i]}"
+        while IFS= read -r name; do
+            [[ "${name}" =~ ^([0-9]{1,2}|[a-z])_ ]] || continue
+            key="${BASH_REMATCH[1]}"
+            case "${chapter_keys}${appendix_keys# } " in
+                *" ${key} "*) continue ;;
+            esac
+            if [[ "${key}" == 0 || "${key}" == 00 ]]; then
+                continue
+            fi
+            case "${key}" in
+                [0-9]*) [[ "${readable[0]}" == true ]] || continue ;;
+                *) [[ "${readable[1]}" == true ]] || continue ;;
+            esac
+            warn "file name ${dir}/${name} has no owner: its key ${key} names no chapter in manus/chaps/, appendix in manus/backs/, or front matter (${zero_key}); give it the key of the one file that includes it (conventions §5)."
+        done <<< "${listings[i]}"
+    done
+
+    # 4. Includer matches: an include whose target under figs/ or tabs/ starts
+    # with a key names the including file's key. A symlinked includer counts
+    # as the file it points to. A bare \includegraphics name counts as figs/
+    # only when a \graphicspath lists figs/. Both are read from each file's
+    # lines joined as TeX joins them (tex_line), so an include or a
+    # \graphicspath may span lines and a comment may split a name
+    # ({figs/%<newline>01_x}); a \graphicspath, whose argument a blank line
+    # would end, is looked for one paragraph at a time. An option value may
+    # hold a ']' inside braces ([alt={A [b] c}]).
+    while IFS= read -r name; do
+        if [[ -n "${name}" ]]; then
+            includers+=("${name}")
+        fi
+    done <<< "$(readable_sources manus/chaps manus/backs manus/fronts -mindepth 1 -maxdepth 1 \( -type f -o -type l \) -name '*.tex' ! -name '.*')"
+    if (( ${#includers[@]} > 0 )); then
+        while IFS= read -r name; do
+            if [[ -n "${name}" ]]; then
+                sources+=("${name}")
+            fi
+        done <<< "$(readable_sources manus -maxdepth 2 \( -type f -o -type l \) \( -name '*.tex' -o -name '*.sty' -o -name '*.cls' \))"
+        if (( ${#sources[@]} > 0 )) && LC_ALL=C awk "${TEX_AWK}"'
+                function scan() {
+                    if (buffer ~ /\\graphicspath[[:space:]]*\{[[:space:]]*(\{[^{}]*\}[[:space:]]*)*\{(\.\/)?figs\/?\}/) found = 1
+                    buffer = ""
+                }
+                found { exit }
+                FNR == 1 { scan() }
+                { line = tex_line($0) }
+                line == " " { scan(); next }
+                { buffer = buffer line }
+                END { scan(); exit !found }' "${sources[@]}" 2>/dev/null; then
+            graphicspath_figs=true
+        fi
+        while IFS=$'\t' read -r includer kind target; do
+            [[ -n "${includer}" ]] || continue
+            target="${target#./}"
+            case "${target}" in
+                figs/*|tabs/*) ;;
+                */*|'') continue ;;
+                *)
+                    [[ "${kind}" == g && "${graphicspath_figs}" == true ]] || continue
+                    target="figs/${target}"
+                    ;;
+            esac
+            base="${target##*/}"
+            [[ "${base%%.*}" =~ ^([0-9]{1,2}|[a-z])_ ]] || continue
+            key="${BASH_REMATCH[1]}"
+            name="${includer##*/}"
+            case "${includer}" in
+                manus/chaps/*) [[ "${name}" =~ ^([0-9]{1,2})_ ]] || continue; includer_key="${BASH_REMATCH[1]}" ;;
+                manus/backs/*) [[ "${name}" =~ ^([a-z])_ ]] || continue; includer_key="${BASH_REMATCH[1]}" ;;
+                *) [[ "${readable[0]}" == true ]] || continue; includer_key="${zero_key}" ;;
+            esac
+            [[ "${key}" != "${includer_key}" ]] || continue
+            # Name the file on disk: \input adds .tex, and \includegraphics
+            # finds the one file whose name adds an extension. A target that
+            # matches no file, or several, is named as written.
+            asset="manus/${target}"
+            if [[ "${kind}" == i && "${target}" != *.tex && -f "${asset}.tex" ]]; then
+                asset="${asset}.tex"
+            elif [[ ! -f "${asset}" && "${kind}" == g ]]; then
+                matches=0
+                for candidate in "${asset}".*; do
+                    if [[ -f "${candidate}" ]]; then
+                        matches=$((matches + 1)); base="${candidate}"
+                    fi
+                done
+                if (( matches == 1 )); then
+                    asset="${base}"
+                fi
+            fi
+            # One warning per file an includer names, however many includes
+            # (with and without the extension) name it.
+            case "${seen_includes}" in
+                *$'\n'"${includer}"$'\t'"${asset}"$'\n'*) continue ;;
+            esac
+            seen_includes="${seen_includes}${includer}"$'\t'"${asset}"$'\n'
+            base="${asset##*/}"
+            warn "file name ${asset} does not carry the key of ${includer}, which includes it: expected key ${includer_key} (${includer_key}_${base#*_}), since an asset takes the key of the one file that includes it (conventions §5)."
+        done <<< "$(LC_ALL=C awk "${TEX_AWK}"'
+            function flush(    command, kind, target) {
+                while (match(buffer, /\\(includegraphics[*]?([[:space:]]*\[([^]{}]|\{[^}]*\})*\])*|input)[[:space:]]*\{[^}]*\}/)) {
+                    command = substr(buffer, RSTART, RLENGTH)
+                    buffer = substr(buffer, RSTART + RLENGTH)
+                    kind = (command ~ /^\\includegraphics/) ? "g" : "i"
+                    match(command, /\{[^}]*\}$/)
+                    target = substr(command, RSTART + 1, RLENGTH - 2)
+                    gsub(/[[:space:]]+/, " ", target)
+                    gsub(/^ | $/, "", target)
+                    printf "%s\t%s\t%s\n", current_file, kind, target
+                }
+                buffer = ""
+            }
+            FNR == 1 {
+                if (NR > 1) flush()
+                current_file = FILENAME
+            }
+            { buffer = buffer tex_line($0) }
+            END { flush() }
+        ' "${includers[@]}")"
+    fi
+
+    if (( WARNS == warns_before )); then
+        log 'File names: manus/chaps, backs, figs, figs/srcs, and tabs follow the owner-key scheme and list in the same order everywhere (conventions §5).'
+    fi
 }
 
 while (( $# > 0 )); do
@@ -169,7 +604,7 @@ done
 env_value() {
     local key="$1" val
     [[ -f "${ENV_FILE}" ]] || return 0
-    val="$(sed -n "s/^[[:space:]]*${key}=//p" "${ENV_FILE}" | tail -1)"
+    val="$(LC_ALL=C sed -n "s/^[[:space:]]*${key}=//p" "${ENV_FILE}" | tail -1)"
     val="${val%$'\r'}"; val="${val%\"}"; val="${val#\"}"; val="${val%\'}"; val="${val#\'}"
     printf '%s' "${val}"
 }
@@ -192,6 +627,17 @@ fi
 LOG_FILE="${BUILD_DIR}/${MAIN_BASE}.log"
 PDF_FILE="${BUILD_DIR}/${MAIN_BASE}.pdf"
 log "Entry point: ${MAIN_TEX}."
+# An entry point lint cannot read has no class option or chapter input to
+# check; the build, if lint runs one, fails on it too.
+MAIN_READ=true
+if [[ ! -r "${MAIN_TEX}" ]]; then
+    hard "the entry point ${MAIN_TEX#"${ROOT_DIR}"/} cannot be read, so none of its text was checked, its class option, chapter inputs, and \\todo markers included."
+    MAIN_READ=false
+fi
+# File names read only the tree under manus/, so they are checked before the
+# build: a failed or missing build, or a later check that stops lint, cannot
+# keep their warnings from printing.
+check_file_names
 # A failed or missing build still gets a Result line, but every check that reads
 # the log or the PDF is skipped: an older PDF left by an earlier successful build
 # would otherwise pass for this manuscript.
@@ -204,38 +650,87 @@ if [[ "${NO_BUILD}" == false ]]; then
 elif [[ ! -f "${LOG_FILE}" || ! -f "${PDF_FILE}" ]]; then
     hard "--no-build requested but ${LOG_FILE} or ${PDF_FILE} is absent."
     BUILD_USABLE=false
-elif grep -q '^!' "${LOG_FILE}"; then
+elif LC_ALL=C grep -q '^!' "${LOG_FILE}"; then
     hard "the last build stopped on a LaTeX error (see ${LOG_FILE}); rebuild with bash execs/run.sh."
     BUILD_USABLE=false
 else
+    # find fails on a directory it cannot read (reported by check_file_names)
+    # or a missing degree/; under pipefail that must not end lint here.
     STALE_SOURCES="$(find manus degree -type f \( -name '*.tex' -o -name '*.bib' -o -name '*.cls' -o -name '*.sty' -o -name '*.bst' \) \
-        -newer "${PDF_FILE}" 2>/dev/null | wc -l | tr -d '[:space:]')"
+        -newer "${PDF_FILE}" 2>/dev/null | wc -l | tr -d '[:space:]' || true)"
     if (( ${STALE_SOURCES:-0} > 0 )); then
         warn "${STALE_SOURCES} source file(s) under manus/ or degree/ are newer than the PDF; rebuild before trusting its page and reference checks."
     fi
 fi
 
 if [[ "${BUILD_USABLE}" == true && -f "${LOG_FILE}" ]]; then
-    if grep -Eqi 'undefined citations|Citation .* undefined|There were undefined references|Reference .* undefined' "${LOG_FILE}"; then
+    if LC_ALL=C grep -Eqi 'undefined citations|Citation .* undefined|There were undefined references|Reference .* undefined' "${LOG_FILE}"; then
         hard 'undefined citation or cross-reference reported by LaTeX.'
     fi
-    OVERFULL="$(grep -Ec 'Overfull \\hbox' "${LOG_FILE}" || true)"
+    OVERFULL="$(LC_ALL=C grep -Ec 'Overfull \\hbox' "${LOG_FILE}" || true)"
     (( OVERFULL == 0 )) || warn "${OVERFULL} overfull hbox warning(s)."
     # A glyph the fonts lack is dropped from the PDF, yet the build still succeeds.
-    MISSING_CHARS="$(grep -c 'Missing character: There is no' "${LOG_FILE}" || true)"
+    MISSING_CHARS="$(LC_ALL=C grep -c 'Missing character: There is no' "${LOG_FILE}" || true)"
     (( MISSING_CHARS == 0 )) || warn "the build log reports ${MISSING_CHARS} missing character(s): text in a script the fonts cannot typeset, such as Chinese without the cjk class option."
 fi
 
-TODO_COUNT="$({
-    find manus -type f -name '*.tex' -print0
-} | xargs -0 awk '
-    {
-        line=$0
-        sub(/(^|[^\\])%.*/, "", line)
-        if (line ~ /\\todo[[:space:]]*\{/) n++
-    }
-    END { print n+0 }
-' 2>/dev/null || printf '0')"
+# Every .tex under manus/ is searched for visible \todo markers as TeX reads
+# it (tex_line), so a marker whose argument opens on a later line counts, and
+# the tail of a line that may begin one (a control word and spaces) is carried
+# to the next; every marker counts, several on one line included. The count
+# matches ASCII only, so it reads bytes: under a UTF-8 locale a stray byte would
+# stop awk. The deposit gate needs a verified zero, so a directory or file lint
+# cannot read, a file in UTF-16 or UTF-32 (whose NUL bytes hide every marker),
+# or an awk that stops fails lint rather than counting as none.
+UNREAD_TEX=$'\n'
+TODO_FILES=()
+while IFS= read -r path; do
+    [[ -n "${path}" ]] || continue
+    if [[ -d "${path}" ]]; then
+        if [[ ! ( -r "${path}" && -x "${path}" ) ]]; then
+            hard "${path} cannot be read, so the \\todo markers in it were not counted."
+        fi
+    elif [[ ! -f "${path}" ]]; then
+        continue
+    elif [[ ! -r "${path}" ]]; then
+        # An entry point lint cannot read has failed once already.
+        if [[ "${ROOT_DIR}/${path}" != "${MAIN_TEX}" ]]; then
+            hard "${path} cannot be read, so none of its text was checked, its \\todo markers included."
+        fi
+        UNREAD_TEX="${UNREAD_TEX}${path}"$'\n'
+    elif has_nul "${path}"; then
+        hard "${path} holds NUL bytes, as UTF-16 and UTF-32 text does, so none of its text was checked, its \\todo markers included; save it as UTF-8."
+        UNREAD_TEX="${UNREAD_TEX}${path}"$'\n'
+    else
+        TODO_FILES+=("${path}")
+    fi
+done <<< "$(find manus \( -type d -o \( -type f -o -type l \) -name '*.tex' \) -print 2>/dev/null | LC_ALL=C sort || true)"
+# The status scan (story-flow-status scripts/scan.sh) counts with the same
+# TEX_AWK and TODO_AWK text; check_consistency.sh keeps the copies identical.
+TODO_AWK='
+function take(line) {
+    if (line == " ") { carry = ""; return }
+    carry = carry line
+    n += gsub(/\\todo[[:space:]]*\{/, "", carry)
+    if (match(carry, /\\[[:alpha:]]*[[:space:]]*$/)) carry = substr(carry, RSTART)
+    else carry = ""
+}
+FNR == 1 { carry = "" }
+{
+    count = physical_lines($0, parts)
+    for (i = 1; i <= count; i++) take(tex_line(parts[i]))
+}
+END { print n + 0 }
+'
+TODO_COUNT=0
+if (( ${#TODO_FILES[@]} > 0 )); then
+    TODO_RC=0
+    TODO_COUNT="$(LC_ALL=C awk "${TEX_AWK}${TODO_AWK}" "${TODO_FILES[@]}" 2>/dev/null)" || TODO_RC=$?
+    if (( TODO_RC != 0 )) || [[ ! "${TODO_COUNT}" =~ ^[0-9]+$ ]]; then
+        hard "the \\todo count stopped early (awk exit ${TODO_RC}), so visible \\todo markers may remain under manus/."
+        TODO_COUNT=0
+    fi
+fi
 if (( TODO_COUNT > 0 )); then
     hard "${TODO_COUNT} visible \\todo marker(s) remain under manus/."
 fi
@@ -245,16 +740,31 @@ check_prose_patterns
 # The file-existence guard matters: a bare command substitution over a missing
 # file fails the assignment under set -e and kills the script before the
 # graceful absent-or-empty warning below can fire.
+# The profile is what the author typed: a UTF-8 one keeps the caller's locale,
+# so a full-width space after a value still reads as a space, and any other is
+# read byte by byte, where Chinese in another encoding matches nothing. A
+# profile lint cannot read fails: its level, language, and title page would
+# otherwise pass unread. PROFILE_READ gates every read below.
 DEGREE_LEVEL=""
-if [[ -s degree/profile.tex ]]; then
-    DEGREE_LEVEL="$(sed -nE 's/^[[:space:]]*%[[:space:]]*degree_level:[[:space:]]*([^[:space:]]+)[[:space:]]*$/\1/p' degree/profile.tex | tail -1)"
+PROFILE_LC="${LC_ALL-}"
+PROFILE_READ=false
+if [[ -s degree/profile.tex && ! -r degree/profile.tex ]]; then
+    hard 'degree/profile.tex cannot be read, so its degree level, language, and title-page fields went unchecked.'
+elif [[ -s degree/profile.tex ]]; then
+    PROFILE_READ=true
+    if ! utf8_valid degree/profile.tex; then
+        PROFILE_LC=C
+        META_WARNED="${META_WARNED}degree/profile.tex"$'\n'
+        warn 'degree/profile.tex is not valid UTF-8, so Chinese in another encoding in its degree field and title-page placeholders went unchecked; save it as UTF-8.'
+    fi
+    DEGREE_LEVEL="$(LC_ALL="${PROFILE_LC}" sed -nE 's/^[[:space:]]*%[[:space:]]*degree_level:[[:space:]]*([^[:space:]]+)[[:space:]]*$/\1/p' degree/profile.tex | tail -1)"
 fi
 case "${DEGREE_LEVEL}" in
     master|doctoral)
         log "Degree level: ${DEGREE_LEVEL}."
         ;;
     "")
-        if [[ -s degree/profile.tex ]]; then
+        if [[ "${PROFILE_READ}" == true ]]; then
             warn 'degree_level is unset in degree/profile.tex; confirm master or doctoral before level-specific review.'
         fi
         ;;
@@ -265,17 +775,20 @@ esac
 
 # Only the degree field names the level: a title may use "Doctor" or "Master" as
 # a subject word, and the run may not change an approved title.
-DEGREE_FIELD="$(grep -E '^[[:space:]]*\\degree\{' degree/profile.tex 2>/dev/null || true)"
-if [[ "${DEGREE_LEVEL}" == master ]] && grep -Eqi 'Doctor(al)?|博士' <<< "${DEGREE_FIELD}"; then
+DEGREE_FIELD=''
+if [[ "${PROFILE_READ}" == true ]]; then
+    DEGREE_FIELD="$(LC_ALL="${PROFILE_LC}" grep -E '^[[:space:]]*\\degree\{' degree/profile.tex 2>/dev/null || true)"
+fi
+if [[ "${DEGREE_LEVEL}" == master ]] && LC_ALL="${PROFILE_LC}" grep -Eqi 'Doctor(al)?|博士' <<< "${DEGREE_FIELD}"; then
     hard 'master degree_level conflicts with doctoral wording in the degree field.'
-elif [[ "${DEGREE_LEVEL}" == doctoral ]] && grep -Eqi 'Master([^a-z]|$)|硕士' <<< "${DEGREE_FIELD}"; then
+elif [[ "${DEGREE_LEVEL}" == doctoral ]] && LC_ALL="${PROFILE_LC}" grep -Eqi 'Master([^a-z]|$)|硕士' <<< "${DEGREE_FIELD}"; then
     hard 'doctoral degree_level conflicts with master wording in the degree field.'
 fi
 
 # Placeholders are read from compiled lines only: the profile's own comments name
 # the fields they describe, and matching those would warn on every profile.
-if [[ -s degree/profile.tex ]]; then
-    PLACEHOLDERS="$(awk '
+if [[ "${PROFILE_READ}" == true ]]; then
+    PLACEHOLDERS="$(LC_ALL="${PROFILE_LC}" awk '
         BEGIN { n = split("Untitled Thesis|未命名学位论文|Author Name|作者姓名|University Name|学校名称|Department or Program|院系或培养单位|Submission Statement|提交说明|Degree Name|学位名称|Advisor Name|导师姓名|Graduation Date|完成日期", p, "|") }
         /^[[:space:]]*%/ { next }
         { for (i = 1; i <= n; i++) if (index($0, p[i])) seen[i] = 1 }
@@ -286,7 +799,7 @@ if [[ -s degree/profile.tex ]]; then
     fi
     # A profile from before the field existed has no line to replace, so the
     # class's own placeholder would reach the title page unnoticed.
-    if ! grep -Eq '^[[:space:]]*\\submissionstatement[[:space:]]*\{' degree/profile.tex; then
+    if ! LC_ALL="${PROFILE_LC}" grep -Eq '^[[:space:]]*\\submissionstatement[[:space:]]*\{' degree/profile.tex; then
         warn 'title-page placeholder: degree/profile.tex sets no \submissionstatement, so the title page prints the class placeholder.'
     fi
 
@@ -295,16 +808,11 @@ if [[ -s degree/profile.tex ]]; then
     # STORY's class takes the zh option, so an institutional class is named but
     # not checked. An option list may span lines: it is joined, comments
     # stripped, before it is read.
-    DISSERTATION_LANG="$(sed -nE 's/^[[:space:]]*%[[:space:]]*dissertation_language:[[:space:]]*([^[:space:]]+)[[:space:]]*$/\1/p' degree/profile.tex | tail -1)"
+    DISSERTATION_LANG="$(LC_ALL="${PROFILE_LC}" sed -nE 's/^[[:space:]]*%[[:space:]]*dissertation_language:[[:space:]]*([^[:space:]]+)[[:space:]]*$/\1/p' degree/profile.tex | tail -1)"
     case "${DISSERTATION_LANG}" in
         en|zh)
-            CLASS_INFO="$(awk '
-                function strip_comment(text, start) {
-                    start = match(text, /(^|[^\\])%/)
-                    if (!start) return text
-                    if (substr(text, start, 1) == "%") return substr(text, 1, start - 1)
-                    return substr(text, 1, start)
-                }
+            CLASS_INFO=''
+            [[ "${MAIN_READ}" == true ]] && CLASS_INFO="$(LC_ALL=C awk "${TEX_AWK}"'
                 { line = strip_comment($0) }
                 !joining && (start = index(line, "\\documentclass")) { joining = 1; line = substr(line, start) }
                 joining {
@@ -321,7 +829,7 @@ if [[ -s degree/profile.tex ]]; then
                     }
                     if (++joined > 40) exit
                 }
-            ' "${MAIN_TEX}")"
+            ' "${MAIN_TEX}" || true)"
             CLASS_NAME="${CLASS_INFO%%$'\t'*}"
             CLASS_OPTIONS="${CLASS_INFO#*$'\t'}"
             ZH_OPTION='(^|[^a-z])(zh|chinese)([^a-z]|$)'
@@ -348,8 +856,11 @@ if [[ ! -s degree/profile.tex ]]; then
     warn 'degree/profile.tex is absent or empty.'
 fi
 
-if [[ -f degree/requirements.md ]]; then
-    OPEN_ROWS="$(grep -cE '^[[:space:]]*- \[ \]' degree/requirements.md || true)"
+if [[ -f degree/requirements.md && ! -r degree/requirements.md ]]; then
+    warn 'degree/requirements.md cannot be read, so its unresolved rows went uncounted.'
+elif [[ -f degree/requirements.md ]]; then
+    meta_lc degree/requirements.md
+    OPEN_ROWS="$(LC_ALL="${META_LC}" grep -cE '^[[:space:]]*- \[ \]' degree/requirements.md || true)"
     if (( ${OPEN_ROWS:-0} > 0 )); then
         warn "${OPEN_ROWS} unresolved row(s) in degree/requirements.md; a deposit needs every row resolved."
     fi
@@ -357,16 +868,39 @@ fi
 
 # A chapter file the entry point never inputs is drafted but absent from the
 # PDF, and nothing else notices: the build succeeds and every count looks fine.
-if [[ "${MAIN_DIR}" == "${ROOT_DIR}/manus" ]]; then
+# The entry point is read once, its lines joined as TeX joins them (tex_line),
+# so an \input whose name a comment or a line break splits still counts; each
+# \input and \include target is printed on its own line, its ends trimmed.
+if [[ "${MAIN_DIR}" == "${ROOT_DIR}/manus" && "${MAIN_READ}" == true ]]; then
+    MAIN_INPUTS="$(LC_ALL=C awk "${TEX_AWK}"'
+        function flush(    command) {
+            while (match(buffer, /\\(input|include)[[:space:]]*\{[^}]*\}/)) {
+                command = substr(buffer, RSTART, RLENGTH)
+                buffer = substr(buffer, RSTART + RLENGTH)
+                match(command, /\{[^}]*\}$/)
+                command = substr(command, RSTART + 1, RLENGTH - 2)
+                sub(/^[[:space:]]+/, "", command)
+                sub(/[[:space:]]+$/, "", command)
+                print command
+            }
+            buffer = ""
+        }
+        {
+            count = physical_lines($0, parts)
+            for (i = 1; i <= count; i++) {
+                line = tex_line(parts[i])
+                if (line == " ") flush(); else buffer = buffer line
+            }
+        }
+        END { flush() }
+    ' "${MAIN_TEX}" || true)"
     for chapter in manus/chaps/*.tex; do
         [[ -f "${chapter}" ]] || continue
-        if ! awk -v base="$(basename -- "${chapter}" .tex)" '
-            { line = $0; sub(/(^|[^\\])%.*/, "", line) }
-            line ~ ("\\\\(input|include)[[:space:]]*\\{[[:space:]]*chaps/" base "(\\.tex)?[[:space:]]*\\}") { found = 1; exit }
-            END { exit !found }
-        ' "${MAIN_TEX}"; then
-            warn "${MAIN_TEX#"${ROOT_DIR}"/} does not \\input ${chapter}; the built PDF omits it."
-        fi
+        base="$(basename -- "${chapter}" .tex)"
+        case $'\n'"${MAIN_INPUTS}"$'\n' in
+            *$'\n'"chaps/${base}"$'\n'*|*$'\n'"chaps/${base}.tex"$'\n'*) ;;
+            *) warn "${MAIN_TEX#"${ROOT_DIR}"/} does not \\input ${chapter}; the built PDF omits it." ;;
+        esac
     done
 fi
 
@@ -374,8 +908,9 @@ fi
 # status is active, a standing supervision record aside — and otherwise from
 # the profile. A thesis from before milestone status carried this may still name
 # it as active_milestone in notes/story.md, which is read only as a fallback.
+# Each reads FILE in the locale meta_lc chose for it, passed as $2 or $3.
 max_pages_of() {
-    awk '{
+    LC_ALL="$2" awk '{
         line = $0
         sub(/^[[:space:]]*%?[[:space:]]*/, "", line)
         if (line !~ /^max_pages:/) next
@@ -387,7 +922,7 @@ max_pages_of() {
     }' "$1"
 }
 yml_value() {
-    awk -v key="$2" '{
+    LC_ALL="$3" awk -v key="$2" '{
         line = $0
         if (line !~ ("^" key ":")) next
         sub("^" key ":[[:space:]]*", "", line)
@@ -400,8 +935,13 @@ yml_value() {
 limit=''
 limit_source=''
 take_limit() {
-    local raw
-    raw="$(max_pages_of "$1")"
+    local raw lc="${PROFILE_LC}"
+    [[ -r "$1" ]] || return 1
+    if [[ "$1" != degree/profile.tex ]]; then
+        meta_lc "$1"
+        lc="${META_LC}"
+    fi
+    raw="$(max_pages_of "$1" "${lc}")"
     [[ -n "${raw}" ]] || return 1
     if [[ "${raw}" =~ ^[1-9][0-9]*$ ]]; then
         limit="${raw}"
@@ -415,34 +955,42 @@ active=''
 active_count=0
 for yml in miles/*/milestone.yml; do
     [[ -f "${yml}" ]] || continue
-    [[ "$(yml_value "${yml}" status)" == active ]] || continue
-    [[ "$(yml_value "${yml}" kind)" != supervision ]] || continue
+    if [[ ! -r "${yml}" ]]; then
+        warn "${yml} cannot be read, so whether it is active, and its page limit, went unchecked."
+        continue
+    fi
+    meta_lc "${yml}"
+    [[ "$(yml_value "${yml}" status "${META_LC}")" == active ]] || continue
+    [[ "$(yml_value "${yml}" kind "${META_LC}")" != supervision ]] || continue
     active_count=$((active_count + 1))
     active="$(basename -- "$(dirname -- "${yml}")")"
 done
 if (( active_count > 1 )); then
     warn "${active_count} milestones have status: active; exactly one may be active, so none of their page limits is applied."
     active=''
+elif (( active_count == 0 )) && [[ -f notes/story.md && ! -r notes/story.md ]]; then
+    warn 'notes/story.md cannot be read, so its legacy active_milestone went unchecked.'
 elif (( active_count == 0 )) && [[ -f notes/story.md ]]; then
-    active="$(awk '/^active_milestone:/ { sub(/^active_milestone:[[:space:]]*/, ""); gsub(/["\047[:space:]]/, ""); print; exit }' notes/story.md)"
+    meta_lc notes/story.md
+    active="$(LC_ALL="${META_LC}" awk '/^active_milestone:/ { sub(/^active_milestone:[[:space:]]*/, ""); gsub(/["\047[:space:]]/, ""); print; exit }' notes/story.md)"
 fi
 if [[ -n "${active}" && -f "miles/${active}/milestone.yml" ]]; then
     take_limit "miles/${active}/milestone.yml" || true
 fi
-if [[ -z "${limit}" && -s degree/profile.tex ]]; then
+if [[ -z "${limit}" && "${PROFILE_READ}" == true ]]; then
     take_limit degree/profile.tex || true
 fi
 if [[ "${BUILD_USABLE}" == true && -n "${limit}" && -f "${PDF_FILE}" ]]; then
     pages=''
     if command -v pdfinfo >/dev/null 2>&1; then
         # An unreadable PDF must not end lint under pipefail before its Result line.
-        pages="$(pdfinfo "${PDF_FILE}" 2>/dev/null | awk '/^Pages:/ {print $2}' || true)"
+        pages="$(pdfinfo "${PDF_FILE}" 2>/dev/null | LC_ALL=C awk '/^Pages:/ {print $2}' || true)"
     fi
     # Without pdfinfo, the engine's "Output written on ... (N pages" line is the
     # fallback; TeX wraps long log lines, so the path may push the count onto
     # the next line or two.
     if [[ ! "${pages}" =~ ^[0-9]+$ && -f "${LOG_FILE}" ]]; then
-        pages="$(awk '
+        pages="$(LC_ALL=C awk '
             /^Output written on / { text = ""; joining = 1; joined = 0 }
             joining {
                 text = text $0

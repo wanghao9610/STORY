@@ -81,10 +81,10 @@ STORY/
 │   ├── main.tex                   # 英文入口
 │   ├── main-zh.tex                # 可构建的简体中文起始模板
 │   ├── fronts/                    # 摘要、致谢、声明等前置部分
-│   ├── chaps/                     # 编号章节：<n>_<slug>.tex
-│   ├── backs/                     # 附录等后置部分
-│   ├── figs/                      # 成图；figs/srcs/ 保存可编辑源文件
-│   ├── tabs/                      # 有证据支持的 LaTeX 表格
+│   ├── chaps/                     # 编号章节：<nn>_<slug>.tex
+│   ├── backs/                     # 附录等后置部分：<letter>_<slug>.tex
+│   ├── figs/                      # 成图 <owner>_<slug>.pdf；figs/srcs/ 保存可编辑源文件
+│   ├── tabs/                      # 有证据支持的 LaTeX 表格：<owner>_<slug>.tex
 │   ├── bibs/                      # reference.bib（首次使用时创建）
 │   └── stys/                      # story.cls、story.sty、story.bst
 ├── mates/                         # 导入的证据快照，只读
@@ -129,10 +129,10 @@ STORY/
 | --- | --- | --- |
 | `manus/` | Manuscript | 学位论文的 LaTeX 源文件 |
 | `fronts/` | Front matter | 摘要、致谢、声明等前置材料 |
-| `chaps/` | Chapters | 每章一个带编号的 `.tex` 文件 |
-| `backs/` | Back matter | 正文章节后的附录及其他材料 |
-| `figs/` | Figures | PDF 或图片成图；`srcs/` 保存可编辑源文件 |
-| `tabs/` | Tables | 有证据支持的表格 `.tex` 文件 |
+| `chaps/` | Chapters | 每章一个 `<nn>_<slug>.tex` 文件，按大纲顺序编键 |
+| `backs/` | Back matter | 正文章节后的附录及其他材料，`<letter>_<slug>.tex` |
+| `figs/` | Figures | 成图 `<owner>_<slug>.pdf`；`srcs/` 保存可编辑源文件 |
+| `tabs/` | Tables | 有证据支持的表格 `<owner>_<slug>.tex` |
 | `bibs/` | Bibliographies | 学位论文参考文献 |
 | `stys/` | Styles | 可复用 class、package 与参考文献样式 |
 | `mates/` | Materials | 带指纹的只读证据快照 |
@@ -141,6 +141,8 @@ STORY/
 | `wkdrs/` | Work directories | 构建产物与临时报告，不是持久项目状态 |
 | `mds/` | Markdowns | 按主题组织的 Markdown 文档 |
 | `srcs/` | Static sources | 文档图片与可编辑视觉源文件 |
+
+`chaps/`、`backs/`、`figs/`、`figs/srcs/` 与 `tabs/` 下的文件一律命名为 `<key>_<slug>.<ext>`：只有一个下划线，其后是小写 slug，词与词之间用 `-` 连接，中文对照版以 `-zh` 结尾。章节的键是两位数编号，附录的键是字母；图、其源文件与表格取 `<owner>`，即引用它的那一个章节或附录文件的键（前置部分用 `00`，保留一位数章节键的论文用 `0`），自身不带序号；`fronts/` 保持无前缀。这样命名后，同一目录在 git 与终端中的排列顺序与在 VS Code、Overleaf、Finder 中一致；文件名不合该方案时，`lint.sh` 会发出警告（[规约 §5](docs/mds/story-workflow/writing-workflow-conventions.md#manuscript-file-names)，英文）。
 
 有三条规则比目录名称更重要。`mates/` 除 `execs/scpts/import.sh` 与 `story-evid-curator` 外一律只读；`wkdrs/` 可以重新生成，因此持久结果应写入 `notes/`、`miles/` 或 `tasks/`；新克隆有意只包含 `notes/.gitkeep` 与 `notes/refs/.gitkeep`。各工作流在第一次使用时创建自己拥有的 `notes/*.md`——文件缺席表示“尚未初始化”，而不是“模板里缺了它”。
 
@@ -288,7 +290,7 @@ bash execs/scpts/lint.sh
 bash execs/scpts/fmt.sh --check
 ```
 
-`run.sh` 调用 `latexmk`，在 `wkdrs/builds/` 中进行源目录外构建（`manus/` 之外的入口文件，例如答辩演示文稿，会构建到其旁边一个被 git 忽略的 `.build/` 中），并在 `pdfinfo` 可用时打印 PDF 路径与页数。`lint.sh` 默认先构建，再把构建失败、未定义引用或交叉引用、可见 `\todo`、非法或冲突的学位元数据，以及超出已确认页数限制视为失败。页数限制取当前里程碑的 `max_pages`（即 supervision 以外、`status: active` 的那个里程碑）；没有这样的里程碑时，取 `notes/story.md` 中旧式键 `active_milestone` 所指里程碑的 `max_pages`；再没有则取 `degree/profile.tex` 中的值；lint 用它与 PDF 的总页数比较：页数用 `pdfinfo` 读取，没有 `pdfinfo` 时从构建日志的 `Output written on` 行读取，两者都读不到页数时，它警告该页数限制未经检查。它会就以下情况发出警告：标题页占位符（包括学位档案中没有 `\submissionstatement` 行）、未设置的 `% dissertation_language`、入口文件加载 STORY 的 class 时所用（或缺少的）语言选项与之不一致、`degree/requirements.md` 中尚未解决的条目、入口文件从未引入的章节文件、多于一个的 active 里程碑、不是正整数的 `max_pages`、比 PDF 更新的源文件、overfull box、构建日志中的缺失字符、格式漂移、未知学位层级、高置信度聊天机器人残留和集中出现的公式化表达。要求条目的计数只包括未勾选的复选框；已勾选的条目是否注明来源，仍由 `story-depo-packer` 逐条阅读，哪些警告会阻塞归档见[规约 §6（Deposit gates）](docs/mds/story-workflow/writing-workflow-conventions.md#deposit-gates)（英文）。针对正文的检查发现只是建议性复核信号，既不能证明文本由 AI 创作，也不构成硬失败。每次运行都以一行 `Result:` 结尾，构建失败时也不例外。lint 报红是稿件起草期的预期状态——证据契约要求你写下的 `\todo` 标记在清零之前本身就是硬失败，它们只阻塞归档，不阻塞起草。`--no-build` 复用上一次构建：该次构建的日志缺失或因错误停止时它会失败，源文件比 PDF 更新时它会警告。
+`run.sh` 调用 `latexmk`，在 `wkdrs/builds/` 中进行源目录外构建（`manus/` 之外的入口文件，例如答辩演示文稿，会构建到其旁边一个被 git 忽略的 `.build/` 中），并在 `pdfinfo` 可用时打印 PDF 路径与页数。`lint.sh` 默认先构建，再把构建失败、未定义引用或交叉引用、可见 `\todo`（按 TeX 读取源文件的方式计数，因此参数被注释或换行拆开的标记仍会计入）、它无法读取的 `manus/` 下 `.tex` 文件或目录、入口文件或 `degree/profile.tex`、`manus/` 下另存为 UTF-16 或 UTF-32 的 `.tex` 文件（其中的标记无法计数）、非法或冲突的学位元数据，以及超出已确认页数限制视为失败。页数限制取当前里程碑的 `max_pages`（即 supervision 以外、`status: active` 的那个里程碑）；没有这样的里程碑时，取 `notes/story.md` 中旧式键 `active_milestone` 所指里程碑的 `max_pages`；再没有则取 `degree/profile.tex` 中的值；lint 用它与 PDF 的总页数比较：页数用 `pdfinfo` 读取，没有 `pdfinfo` 时从构建日志的 `Output written on` 行读取，两者都读不到页数时，它警告该页数限制未经检查。它会就以下情况发出警告：标题页占位符（包括学位档案中没有 `\submissionstatement` 行）、未设置的 `% dissertation_language`、入口文件加载 STORY 的 class 时所用（或缺少的）语言选项与之不一致、`degree/requirements.md` 中尚未解决的条目、入口文件从未引入的章节文件、不合所属键命名方案的稿件文件名、多于一个的 active 里程碑、不是正整数的 `max_pages`、它无法读取的里程碑记录、`degree/requirements.md` 或 `notes/story.md`、不是有效 UTF-8 的源文件或记录（按字节读取，稿件文件的正文也不做复核）、比 PDF 更新的源文件、overfull box、构建日志中的缺失字符、格式漂移、未知学位层级、高置信度聊天机器人残留和集中出现的公式化表达。要求条目的计数只包括未勾选的复选框；已勾选的条目是否注明来源，仍由 `story-depo-packer` 逐条阅读，哪些警告会阻塞归档见[规约 §6（Deposit gates）](docs/mds/story-workflow/writing-workflow-conventions.md#deposit-gates)（英文）。针对正文的检查发现只是建议性复核信号，既不能证明文本由 AI 创作，也不构成硬失败。每次运行都以一行 `Result:` 结尾，构建失败时也不例外。lint 报红是稿件起草期的预期状态——证据契约要求你写下的 `\todo` 标记在清零之前本身就是硬失败，它们只阻塞归档，不阻塞起草。`--no-build` 复用上一次构建：该次构建的日志缺失或因错误停止时它会失败，源文件比 PDF 更新时它会警告。
 
 `fmt.sh` 使用仓库的 `latexindent` 配置，在不改变排版文本的前提下维持一句一行。它把收尾的 `}` 或 `]` 留在它所结束的句子那一行，并拒绝任何会改变排版文本的改写：该文件保持原样，脚本以 `2` 退出。被拒绝的文件需要手动修正：通常是独占一行的收尾 `}` 或 `]`，应移到上一行末尾；若该行以单独的 `%` 结尾，则取代这个 `%`（那个 `%` 只吞掉了该行的换行；只有收尾符所在行本身以 `%` 结尾时，才在它后面保留 `%`）；包住连续正文的 `{%` 分组（`\mbox{%` … `}`），应写成一行并去掉 `%`；或是在同一行跟在收尾 `}` 之后的句子（`\todo{...} The end.`、`\emph{One thing.} here. The end.`），应另起一行。后面紧接脚注、引用、标签、索引条目或 `\todo` 命令的句点（`good.\footnote{...}`、`et al.\cite{x}`）只在该命令之后才算句末，后面紧接转义空格或细空格的句点（`et al.\ The`、`Fig.\,3`）不算句末，因此两者都不会在源文件没有空格的地方被断开。在大写字母或数字前被误读为句末的缩写（`et al. The`、`Fig. 3`）不会被拒绝，而是被拆成两行，因为换行即空格；改用不断行空格可让句子保持完整。它尚不拆分或检查中文句子，因此中文正文请手动保持一句一行；`--check` 不会对含多句的中文行报错。它排除可复用样式（`manus/stys/`）和学校正式模板（`miles/*/template/`）。不带 `--check` 运行即可应用格式化。
 
@@ -322,8 +324,8 @@ bash execs/scpts/fmt.sh --check
 | `story-syns-coach` † | 需要确认论文问题、中心论点、研究问题、主线或贡献 | `notes/story.md`、`contributions.md`、`publications.md`、`claims.md` |
 | `story-outl-planner` † | 已确认的论文总叙事需要转化为章节结构 | 带章节简报的 `notes/outline.md`、`notation.md`、尚无文件的章节的骨架 |
 | `story-chap-drafter` | 一个章节或一份前置/后置部分文件需要以作者的学术声音依据证据起草或修改；`trace` 只补充缺失的来源锚点，不重写正文 | 一个 `manus/chaps/`、`manus/fronts/` 或 `manus/backs/` 文件及同步台账 |
-| `story-tabs-builder` | 需要一张结果、比较、映射或综合表格 | 一个 `manus/tabs/*.tex` 文件，每个带数值或比较的行都有来源锚点 |
-| `story-figs-designer` | 需要一张概念、方法、结果或综合图 | `manus/figs/` 下的成图与可编辑源文件 |
+| `story-tabs-builder` | 需要一张结果、比较、映射或综合表格 | 一个 `manus/tabs/<owner>_<slug>.tex` 文件，每个带数值或比较的行都有来源锚点 |
+| `story-figs-designer` | 需要一张概念、方法、结果或综合图 | 成图 `manus/figs/<owner>_<slug>.pdf` 与 `manus/figs/srcs/` 下的可编辑源文件 |
 | `story-refs-curator` | 需要添加、核验、阅读、去重或定位一项来源 | 参考文献条目与 `notes/refs/` 阅读笔记 |
 | `story-copy-editor` | 一个章节、一份前置/后置部分文件或整篇论文（`full`）需要润色作者声音、公式化表达、术语、衔接、重复或符号一致性 | 手稿修改、报告、建议性的 `tasks/prose.md` 或 `notes/style.md` |
 | `story-clms-auditor` | 数值、比较和学位贡献论断需要可追溯性检查，或某个数字看起来有误 | 论断与贡献状态、可重新生成的报告、`tasks/audits.md` 中的条目 |
@@ -515,7 +517,7 @@ bash execs/update.sh --skill story-flow-status
 - `--force` 允许覆盖受管路径中的本地修改及原本会保留的 harness 配置，但不会扩大路径范围。
 - `--adopt` 只把缺失的骨架文件复制进已有 Git 仓库，绝不覆盖现有路径；它不能与 `--force` 同用。
 
-拉取来源为 `STORY_REPOSITORY`，依次从环境变量、`.env`、官方 GitHub 仓库解析。上游同路径的受管文件会被覆盖，新文件会加入。更新不删除任何文件：只存在于本地的文件，包括你自己的，都会保留，受管路径下的这类文件在 `--diff` 中显示为 `extra`。STORY 已不再提供中文指令对照版（每个 skill 旁的 `SKILL_zh.md`、`AGENTS.zh-CN.md`、`CLAUDE.zh-CN.md`、`.pi/APPEND_SYSTEM.zh-CN.md`、中文 `/story` 路由（`.agents/commands/story.zh-CN.md`）、包装命令与 Pi prompt，以及中文工作流规范），也不再提供三份独立的工作流规格（学术自然写作指南、项目记忆规格和 model-id 兜底说明），它们的规则已并入写作工作流规范（§5、§10，以及 §7 与 §11）。论文仓库中仍留有的这些文件已没有 skill 读取，更新也会原样保留，请手动删除。早期版本的 skill 在笔记旁写下的 `notes/**/*.zh-CN.md` 对照文件归你所有：更新会保留它们，但已没有 skill 读取或更新它们；`story-flow-status` 会列出它们，便于你合并或删除。在 STORY 停止提供这些文件之前的更新脚本会在替换自身之前报错 `Upstream ref is missing AGENTS.zh-CN.md` 并停止。请手动替换它一次：从你所更新的仓库（`STORY_REPOSITORY`）取来 `execs/update.sh`（官方仓库可用 `curl -fsSL https://raw.githubusercontent.com/wanghao9610/STORY/main/execs/update.sh -o execs/update.sh`），提交这次替换，使更新脚本的未提交改动检查能够通过，再重新运行。较早的版本还会放入 `.story/memory/MEMORY.md` 与 `.story/memory/MEMORY.zh-CN.md`，把 `.story/memory/local/MEMORY.md` 当作本机索引读取，并要求每个记忆文件配一个 `<slug>.zh-CN.md` 中文对照版。记忆库属于论文本身，所以更新会保留这些文件，但 hook 已不再读取这些索引文件，而会把每个中文对照版当作另一条记忆再列一次。请把每条索引行写进对应记忆文件的 `summary`，把每个中文对照版的内容并入其英文文件，然后删除这些旧文件；删除之前，更新会一直提示。里程碑记录现在放在 `miles/` 而不是 `milestones/` 下：更新不移动任何文件，在你运行 `git mv milestones miles` 并提交之前，会一直报告遗留的 `milestones/`。更新前先提交当前工作，不确定时先预览，再用 `git status` 与 `git diff` 检查结果。`bash execs/update.sh --help` 是权威参数说明。
+拉取来源为 `STORY_REPOSITORY`，依次从环境变量、`.env`、官方 GitHub 仓库解析。上游同路径的受管文件会被覆盖，新文件会加入。更新不删除任何文件：只存在于本地的文件，包括你自己的，都会保留，受管路径下的这类文件在 `--diff` 中显示为 `extra`。STORY 已不再提供中文指令对照版（每个 skill 旁的 `SKILL_zh.md`、`AGENTS.zh-CN.md`、`CLAUDE.zh-CN.md`、`.pi/APPEND_SYSTEM.zh-CN.md`、中文 `/story` 路由（`.agents/commands/story.zh-CN.md`）、包装命令与 Pi prompt，以及中文工作流规范），也不再提供三份独立的工作流规格（学术自然写作指南、项目记忆规格和 model-id 兜底说明），它们的规则已并入写作工作流规范（§5、§10，以及 §7 与 §11）。论文仓库中仍留有的这些文件已没有 skill 读取，更新也会原样保留，请手动删除。早期版本的 skill 在笔记旁写下的 `notes/**/*.zh-CN.md` 对照文件归你所有：更新会保留它们，但已没有 skill 读取或更新它们；`story-flow-status` 会列出它们，便于你合并或删除。在 STORY 停止提供这些文件之前的更新脚本会在替换自身之前报错 `Upstream ref is missing AGENTS.zh-CN.md` 并停止。请手动替换它一次：从你所更新的仓库（`STORY_REPOSITORY`）取来 `execs/update.sh`（官方仓库可用 `curl -fsSL https://raw.githubusercontent.com/wanghao9610/STORY/main/execs/update.sh -o execs/update.sh`），提交这次替换，使更新脚本的未提交改动检查能够通过，再重新运行。较早的版本还会放入 `.story/memory/MEMORY.md` 与 `.story/memory/MEMORY.zh-CN.md`，把 `.story/memory/local/MEMORY.md` 当作本机索引读取，并要求每个记忆文件配一个 `<slug>.zh-CN.md` 中文对照版。记忆库属于论文本身，所以更新会保留这些文件，但 hook 已不再读取这些索引文件，而会把每个中文对照版当作另一条记忆再列一次。请把每条索引行写进对应记忆文件的 `summary`，把每个中文对照版的内容并入其英文文件，然后删除这些旧文件；删除之前，更新会一直提示。里程碑记录现在放在 `miles/` 而不是 `milestones/` 下：更新不移动任何文件，在你运行 `git mv milestones miles` 并提交之前，会一直报告遗留的 `milestones/`。稿件文件名现在遵循规约 §5 的所属键方案，而更新从不同步 `manus/`，因此不会重命名其中任何文件：请按 2026-09-26 更新日志条目所列步骤手动改名；在此之前，`lint.sh` 会就每个不合方案的文件名发出警告。更新前先提交当前工作，不确定时先预览，再用 `git status` 与 `git diff` 检查结果。`bash execs/update.sh --help` 是权威参数说明。
 
 ## 项目约定
 
@@ -564,6 +566,7 @@ bash execs/update.sh --skill story-flow-status
 
 按日期列出要点，最新在前。STORY 目前还没有给版本打 tag，因此 `bash execs/update.sh` 跟随 `main`；某个版本打了 tag 之后，把 tag 作为 `ref` 传入即可把更新固定到该版本。
 
+- **2026-09-27** —— 稿件文件统一采用所属键（owner key）命名方案 `<key>_<slug>.<ext>`，使同一目录在 git 与终端中的排列顺序与在 VS Code、Overleaf、Finder 中一致（[规约 §5，Manuscript file names](docs/mds/story-workflow/writing-workflow-conventions.md#manuscript-file-names)，英文）：键与小写 slug 之间只有一个 `_`，slug 中的词用 `-` 连接。章节为 `manus/chaps/<nn>_<slug>.tex`，使用两位数键（不超过九章且已使用一位数键的论文可以保留，但同一目录内的键位数必须一致）；附录及其他后置部分为 `manus/backs/<letter>_<slug>.tex`；图、其可编辑源文件与表格取引用它们的那一个章节或附录文件的键（前置部分用 `00`，保留一位数章节键的论文用 `0`），自身不带序号：`manus/figs/<owner>_<slug>.pdf`、`manus/figs/srcs/<owner>_<slug>.*` 与 `manus/tabs/<owner>_<slug>.tex`。语言对照版以 `-zh` 结尾，因此附录起始文件现为 `manus/backs/a_supporting-material.tex` 与 `a_supporting-material-zh.tex`；`manus/fronts/` 保持无前缀。在已确认的重新编号、拆分或合并中，`story-outl-planner` 会把章节的图、源文件与表格随章节一起移动并改写其路径；`story-figs-designer` 与 `story-tabs-builder` 按大纲行的 `Chapter` 单元格为文件命名。`lint.sh` 现在会就以下情况发出警告（不判失败）：不合方案的文件名、字节顺序与数字顺序不一致、键位数不一或 slug 仅在数字前导零上有差别的目录、没有任何章节、附录或前置部分持有的键，以及所引用资源带着别的文件的键的引用。更新从不改动 `manus/`，因此已有的论文仓库请在一次提交中手动改名：运行 `git mv manus/backs/a_supporting_material.tex manus/backs/a_supporting-material.tex` 与 `git mv manus/backs/a_supporting_material_zh.tex manus/backs/a_supporting-material-zh.tex`，再把 `manus/main.tex` 中的 `\input{backs/a_supporting_material}` 与 `manus/main-zh.tex` 中的 `\input{backs/a_supporting_material_zh}` 改为新文件名（也可以保留旧文件名并接受 lint 警告）；可选地把一位数章节键扩为两位数；把每个图、源文件与表格改用引用它的文件的键；并改写 `\input`、`\includegraphics` 行以及 `notes/` 与 `tasks/` 中每个指向被改名文件的路径单元格。`lint.sh` 按 TeX 的方式读取稿件源文件。参数被注释或换行拆开的 `\todo`、`\verb|50%|` 之后的 `\todo`、以单独 CR 换行的文件中的 `\todo`，以及同一行中的多个 `\todo`，现在都会计入；以同样方式拆开的章节 `\input` 也算作已引入。`manus/` 下 lint 无法读取的 `.tex` 文件或目录、另存为 UTF-16 或 UTF-32 的 `.tex` 文件、无法读取的入口文件和 `degree/profile.tex`，现在会让 lint 失败，而不再当作无问题通过；源文件、学位档案、`.env` 或里程碑记录中不是 UTF-8 的字节，也不再中断 lint 或 `run.sh`：该文件改为按字节读取，并给出一条警告。状态扫描的 `todo markers:` 计数现在遵循 lint 的规则，并列出无法计数的文件。
 - **2026-09-24** —— 在全新会话中运行的场景测试发现了三处指令缺口，现已补上。`AGENTS.md` 现在写明规约 §8 对每次运行（无论是否经过 skill）早已提出的要求：修改 `manus/` 之后，先运行 `bash execs/run.sh`，只有它成功时才运行 `bash execs/scpts/lint.sh --no-build`；交接行写出最早未满足关口的确切命令、只有你能解除时的作者行动、解除受阻或失败步骤的操作，或者只有在整条流水线上已没有未满足的关口时，才逐字写出 `下一步：无——请求的工作流已完成。`，不改写措辞，也不附带第二条建议；完成报告须写明构建出的 PDF、页数、lint 结论、台账变更和剩余关口。对你指定的样本运行 `story-copy-editor style` 时，它记录样本路径，并在报告中提出其他字段的措辞，只有你确认后才写入该字段。字段一直只能留空或写入作者确认的内容，但早先对样本运行的 `style` 可能已把它自己的解读写进某个字段；如果你运行过，请检查 `notes/style.md`。运行发现旧版的记忆索引或 `.zh-CN.md` 对照版时，会把合并与删除作为你的操作指出，而不是主动提出代为执行（规约 §1 与 §10）。`AGENTS.md` 还写明更正后的人工材料可登记为新记录；`tasks/audits.md` 的各节在全论文审计写入日期之前记为 `Last full run: none`。`story-auto` 目标运行的最终回复现在以它的检查与所用级别开头，因为工具调用之间的文字可能不会送到你面前；`story-flow-status` 只通过常设导师记录的未兑现承诺来报告它。
 - **2026-09-24** —— `story-cite-auditor` 与 `story-refs-curator` 的 frontmatter 描述重新成为合法的 YAML：各自未加引号的 `: ` 会让严格的解析器拒绝整个块，从而丢掉该 skill 的路由文字；`check_consistency.sh` 现在会对这类值报错。一次针对当前模型的提示词审查还在几处收紧了措辞，但没有改变任何规则：`story-copy-editor` 的描述写明了它的 `style` 目标，`story-cite-auditor` 与 `story-depo-packer` 的描述不再暗示事先声明的修改是被允许的。规约中关于证据判定、`tasks/` 键、`active_milestone` 回退和 lint 警告的句子，现在与代码及执行它们的 skill 一致。审查发现的四处矛盾也已定下：旧版记忆索引与中文对照版的迁移（把索引行写进 `summary`、合并对照版、删除旧文件）由作者完成，而不是由 skill 完成（§10，现与 §1 和 `AGENTS.md` 一致）；大纲行只有在对应产物所陈述的每条论断在 `notes/claims.md` 中的 `Stated in` 与 `Evidence` 都是最新时才是 `ready`，定义与设置规则现在写法相同（§3）；除 Codex 外，provenance hook 给不出可用的 ID 时，改为让模型复制会话上下文明确给出的 ID，只有上下文也没有给出时才写 `unrecorded`，与 §7 已规定的顺序一致（Codex 的 hook 仍退回 `unrecorded`，因为它的 `--check` 以此为准）；commit guard 拒绝强制推送时，提示把推送留给用户。
 - **2026-09-24** —— 里程碑目录由 `milestones/` 改名为 `miles/`，与 `mates/`、`manus/`、`notes/`、`tasks/` 等简写目录名保持一致；所有 skill、`lint.sh`、状态扫描和保护收到反馈的 gate 现在都只读取 `miles/`。更新不移动任何文件：已有的论文仓库请运行 `git mv milestones miles` 并提交，在此之前更新器会一直报告遗留的 `milestones/`（见[更新 STORY](#更新-story-的-skill-与工作流文档)）。已有的 `.editorconfig` 会被保留，请把其中两个 `milestones/` 模板小节手动改为 `miles/`。

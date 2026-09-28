@@ -36,8 +36,8 @@ flowchart LR
 | `story-syns-coach` † | 总问题、中心论点、研究问题或贡献不清楚 | 总叙事、贡献、出版物与论断元数据 |
 | `story-outl-planner` † | 把研究主线变成章节规划 | `notes/outline.md`、`notes/notation.md` 与章节骨架 |
 | `story-chap-drafter` | 以学位论文和作者声音起草或基于证据修改一章或一份前置/后置部分文件；`trace` 只补充来源锚点，不重写正文 | 一个 `manus/chaps/`、`manus/fronts/` 或 `manus/backs/` 文件及同步台账 |
-| `story-tabs-builder` | 从已登记证据生成表格 | `manus/tabs/*.tex` |
-| `story-figs-designer` | 规划或制作图及可编辑源文件 | `manus/figs/` 与 `manus/figs/srcs/` |
+| `story-tabs-builder` | 从已登记证据生成表格 | `manus/tabs/<owner>_<slug>.tex`，键取引用它的文件 |
+| `story-figs-designer` | 规划或制作图及可编辑源文件 | `manus/figs/<owner>_<slug>.pdf` 与 `manus/figs/srcs/<owner>_<slug>.*`，键取引用它的文件 |
 | `story-refs-curator` | 添加、核验、阅读或组织文献 | bibliography 与 `notes/refs/` |
 | `story-copy-editor` | 统一作者声音，修改公式化表达、术语、过渡或重复 | 正文修改、报告或 `notes/style.md` |
 | `story-clms-auditor` | 检查数字和贡献论断的可追溯性 | 论断结论与任务 |

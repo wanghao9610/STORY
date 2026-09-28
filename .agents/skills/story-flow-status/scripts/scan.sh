@@ -239,7 +239,9 @@ heading 'Latest build'
 # The same entry-point and output-directory resolution run.sh uses: STORY_MAIN
 # from the environment, then .env (default manus/main.tex), wkdrs/builds/ for a
 # main under manus/, <dir>/.build beside a main anywhere else.
-scan_main="${STORY_MAIN:-$(sed -n 's/^[[:space:]]*STORY_MAIN=//p' .env 2>/dev/null | tail -1)}"
+# The pattern is ASCII, and under a UTF-8 locale a byte that is not UTF-8 would
+# stop sed and leave the default entry point in place of the one .env names.
+scan_main="${STORY_MAIN:-$(LC_ALL=C sed -n 's/^[[:space:]]*STORY_MAIN=//p' .env 2>/dev/null | tail -1)}"
 scan_main="${scan_main%$'\r'}"; scan_main="${scan_main%\"}"; scan_main="${scan_main#\"}"
 scan_main="${scan_main%\'}"; scan_main="${scan_main#\'}"
 scan_main="${scan_main:-manus/main.tex}"
@@ -252,9 +254,83 @@ else
     build_dir="${scan_dir}/.build"
 fi
 printf 'entry point: %s\n' "${scan_main}"
-printf 'todo markers: %s\n' "$(find manus -type f -name '*.tex' -exec awk '
-    { line = $0; sub(/(^|[^\\])%.*/, "", line); if (line ~ /\\todo[[:space:]]*\{/) n++ }
-    END { print n + 0 }' {} + 2>/dev/null | awk '{ s += $1 } END { print s + 0 }')"
+# The todo count is lint.sh's own, so the two never disagree: TEX_AWK and
+# TODO_AWK are copies of lint.sh's text (check_consistency.sh compares them),
+# read under LC_ALL=C over the files lint counts. A directory or file lint
+# cannot read, or one in UTF-16 or UTF-32, is named instead: lint fails on it.
+TEX_AWK='
+function strip_comment(text,    kept, piece, delimiter, rest, end) {
+    comment_cut = 0
+    kept = ""
+    while (1) {
+        if (substr(text, 1, 1) == "%") { comment_cut = 1; return kept }
+        if (!match(text, /(^|[^\\])(\\\\)*(%|\\verb[*]?[^*[:alpha:][:space:]])/)) return kept text
+        piece = substr(text, RSTART, RLENGTH)
+        if (piece !~ /\\verb[*]?[^*[:alpha:][:space:]]$/) {
+            comment_cut = 1
+            return kept substr(text, 1, RSTART + RLENGTH - 2)
+        }
+        delimiter = substr(piece, length(piece), 1)
+        kept = kept substr(text, 1, RSTART + index(piece, "\\verb") - 2) " "
+        rest = substr(text, RSTART + RLENGTH)
+        end = index(rest, delimiter)
+        if (!end) return kept
+        text = substr(rest, end + 1)
+    }
+}
+function tex_line(text,    kept) {
+    sub(/\r$/, "", text)
+    sub(/^[ \t]+/, "", text)
+    kept = strip_comment(text)
+    if (comment_cut) return kept
+    sub(/[ \t]+$/, "", kept)
+    return kept " "
+}
+function physical_lines(text, parts,    count) {
+    sub(/\r$/, "", text)
+    count = split(text, parts, "\r")
+    if (count == 0) { parts[1] = ""; count = 1 }
+    return count
+}
+'
+TODO_AWK='
+function take(line) {
+    if (line == " ") { carry = ""; return }
+    carry = carry line
+    n += gsub(/\\todo[[:space:]]*\{/, "", carry)
+    if (match(carry, /\\[[:alpha:]]*[[:space:]]*$/)) carry = substr(carry, RSTART)
+    else carry = ""
+}
+FNR == 1 { carry = "" }
+{
+    count = physical_lines($0, parts)
+    for (i = 1; i <= count; i++) take(tex_line(parts[i]))
+}
+END { print n + 0 }
+'
+scan_todo_files=()
+scan_unread=''
+while IFS= read -r path; do
+    [[ -n "${path}" ]] || continue
+    if [[ -d "${path}" ]]; then
+        [[ -r "${path}" && -x "${path}" ]] || scan_unread="${scan_unread}${scan_unread:+, }${path}/"
+    elif [[ ! -f "${path}" ]]; then
+        continue
+    elif [[ ! -r "${path}" || "$(LC_ALL=C tr -cd '\000' < "${path}" 2>/dev/null | LC_ALL=C wc -c | tr -d '[:space:]')" != 0 ]]; then
+        scan_unread="${scan_unread}${scan_unread:+, }${path}"
+    else
+        scan_todo_files+=("${path}")
+    fi
+done < <(find manus \( -type d -o \( -type f -o -type l \) -name '*.tex' \) -print 2>/dev/null | LC_ALL=C sort)
+scan_todos=0
+if (( ${#scan_todo_files[@]} > 0 )); then
+    scan_todos="$(LC_ALL=C awk "${TEX_AWK}${TODO_AWK}" "${scan_todo_files[@]}" 2>/dev/null)" || scan_todos='unknown'
+fi
+if [[ -n "${scan_unread}" ]]; then
+    printf 'todo markers: %s (not counted in %s, which lint fails on)\n' "${scan_todos}" "${scan_unread}"
+else
+    printf 'todo markers: %s\n' "${scan_todos}"
+fi
 pdf="${build_dir}/${scan_base}.pdf"
 if [[ -f "${pdf}" ]]; then
     if command -v pdfinfo >/dev/null 2>&1; then

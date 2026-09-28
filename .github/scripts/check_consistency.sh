@@ -985,7 +985,7 @@ printf '%s\n' '# Claims' '' '## Ledger' '' \
     '| ID | Claim | Contribution | Source | Status |' \
     '|---|---|---|---|---|' \
     '| C001 | Accuracy improves by 2 points | K1 | `mates/a.csv` | verified |' \
-    '| C002 | The error \|e\| stays below 0.1 | K1 | manus/chaps/3_results.tex | drafted |' \
+    '| C002 | The error \|e\| stays below 0.1 | K1 | manus/chaps/03_results.tex | drafted |' \
     '| C003 | `P(A \| B)` exceeds 0.5 | K2 | | unsourced |' \
     '| C004 | Plain claim | K2 | x | `unsourced` |' > "${scan_fixture}/notes/claims.md"
 scan_counts="$(cd "${scan_fixture}" && bash "${ROOT_DIR}/.agents/skills/story-flow-status/scripts/scan.sh" 2>/dev/null | grep -F 'notes/claims.md [Ledger] Status:')"
@@ -995,6 +995,44 @@ if [[ "${scan_counts}" == 'notes/claims.md [Ledger] Status: verified=1 drafted=1
 else
     fail "the status scan miscounts a ledger with an escaped \\| in a cell: ${scan_counts:-no Status line}"
 fi
+# The status scan counts visible \todo markers with lint's own awk text, so
+# the two never report different counts: the copies must stay identical, and
+# the count must follow lint's rules (a % after \\ is a comment, a marker whose
+# argument opens after a comment or on the next line counts, a lone-CR file is
+# read line by line, a byte that is not UTF-8 stops nothing, and a file lint
+# cannot read is named, not counted as none).
+for block in TEX_AWK TODO_AWK; do
+    lint_block="$(sed -n "/^${block}='\$/,/^'\$/p" execs/scpts/lint.sh)"
+    scan_block="$(sed -n "/^${block}='\$/,/^'\$/p" .agents/skills/story-flow-status/scripts/scan.sh)"
+    if [[ -z "${lint_block}" || "${lint_block}" != "${scan_block}" ]]; then
+        fail "the status scan's ${block} differs from lint.sh's, so their todo counts can disagree"
+    fi
+done
+scan_fixture="$(mktemp -d)"
+mkdir -p "${scan_fixture}/degree" "${scan_fixture}/notes" "${scan_fixture}/manus/chaps"
+printf '%s\n' 'A proof.\\% \todo{tighten the bound}' > "${scan_fixture}/manus/chaps/01_a.tex"
+printf '%s\n' '\todo{% the bound' '  tighten it}' > "${scan_fixture}/manus/chaps/02_b.tex"
+printf 'R\351sum\351 \\todo{x}\n' > "${scan_fixture}/manus/chaps/03_c.tex"
+printf '%s\n' '\todo%' '  {split}' 'The rate is \verb|50%| here. \todo{after verb}' > "${scan_fixture}/manus/chaps/04_d.tex"
+printf '\\chapter{E}\r%% a note\r\\todo{after a lone CR}\r' > "${scan_fixture}/manus/chaps/05_e.tex"
+scan_utf8="$(locale -a 2>/dev/null | grep -Eix 'c\.utf-?8|en_us\.utf-?8' | head -n 1 || true)"
+scan_todos="$(cd "${scan_fixture}" && LC_ALL="${scan_utf8}" bash "${ROOT_DIR}/.agents/skills/story-flow-status/scripts/scan.sh" 2>/dev/null | grep -F 'todo markers:')"
+if [[ "${scan_todos}" == 'todo markers: 5' ]]; then
+    ok "the status scan counts visible \\todo markers by lint's rules"
+else
+    fail "the status scan's todo count departs from lint's rules: ${scan_todos:-no todo line} (expected 5)"
+fi
+chmod 000 "${scan_fixture}/manus/chaps/05_e.tex"
+if [[ ! -r "${scan_fixture}/manus/chaps/05_e.tex" ]]; then
+    scan_todos="$(cd "${scan_fixture}" && bash "${ROOT_DIR}/.agents/skills/story-flow-status/scripts/scan.sh" 2>/dev/null | grep -F 'todo markers:')"
+    if [[ "${scan_todos}" == 'todo markers: 4 (not counted in manus/chaps/05_e.tex, which lint fails on)' ]]; then
+        ok 'the status scan names a manuscript file it cannot read instead of counting it as clean'
+    else
+        fail "the status scan hides a manuscript file it cannot read: ${scan_todos:-no todo line}"
+    fi
+fi
+chmod -R u+rwx "${scan_fixture}"
+rm -rf "${scan_fixture}"
 
 grep -q 'Systematic Toolchain for Organizing Research over Years' README.md || fail 'README.md lacks the official expansion'
 grep -q 'A STAR takes the STAGE to tell a STORY' README.md || fail 'README.md lacks the official tagline'
