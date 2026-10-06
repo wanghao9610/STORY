@@ -1,6 +1,6 @@
 ---
 description: Run story-proj-adopt with its STORY workflow instructions
-argument-hint: "[SOURCE_PATH] [DESCRIPTION] [involve=LEVEL]"
+argument-hint: "[SOURCE_PATH] [DESCRIPTION] [involve=low]"
 ---
 
 Read `.pi/skills/story-proj-adopt/SKILL.md` in full and follow it as this run's instructions.

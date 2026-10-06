@@ -1,6 +1,6 @@
 ---
 description: Run story-revs-resolver with its STORY workflow instructions
-argument-hint: "[MILESTONE] [DESCRIPTION] [involve=LEVEL]"
+argument-hint: "[MILESTONE] [DESCRIPTION] [involve=high]"
 ---
 
 Read `.pi/skills/story-revs-resolver/SKILL.md` in full and follow it as this run's instructions.

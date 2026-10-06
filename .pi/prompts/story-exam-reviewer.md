@@ -1,6 +1,6 @@
 ---
 description: Run story-exam-reviewer with its STORY workflow instructions
-argument-hint: "[MILESTONE] [DESCRIPTION] [involve=LEVEL]"
+argument-hint: "[MILESTONE] [DESCRIPTION] [involve=<level>]"
 ---
 
 Read `.pi/skills/story-exam-reviewer/SKILL.md` in full and follow it as this run's instructions.

@@ -1,6 +1,6 @@
 ---
 description: Pursue a stated thesis goal, starting each next unmarked STORY skill and stopping at any † skill
-argument-hint: "GOAL [involve=LEVEL]"
+argument-hint: "GOAL [involve=low]"
 disable-model-invocation: true
 ---
 

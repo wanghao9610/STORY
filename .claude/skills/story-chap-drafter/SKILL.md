@@ -1,7 +1,7 @@
 ---
 name: story-chap-drafter
 description: Use to draft or revise what one thesis chapter or one front- or back-matter file (abstract, appendix) says — argument, claims, evidence, citations in prose — from its brief, the thesis story, ledgers, reading notes, fingerprinted evidence, and authorial style, or to trace an existing chapter's source anchors without changing its text. For wording-only polish that keeps every claim, use story-copy-editor.
-argument-hint: "CHAPTER | FRONT_OR_BACK_FILE | trace CHAPTER [DESCRIPTION] [involve=LEVEL]"
+argument-hint: "CHAPTER | FRONT_OR_BACK_FILE | trace CHAPTER [DESCRIPTION] [involve=low]"
 ---
 
 # Draft one evidence-bound chapter

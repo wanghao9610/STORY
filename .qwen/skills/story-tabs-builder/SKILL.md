@@ -1,7 +1,7 @@
 ---
 name: story-tabs-builder
 description: Use to build or revise one thesis table (results, comparisons, mappings, synthesis) from fingerprinted evidence, with a source anchor on every quantitative or comparative row and synchronized claim, outline, and notation records. For a design whose message depends on visual encoding, use story-figs-designer.
-argument-hint: "[TABLE | new] [DESCRIPTION] [involve=LEVEL]"
+argument-hint: "[TABLE | new] [DESCRIPTION] [involve=low]"
 ---
 
 # Build one evidence-backed table

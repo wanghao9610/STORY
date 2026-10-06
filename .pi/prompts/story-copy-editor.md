@@ -1,6 +1,6 @@
 ---
 description: Run story-copy-editor with its STORY workflow instructions
-argument-hint: "[CHAPTER | FILE | full | style] [DESCRIPTION] [involve=LEVEL]"
+argument-hint: "[CHAPTER | FILE | full | style] [DESCRIPTION] [involve=low]"
 ---
 
 Read `.pi/skills/story-copy-editor/SKILL.md` in full and follow it as this run's instructions.

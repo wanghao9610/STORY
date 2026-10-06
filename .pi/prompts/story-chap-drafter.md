@@ -1,6 +1,6 @@
 ---
 description: Run story-chap-drafter with its STORY workflow instructions
-argument-hint: "CHAPTER | FRONT_OR_BACK_FILE | trace CHAPTER [DESCRIPTION] [involve=LEVEL]"
+argument-hint: "CHAPTER | FRONT_OR_BACK_FILE | trace CHAPTER [DESCRIPTION] [involve=low]"
 ---
 
 Read `.pi/skills/story-chap-drafter/SKILL.md` in full and follow it as this run's instructions.

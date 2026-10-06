@@ -55,32 +55,36 @@ takes_argument_hint() { # $1 = tree
 }
 
 # One shape for the whole roster: <skill> [TARGET] [DESCRIPTION] [involve=<level>]
-# (writing workflow conventions §7). Uppercase placeholders are values the author
-# supplies and lowercase words are literal modes; the manifest is English only, so
-# the hint is too. Every hint ends in `[involve=LEVEL]`, never one literal level:
-# the default comes from INVOLVE in .env. This table holds only the target part.
+# (writing workflow conventions §7), written as STAR and STAGE write theirs.
+# Uppercase placeholders are positional values the author supplies, lowercase
+# words are literal modes, and a <lowercase> placeholder is the value after a
+# key= or a mode; [] marks what may be left out, ... a repeat. The manifest is
+# English only, so the hint is too. The involve token names the level worth
+# switching to for this skill (low to ask less, high to weigh each call), or
+# <level> where no level is suggested; the default still comes from INVOLVE in
+# .env. This table holds the target part and that level.
 argument_hint() { # $1 = skill
-    local target
+    local target level
     case "$1" in
-        story-chap-drafter)  target='CHAPTER | FRONT_OR_BACK_FILE | trace CHAPTER' ;;
-        story-cite-auditor)  target='[CHAPTER | full]' ;;
-        story-clms-auditor)  target='[CHAPTER | CLAIM_ID[,CLAIM_ID...] | full]' ;;
-        story-copy-editor)   target='[CHAPTER | FILE | full | style]' ;;
-        story-defn-builder)  target='[MILESTONE]' ;;
-        story-depo-packer)   target='MILESTONE' ;;
-        story-evid-curator)  target='[check | import source=PATH [slug=NAME] | register path=FILE...]' ;;
-        story-exam-reviewer) target='[MILESTONE]' ;;
-        story-figs-designer) target='[FIGURE | new]' ;;
-        story-flow-status)   target='' ;;
-        story-outl-planner)  target='' ;;
-        story-proj-adopt)    target='[SOURCE_PATH]' ;;
-        story-refs-curator)  target='[PAPER... | CHAPTER | reconcile]' ;;
-        story-revs-resolver) target='[MILESTONE]' ;;
-        story-syns-coach)    target='' ;;
-        story-tabs-builder)  target='[TABLE | new]' ;;
+        story-chap-drafter)  target='CHAPTER | FRONT_OR_BACK_FILE | trace CHAPTER'; level='low' ;;
+        story-cite-auditor)  target='[CHAPTER | full]'; level='<level>' ;;
+        story-clms-auditor)  target='[CHAPTER | CLAIM_ID[,CLAIM_ID...] | full]'; level='<level>' ;;
+        story-copy-editor)   target='[CHAPTER | FILE | full | style]'; level='low' ;;
+        story-defn-builder)  target='[MILESTONE]'; level='high' ;;
+        story-depo-packer)   target='MILESTONE'; level='high' ;;
+        story-evid-curator)  target='[check | import source=<path> [slug=<name>] | register path=<file>...]'; level='low' ;;
+        story-exam-reviewer) target='[MILESTONE]'; level='<level>' ;;
+        story-figs-designer) target='[FIGURE | new]'; level='low' ;;
+        story-flow-status)   target=''; level='<level>' ;;
+        story-outl-planner)  target=''; level='high' ;;
+        story-proj-adopt)    target='[SOURCE_PATH]'; level='low' ;;
+        story-refs-curator)  target='[PAPER... | CHAPTER | reconcile]'; level='low' ;;
+        story-revs-resolver) target='[MILESTONE]'; level='high' ;;
+        story-syns-coach)    target=''; level='high' ;;
+        story-tabs-builder)  target='[TABLE | new]'; level='low' ;;
         *) return 1 ;;
     esac
-    printf '%s[DESCRIPTION] [involve=LEVEL]' "${target:+${target} }"
+    printf '%s[DESCRIPTION] [involve=%s]' "${target:+${target} }" "${level}"
 }
 
 # Frontmatter only Claude Code reads, one table per skill like argument_hint():

@@ -2,7 +2,7 @@
 name: story-revs-resolver
 disable-model-invocation: true
 description: Use after thesis feedback or an official outcome arrives from supervisors, coauthors, committees, examiners, defenses, corrections, or deposits. Converts it into an immutable-source point ledger, reasoned dispositions, tracked promises, and outcome records, without rewriting chapters. For a simulated review, use story-exam-reviewer.
-argument-hint: "[MILESTONE] [DESCRIPTION] [involve=LEVEL]"
+argument-hint: "[MILESTONE] [DESCRIPTION] [involve=high]"
 ---
 
 # Resolve thesis feedback

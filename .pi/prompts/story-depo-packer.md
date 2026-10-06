@@ -1,6 +1,6 @@
 ---
 description: Run story-depo-packer with its STORY workflow instructions
-argument-hint: "MILESTONE [DESCRIPTION] [involve=LEVEL]"
+argument-hint: "MILESTONE [DESCRIPTION] [involve=high]"
 ---
 
 Read `.pi/skills/story-depo-packer/SKILL.md` in full and follow it as this run's instructions.

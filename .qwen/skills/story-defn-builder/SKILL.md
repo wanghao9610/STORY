@@ -2,7 +2,7 @@
 name: story-defn-builder
 disable-model-invocation: true
 description: Use for an applicable pre-defense or final defense. Plans, builds, and checks the thesis defense narrative, an editable slide deck, and a question bank from `verified` thesis claims, registered evidence, and confirmed timing and rules. For a mock examination report, use story-exam-reviewer.
-argument-hint: "[MILESTONE] [DESCRIPTION] [involve=LEVEL]"
+argument-hint: "[MILESTONE] [DESCRIPTION] [involve=high]"
 ---
 
 # Build the degree defense

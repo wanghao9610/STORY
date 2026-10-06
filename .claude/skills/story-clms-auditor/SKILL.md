@@ -1,7 +1,7 @@
 ---
 name: story-clms-auditor
 description: Use before reviews, defense, or deposit, or after evidence changes, to audit a thesis's numbers, comparisons, and degree-contribution claims against source anchors, the claim ledger, and fingerprinted evidence. Read-only on the manuscript and evidence. For citation keys and literature assertions, use story-cite-auditor.
-argument-hint: "[CHAPTER | CLAIM_ID[,CLAIM_ID...] | full] [DESCRIPTION] [involve=LEVEL]"
+argument-hint: "[CHAPTER | CLAIM_ID[,CLAIM_ID...] | full] [DESCRIPTION] [involve=<level>]"
 ---
 
 # Audit claims and numbers

@@ -2,7 +2,7 @@
 name: story-proj-adopt
 disable-model-invocation: true
 description: Use when an existing thesis draft or Overleaf export should come under STORY. Inventories the draft, confirms a file map, copies (never moves) the source after the author commits a pre-adoption checkpoint, records the draft's claims, and verifies the resulting build without redesigning chapters. After adoption, story-syns-coach frames the thesis story.
-argument-hint: "[SOURCE_PATH] [DESCRIPTION] [involve=LEVEL]"
+argument-hint: "[SOURCE_PATH] [DESCRIPTION] [involve=low]"
 ---
 
 # Adopt an existing thesis

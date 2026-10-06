@@ -2,7 +2,7 @@
 name: story-syns-coach
 disable-model-invocation: true
 description: Use before outlining, when the thesis lacks a coherent argument, or to record an author-supplied publication reuse or permission fact. Shapes the thesis problem, central argument, research questions, arc, synthesis, and degree contributions from the author's intent and registered evidence, with the contribution, publication, and claim maps. For chapter architecture, use story-outl-planner.
-argument-hint: "[DESCRIPTION] [involve=LEVEL]"
+argument-hint: "[DESCRIPTION] [involve=high]"
 ---
 
 # Shape the degree-level synthesis

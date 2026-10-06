@@ -1,7 +1,7 @@
 ---
 name: story-exam-reviewer
 description: Use when a built thesis needs a mock examiner or committee review. Simulates a degree-appropriate examination of coherence, contributions, methods, evidence, literature, attribution, limitations, and presentation, and writes a report without editing the manuscript. For claim traceability, use story-clms-auditor; for citations, story-cite-auditor.
-argument-hint: "[MILESTONE] [DESCRIPTION] [involve=LEVEL]"
+argument-hint: "[MILESTONE] [DESCRIPTION] [involve=<level>]"
 ---
 
 # Run a degree-appropriate mock examination

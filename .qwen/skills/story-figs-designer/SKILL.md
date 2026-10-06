@@ -1,7 +1,7 @@
 ---
 name: story-figs-designer
 description: Use to plan, create, or revise one thesis figure (conceptual, method, result, synthesis) with an editable source, a rendered PDF under manus/figs/, and evidence mappings for every data mark, numeric label, and comparative caption statement. For a table of values, use story-tabs-builder.
-argument-hint: "[FIGURE | new] [DESCRIPTION] [involve=LEVEL]"
+argument-hint: "[FIGURE | new] [DESCRIPTION] [involve=low]"
 ---
 
 # Design one traceable figure

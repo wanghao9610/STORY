@@ -1,7 +1,7 @@
 ---
 name: story-evid-curator
 description: Use when thesis evidence under mates/ must be imported, registered, refreshed, or integrity-checked with provenance and fingerprints, from STAR/STAGE/STORY sources or manual research artifacts. Never edits evidence in place and never writes the claim ledger.
-argument-hint: "[check | import source=PATH [slug=NAME] | register path=FILE...] [DESCRIPTION] [involve=LEVEL]"
+argument-hint: "[check | import source=<path> [slug=<name>] | register path=<file>...] [DESCRIPTION] [involve=low]"
 ---
 
 # Curate thesis evidence

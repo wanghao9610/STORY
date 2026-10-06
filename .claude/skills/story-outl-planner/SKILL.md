@@ -2,7 +2,7 @@
 name: story-outl-planner
 disable-model-invocation: true
 description: Use once the thesis story is finalized or the author chooses a provisional outline, and whenever chapter boundaries change. Turns the story and contribution map into chapter architecture, briefs, figure and table plans, and chapter scaffolds wired into the active entry point, mapping existing drafts instead of replacing them. For the thesis argument itself, use story-syns-coach.
-argument-hint: "[DESCRIPTION] [involve=LEVEL]"
+argument-hint: "[DESCRIPTION] [involve=high]"
 ---
 
 # Plan the thesis outline

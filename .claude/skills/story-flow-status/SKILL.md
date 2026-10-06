@@ -2,7 +2,7 @@
 name: story-flow-status
 effort: medium
 description: Use when the thesis state is unclear or the author asks for status or the next step. Reads the whole STORY repository and reports degree-level validity, evidence health, chapter/claim/contribution coverage, applicable milestone gates, build and lint state, and exactly one recommended next action. Strictly read-only; writes no files.
-argument-hint: "[DESCRIPTION] [involve=LEVEL]"
+argument-hint: "[DESCRIPTION] [involve=<level>]"
 ---
 
 # Report thesis workflow status

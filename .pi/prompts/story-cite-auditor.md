@@ -1,6 +1,6 @@
 ---
 description: Run story-cite-auditor with its STORY workflow instructions
-argument-hint: "[CHAPTER | full] [DESCRIPTION] [involve=LEVEL]"
+argument-hint: "[CHAPTER | full] [DESCRIPTION] [involve=<level>]"
 ---
 
 Read `.pi/skills/story-cite-auditor/SKILL.md` in full and follow it as this run's instructions.

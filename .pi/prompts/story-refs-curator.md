@@ -1,6 +1,6 @@
 ---
 description: Run story-refs-curator with its STORY workflow instructions
-argument-hint: "[PAPER... | CHAPTER | reconcile] [DESCRIPTION] [involve=LEVEL]"
+argument-hint: "[PAPER... | CHAPTER | reconcile] [DESCRIPTION] [involve=low]"
 ---
 
 Read `.pi/skills/story-refs-curator/SKILL.md` in full and follow it as this run's instructions.
