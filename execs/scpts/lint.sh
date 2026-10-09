@@ -69,17 +69,21 @@ function physical_lines(text, parts,    count) {
 # record) keeps the caller's locale for a valid file, whose [[:space:]] also
 # takes a full-width space, and reads any other file byte by byte (meta_lc),
 # with one warning. The prose review matches Chinese on purpose, so it skips,
-# by name, a file that is not UTF-8. utf8_valid asks iconv, when iconv rejects
-# a byte that is not UTF-8, else perl, and then awk and sed in the caller's
-# locale: macOS iconv takes a sequence past U+10FFFF that macOS awk and sed
-# reject, and with neither iconv nor perl the two probes alone decide.
+# by name, a file that is not UTF-8. utf8_valid asks perl's strict decoder,
+# else iconv when iconv rejects a byte that is not UTF-8 and takes a long run of
+# multibyte text, and then awk and sed in the caller's locale: macOS iconv takes
+# a sequence past U+10FFFF that macOS awk and sed reject, the macOS 26 iconv
+# rejects valid text once a few hundred multibyte characters run together (a
+# Chinese chapter), and with neither perl nor a sound iconv the two probes
+# alone decide.
 UTF8_TOOL=none
-if command -v iconv >/dev/null 2>&1 \
-    && printf 'caf\303\251\n' | iconv -f UTF-8 -t UTF-8 >/dev/null 2>&1 \
-    && ! printf 'caf\351\n' | iconv -f UTF-8 -t UTF-8 >/dev/null 2>&1; then
-    UTF8_TOOL=iconv
-elif command -v perl >/dev/null 2>&1; then
+if command -v perl >/dev/null 2>&1 && perl -MEncode -e 1 >/dev/null 2>&1; then
     UTF8_TOOL=perl
+elif command -v iconv >/dev/null 2>&1 \
+    && printf 'caf\303\251\n' | iconv -f UTF-8 -t UTF-8 >/dev/null 2>&1 \
+    && ! printf 'caf\351\n' | iconv -f UTF-8 -t UTF-8 >/dev/null 2>&1 \
+    && LC_ALL=C awk 'BEGIN { for (i = 0; i < 1024; i++) printf "\344\270\255" }' | iconv -f UTF-8 -t UTF-8 >/dev/null 2>&1; then
+    UTF8_TOOL=iconv
 fi
 utf8_valid() {
     case "${UTF8_TOOL}" in
@@ -348,29 +352,31 @@ readable_sources() {
 }
 
 # Conventions §5 (Manuscript file names): every file under the directories below
-# is <key>_<slug>.<ext>, and a figure, its source, and a table take the key of
-# the one chapter or appendix file that includes them, or the zero key for front
-# matter. Names are directory facts, so this needs no build and reads manus/
-# whatever the entry point; lint runs it before the build, so neither a failed
-# or missing build nor a later check that stops lint hides what it found.
+# is <key>_<slug>.<ext>, and a figure file, a table, and a source take the key
+# of the one chapter or appendix file that includes them, or the zero key for
+# front matter. A figure is manus/figs/<owner>_<slug>.tex, and its graphic and
+# editable sources under manus/figs/srcs/ share its key and slug. Names are
+# directory facts, so this needs no build and reads manus/ whatever the entry
+# point; lint runs it before the build, so neither a failed or missing build
+# nor a later check that stops lint hides what it found.
 check_file_names() {
     local slug='[a-z][a-z0-9]*(-[a-z0-9]+)*'
     local warns_before="${WARNS}" dir pattern expected name names natural diverge pair mixed
     local chapter_keys=' ' appendix_keys=' ' zero_key='00' one_digit_keys='^ ([0-9] )+$'
-    local key includer includer_key kind target base asset candidate matches
+    local key includer includer_key includer_stem kind target base asset candidate matches
     local seen_includes=$'\n'
-    local width first_name first_width graphicspath_figs=false IN_GIT_TREE=false
+    local width first_name first_width graphicspath_dir='' IN_GIT_TREE=false
     local -a dirs=(manus/chaps manus/backs manus/figs manus/figs/srcs manus/tabs)
     local -a modes=(files files files all files)
     local -a readable=(true true true true true)
     local -a patterns=(
         "^[0-9]{1,2}_${slug}\\.tex\$"
         "^[a-z]_${slug}\\.tex\$"
-        "^([0-9]{1,2}|[a-z])_${slug}(\\.[a-z0-9]+)+\$"
+        "^([0-9]{1,2}|[a-z])_${slug}\\.tex\$"
         "^([0-9]{1,2}|[a-z])_${slug}(\\.[a-z0-9]+)*\$"
         "^([0-9]{1,2}|[a-z])_${slug}\\.tex\$"
     )
-    local -a expects=('<nn>_<slug>.tex' '<letter>_<slug>.tex' '<owner>_<slug>.<ext>' '<owner>_<slug> or <owner>_<slug>.<ext>' '<owner>_<slug>.tex')
+    local -a expects=('<nn>_<slug>.tex' '<letter>_<slug>.tex' '<owner>_<slug>.tex' '<owner>_<slug> or <owner>_<slug>.<ext>' '<owner>_<slug>.tex')
     local -a listings=() includers=() sources=()
     local i
 
@@ -475,11 +481,13 @@ check_file_names() {
     done
 
     # 4. Includer matches: an include whose target under figs/ or tabs/ starts
-    # with a key names the including file's key. A symlinked includer counts
-    # as the file it points to. A bare \includegraphics name counts as figs/
-    # only when a \graphicspath lists figs/. Both are read from each file's
-    # lines joined as TeX joins them (tex_line), so an include or a
-    # \graphicspath may span lines and a comment may split a name
+    # with a key names the including file's key, and a figure file's graphic
+    # under figs/srcs/ shares its key and slug; a multi-file source counts by
+    # its directory. A symlinked includer counts as the file it points to. A
+    # bare \includegraphics name counts as figs/srcs/ only when a
+    # \graphicspath lists figs/srcs/. Both are read from each file's lines
+    # joined as TeX joins them (tex_line), so an include or a \graphicspath
+    # may span lines and a comment may split a name
     # ({figs/%<newline>01_x}); a \graphicspath, whose argument a blank line
     # would end, is looked for one paragraph at a time. An option value may
     # hold a ']' inside braces ([alt={A [b] c}]).
@@ -487,16 +495,17 @@ check_file_names() {
         if [[ -n "${name}" ]]; then
             includers+=("${name}")
         fi
-    done <<< "$(readable_sources manus/chaps manus/backs manus/fronts -mindepth 1 -maxdepth 1 \( -type f -o -type l \) -name '*.tex' ! -name '.*')"
+    done <<< "$(readable_sources manus/chaps manus/backs manus/fronts manus/figs -mindepth 1 -maxdepth 1 \( -type f -o -type l \) -name '*.tex' ! -name '.*')"
     if (( ${#includers[@]} > 0 )); then
         while IFS= read -r name; do
             if [[ -n "${name}" ]]; then
                 sources+=("${name}")
             fi
         done <<< "$(readable_sources manus -maxdepth 2 \( -type f -o -type l \) \( -name '*.tex' -o -name '*.sty' -o -name '*.cls' \))"
-        if (( ${#sources[@]} > 0 )) && LC_ALL=C awk "${TEX_AWK}"'
+        if (( ${#sources[@]} > 0 )); then
+            graphicspath_dir="$(LC_ALL=C awk "${TEX_AWK}"'
                 function scan() {
-                    if (buffer ~ /\\graphicspath[[:space:]]*\{[[:space:]]*(\{[^{}]*\}[[:space:]]*)*\{(\.\/)?figs\/?\}/) found = 1
+                    if (buffer ~ /\\graphicspath[[:space:]]*\{[[:space:]]*(\{[^{}]*\}[[:space:]]*)*\{(\.\/)?figs\/srcs\/?\}/) found = 1
                     buffer = ""
                 }
                 found { exit }
@@ -504,8 +513,7 @@ check_file_names() {
                 { line = tex_line($0) }
                 line == " " { scan(); next }
                 { buffer = buffer line }
-                END { scan(); exit !found }' "${sources[@]}" 2>/dev/null; then
-            graphicspath_figs=true
+                END { scan(); if (found) print "figs/srcs" }' "${sources[@]}" 2>/dev/null || true)"
         fi
         while IFS=$'\t' read -r includer kind target; do
             [[ -n "${includer}" ]] || continue
@@ -514,35 +522,54 @@ check_file_names() {
                 figs/*|tabs/*) ;;
                 */*|'') continue ;;
                 *)
-                    [[ "${kind}" == g && "${graphicspath_figs}" == true ]] || continue
-                    target="figs/${target}"
+                    [[ "${kind}" == g && -n "${graphicspath_dir}" ]] || continue
+                    target="${graphicspath_dir}/${target}"
                     ;;
             esac
             base="${target##*/}"
+            asset=''
+            case "${target}" in
+                figs/srcs/*/*) base="${target#figs/srcs/}"; base="${base%%/*}"; asset="manus/figs/srcs/${base}" ;;
+            esac
             [[ "${base%%.*}" =~ ^([0-9]{1,2}|[a-z])_ ]] || continue
             key="${BASH_REMATCH[1]}"
             name="${includer##*/}"
+            includer_stem=''
             case "${includer}" in
                 manus/chaps/*) [[ "${name}" =~ ^([0-9]{1,2})_ ]] || continue; includer_key="${BASH_REMATCH[1]}" ;;
                 manus/backs/*) [[ "${name}" =~ ^([a-z])_ ]] || continue; includer_key="${BASH_REMATCH[1]}" ;;
+                manus/figs/*)
+                    [[ "${name}" =~ ^([0-9]{1,2}|[a-z])_ ]] || continue
+                    includer_key="${BASH_REMATCH[1]}"
+                    if [[ "${target}" == figs/srcs/* ]]; then
+                        includer_stem="${name%.tex}"
+                    fi
+                    ;;
                 *) [[ "${readable[0]}" == true ]] || continue; includer_key="${zero_key}" ;;
             esac
-            [[ "${key}" != "${includer_key}" ]] || continue
+            if [[ -n "${includer_stem}" ]]; then
+                [[ "${base%%.*}" != "${includer_stem}" ]] || continue
+            else
+                [[ "${key}" != "${includer_key}" ]] || continue
+            fi
             # Name the file on disk: \input adds .tex, and \includegraphics
-            # finds the one file whose name adds an extension. A target that
-            # matches no file, or several, is named as written.
-            asset="manus/${target}"
-            if [[ "${kind}" == i && "${target}" != *.tex && -f "${asset}.tex" ]]; then
-                asset="${asset}.tex"
-            elif [[ ! -f "${asset}" && "${kind}" == g ]]; then
-                matches=0
-                for candidate in "${asset}".*; do
-                    if [[ -f "${candidate}" ]]; then
-                        matches=$((matches + 1)); base="${candidate}"
+            # finds the one graphic whose name adds an extension. A target
+            # that matches no file, or several, is named as written, and a
+            # multi-file source by its directory.
+            if [[ -z "${asset}" ]]; then
+                asset="manus/${target}"
+                if [[ "${kind}" == i && "${target}" != *.tex && -f "${asset}.tex" ]]; then
+                    asset="${asset}.tex"
+                elif [[ ! -f "${asset}" && "${kind}" == g ]]; then
+                    matches=0
+                    for candidate in "${asset}".{pdf,png,jpg,jpeg,eps,mps,svg}; do
+                        if [[ -f "${candidate}" ]]; then
+                            matches=$((matches + 1)); base="${candidate}"
+                        fi
+                    done
+                    if (( matches == 1 )); then
+                        asset="${base}"
                     fi
-                done
-                if (( matches == 1 )); then
-                    asset="${base}"
                 fi
             fi
             # One warning per file an includer names, however many includes
@@ -552,6 +579,11 @@ check_file_names() {
             esac
             seen_includes="${seen_includes}${includer}"$'\t'"${asset}"$'\n'
             base="${asset##*/}"
+            if [[ -n "${includer_stem}" ]]; then
+                base="${base#"${base%%.*}"}"
+                warn "file name ${asset} does not share the key and slug of ${includer}, which includes it: expected ${includer_stem}${base}, since a figure's graphic and sources share the figure file's name (conventions §5)."
+                continue
+            fi
             warn "file name ${asset} does not carry the key of ${includer}, which includes it: expected key ${includer_key} (${includer_key}_${base#*_}), since an asset takes the key of the one file that includes it (conventions §5)."
         done <<< "$(LC_ALL=C awk "${TEX_AWK}"'
             function flush(    command, kind, target) {

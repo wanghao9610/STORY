@@ -37,7 +37,7 @@ flowchart LR
 | `story-outl-planner` † | The research arc must become a chapter plan | `notes/outline.md`, `notes/notation.md`, chapter scaffolds |
 | `story-chap-drafter` | One chapter or one front- or back-matter file needs evidence-bound drafting in the thesis and author's voice; `trace` adds source anchors without redrafting | one `manus/chaps/`, `manus/fronts/`, or `manus/backs/` file and ledger updates |
 | `story-tabs-builder` | A table must be generated from registered evidence | `manus/tabs/<owner>_<slug>.tex`, keyed by the file that includes it |
-| `story-figs-designer` | A figure and editable source must be planned or built | `manus/figs/<owner>_<slug>.pdf` and `manus/figs/srcs/<owner>_<slug>.*`, keyed by the file that includes it |
+| `story-figs-designer` | A figure and editable source must be planned or built | `manus/figs/<owner>_<slug>.tex` and its graphic and sources `manus/figs/srcs/<owner>_<slug>.*`, keyed by the file that includes it |
 | `story-refs-curator` | A source must be added, verified, read, or positioned | bibliography and `notes/refs/` |
 | `story-copy-editor` | Authorial voice, formulaic prose, terminology, transitions, or repetition need polishing | manuscript edits, a report, or `notes/style.md` |
 | `story-clms-auditor` | Numbers and contribution claims need traceability checks | claim verdicts and tasks |

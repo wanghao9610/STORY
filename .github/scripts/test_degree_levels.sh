@@ -278,25 +278,31 @@ mv "${WORK_DIR}/prose-test.keep" "${WORK_DIR}/manus/chaps/01_prose-test.tex"
 # pass line and no naming warning, hidden files, commented includes (a % after
 # \\ included), and in a git work tree the names git ignores aside. A name off
 # the grammar, key widths that sort differently in git and in an editor, keys
-# of two widths that sort alike, a key no file owns, and an asset whose
-# includer carries another key, on one line or across several (lines joined as
-# TeX joins them, so a comment may split the name), each warn, name the file on
-# disk, and none of them fails lint.
+# of two widths that sort alike, a key no file owns, an asset whose includer
+# carries another key, on one line or across several (lines joined as TeX joins
+# them, so a comment may split the name), and a figure file whose graphic under
+# figs/srcs/ has another name, each warn, name the file on disk, and none of
+# them fails lint.
 mkdir -p "${WORK_DIR}/manus/backs" "${WORK_DIR}/manus/fronts" \
     "${WORK_DIR}/manus/figs/srcs/02_pipeline" "${WORK_DIR}/manus/tabs"
-for asset in figs/.gitkeep figs/.DS_Store figs/00_teaser.pdf figs/02_pipeline.pdf figs/a_lemma.pdf \
-        figs/srcs/.gitkeep figs/srcs/02_pipeline.py figs/srcs/02_pipeline.map.md tabs/02_results.tex; do
+for asset in figs/.gitkeep figs/.DS_Store figs/srcs/.gitkeep figs/srcs/00_teaser.pdf figs/srcs/02_pipeline.pdf \
+        figs/srcs/02_pipeline.py figs/srcs/02_pipeline.map.md figs/srcs/02_pipeline/stage.pdf \
+        figs/srcs/a_lemma.pdf figs/srcs/a_lemma.pptx tabs/02_results.tex; do
     : > "${WORK_DIR}/manus/${asset}"
 done
-printf '%s\n' '\graphicspath{{figs/}}' \
-    '\includegraphics[width=\linewidth]{figs/02_pipeline.pdf} and \input{tabs/02_results}' \
+printf '%s\n' '\graphicspath{{figs/srcs/}}' \
+    '\input{figs/02_pipeline} and \input{tabs/02_results}' \
     '\includegraphics{02_pipeline}' \
-    '% \includegraphics{figs/a_lemma}' \
-    '\includegraphics{figs/02_pipeline} \\% \includegraphics{figs/a_lemma}' \
+    '% \input{figs/a_lemma}' \
+    '\input{figs/02_pipeline} \\% \input{figs/a_lemma}' \
     '\includegraphics{figs/logo.pdf}' > "${WORK_DIR}/manus/chaps/02_method.tex"
-printf '%s\n' '\includegraphics{figs/a_lemma}' > "${WORK_DIR}/manus/backs/a_proofs.tex"
-printf '%s\n' '\includegraphics{./figs/a_lemma.pdf}' > "${WORK_DIR}/manus/backs/a_proofs-zh.tex"
-printf '%s\n' '\includegraphics{figs/00_teaser}' > "${WORK_DIR}/manus/fronts/abstract.tex"
+printf '%s\n' '\includegraphics[width=\linewidth]{figs/srcs/02_pipeline.pdf}' \
+    '\includegraphics{figs/srcs/02_pipeline/stage.pdf}' > "${WORK_DIR}/manus/figs/02_pipeline.tex"
+printf '%s\n' '\includegraphics{figs/srcs/a_lemma}' > "${WORK_DIR}/manus/figs/a_lemma.tex"
+printf '%s\n' '\includegraphics{00_teaser}' > "${WORK_DIR}/manus/figs/00_teaser.tex"
+printf '%s\n' '\input{figs/a_lemma}' > "${WORK_DIR}/manus/backs/a_proofs.tex"
+printf '%s\n' '\input{./figs/a_lemma.tex}' > "${WORK_DIR}/manus/backs/a_proofs-zh.tex"
+printf '%s\n' '\input{figs/00_teaser}' > "${WORK_DIR}/manus/fronts/abstract.tex"
 expect_pass file_names_on_scheme
 refute_log file_names_on_scheme 'WARN: file name'
 expect_log file_names_on_scheme 'File names: manus/chaps, backs, figs, figs/srcs, and tabs follow the owner-key scheme'
@@ -321,7 +327,7 @@ fi
 expect_pass file_names_grammar
 expect_log file_names_grammar 'WARN: file name manus/chaps/03_related_work.tex is not <nn>_<slug>.tex (conventions §5)'
 expect_log file_names_grammar 'WARN: file name manus/backs/b_extra_zh.tex is not <letter>_<slug>.tex (conventions §5)'
-expect_log file_names_grammar 'WARN: file name manus/figs/accuracy.pdf is not <owner>_<slug>.<ext> (conventions §5)'
+expect_log file_names_grammar 'WARN: file name manus/figs/accuracy.pdf is not <owner>_<slug>.tex (conventions §5)'
 refute_log file_names_grammar 'File names:'
 rm "${WORK_DIR}/manus/chaps/03_related_work.tex" "${WORK_DIR}/manus/backs/b_extra_zh.tex" "${WORK_DIR}/manus/figs/accuracy.pdf"
 : > "${WORK_DIR}/manus/chaps/9_late.tex"
@@ -337,32 +343,41 @@ expect_log file_names_one_width 'WARN: file names in manus/chaps/ mix key widths
 refute_log file_names_one_width 'sort differently'
 refute_log file_names_one_width 'File names:'
 rm "${WORK_DIR}/manus/chaps/3_results.tex"
-for asset in figs/07_orphan.pdf figs/a_bars.pdf figs/a_diagram.pdf figs/a_note.pdf figs/a_plot.pdf figs/a_split.pdf tabs/a_notation.tex; do
+for asset in figs/07_orphan.tex figs/srcs/a_bars.pdf figs/srcs/a_diagram.pdf figs/srcs/a_note.pdf figs/srcs/a_plot.pdf \
+        figs/srcs/a_split.pdf tabs/a_notation.tex; do
     : > "${WORK_DIR}/manus/${asset}"
 done
 printf '%s\n' 'See \includegraphics[trim={0 0 1 1}]{a_lemma}.' \
-    'In 50\% of runs \includegraphics{figs/a_bars}' \
-    '\includegraphics[' '  width=\linewidth,' ']{figs/a_diagram}' \
-    '\includegraphics[width=\linewidth]%' '  {figs/a_plot}' \
-    '\includegraphics[width=\linewidth]{%' '  figs/00_teaser}' \
-    '\includegraphics{figs/%' '  a_split}' \
-    '\includegraphics{figs/%' '%% a note on its own line' '  a_note}' \
+    'In 50\% of runs \includegraphics{figs/srcs/a_bars}' \
+    '\includegraphics[' '  width=\linewidth,' ']{figs/srcs/a_diagram}' \
+    '\includegraphics[width=\linewidth]%' '  {figs/srcs/a_plot}' \
+    '\includegraphics[width=\linewidth]{%' '  figs/srcs/00_teaser}' \
+    '\includegraphics{figs/srcs/%' '  a_split}' \
+    '\includegraphics{figs/srcs/%' '%% a note on its own line' '  a_note}' \
     '\input{%' '  tabs/a_notation}' >> "${WORK_DIR}/manus/chaps/02_method.tex"
 printf '%s\n' '\input{tabs/02_results}' >> "${WORK_DIR}/manus/fronts/abstract.tex"
+printf '%s\n' '\includegraphics{figs/srcs/02_pipeline}' '\includegraphics{figs/srcs/02_pipeline/stage.pdf}' \
+    > "${WORK_DIR}/manus/figs/02_flow.tex"
+printf '%s\n' '\includegraphics{a_bars}' > "${WORK_DIR}/manus/figs/02_chart.tex"
 expect_pass file_names_owners
-expect_log file_names_owners 'WARN: file name manus/figs/07_orphan.pdf has no owner: its key 07 names no chapter in manus/chaps/, appendix in manus/backs/, or front matter (00)'
-for expected in 'manus/figs/a_lemma.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_lemma.pdf)' \
-        'manus/figs/a_bars.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_bars.pdf)' \
-        'manus/figs/a_diagram.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_diagram.pdf)' \
-        'manus/figs/a_plot.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_plot.pdf)' \
-        'manus/figs/00_teaser.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_teaser.pdf)' \
-        'manus/figs/a_split.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_split.pdf)' \
-        'manus/figs/a_note.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_note.pdf)' \
+expect_log file_names_owners 'WARN: file name manus/figs/07_orphan.tex has no owner: its key 07 names no chapter in manus/chaps/, appendix in manus/backs/, or front matter (00)'
+for expected in 'manus/figs/srcs/a_lemma.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_lemma.pdf)' \
+        'manus/figs/srcs/a_bars.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_bars.pdf)' \
+        'manus/figs/srcs/a_diagram.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_diagram.pdf)' \
+        'manus/figs/srcs/a_plot.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_plot.pdf)' \
+        'manus/figs/srcs/00_teaser.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_teaser.pdf)' \
+        'manus/figs/srcs/a_split.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_split.pdf)' \
+        'manus/figs/srcs/a_note.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_note.pdf)' \
         'manus/tabs/a_notation.tex does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_notation.tex)' \
-        'manus/tabs/02_results.tex does not carry the key of manus/fronts/abstract.tex, which includes it: expected key 00 (00_results.tex)'; do
+        'manus/tabs/02_results.tex does not carry the key of manus/fronts/abstract.tex, which includes it: expected key 00 (00_results.tex)' \
+        'manus/figs/srcs/02_pipeline.pdf does not share the key and slug of manus/figs/02_flow.tex, which includes it: expected 02_flow.pdf' \
+        'manus/figs/srcs/02_pipeline does not share the key and slug of manus/figs/02_flow.tex, which includes it: expected 02_flow,' \
+        'manus/figs/srcs/a_bars.pdf does not share the key and slug of manus/figs/02_chart.tex, which includes it: expected 02_chart.pdf'; do
     expect_log file_names_owners "WARN: file name ${expected}"
 done
 refute_log file_names_owners 'manus/figs/02_pipeline'
+refute_log file_names_owners 'a_lemma.pptx'
+refute_log file_names_owners 'manus/figs/srcs/02_pipeline/stage.pdf'
 rm -rf "${WORK_DIR}/manus/backs" "${WORK_DIR}/manus/fronts" "${WORK_DIR}/manus/figs" "${WORK_DIR}/manus/tabs" \
     "${WORK_DIR}/manus/chaps/02_method.tex"
 
@@ -376,60 +391,60 @@ rm -rf "${WORK_DIR}/manus/backs" "${WORK_DIR}/manus/fronts" "${WORK_DIR}/manus/f
 # warning, makes no asset ownerless, and ends neither the naming check nor
 # lint; a missing build still gets every naming warning.
 SHARED_DIR="${WORK_DIR}/shared"
-mkdir -p "${WORK_DIR}/manus/backs" "${WORK_DIR}/manus/fronts" "${WORK_DIR}/manus/figs" \
+mkdir -p "${WORK_DIR}/manus/backs" "${WORK_DIR}/manus/fronts" "${WORK_DIR}/manus/figs/srcs" \
     "${WORK_DIR}/manus/tabs" "${WORK_DIR}/manus/stys" "${SHARED_DIR}"
-for asset in backs/a_proofs.tex figs/01_plot.pdf figs/a_alt.pdf figs/a_box.pdf tabs/01_scores.tex; do
+for asset in backs/a_proofs.tex figs/srcs/01_plot.pdf figs/srcs/a_alt.pdf figs/srcs/a_box.pdf tabs/01_scores.tex; do
     : > "${WORK_DIR}/manus/${asset}"
 done
 printf '%s\n' 'Method.' > "${WORK_DIR}/manus/chaps/02_method.tex"
-: > "${WORK_DIR}/manus/figs/01_seed1.pdf"
-: > "${WORK_DIR}/manus/figs/01_seed01.pdf"
+: > "${WORK_DIR}/manus/figs/01_seed1.tex"
+: > "${WORK_DIR}/manus/figs/01_seed01.tex"
 expect_pass file_names_leading_zeros
-expect_log file_names_leading_zeros 'WARN: file names in manus/figs/ sort differently in Finder than in git and ls: 01_seed01.pdf and 01_seed1.pdf differ only in a number'
+expect_log file_names_leading_zeros 'WARN: file names in manus/figs/ sort differently in Finder than in git and ls: 01_seed01.tex and 01_seed1.tex differ only in a number'
 refute_log file_names_leading_zeros 'WARN: file name '
-rm "${WORK_DIR}/manus/figs/01_seed1.pdf" "${WORK_DIR}/manus/figs/01_seed01.pdf"
-printf '%s\n' '\includegraphics[alt={A [b] c}]{figs/a_alt}' '\includegraphics[0,0][1,1]{figs/a_box}' \
+rm "${WORK_DIR}/manus/figs/01_seed1.tex" "${WORK_DIR}/manus/figs/01_seed01.tex"
+printf '%s\n' '\includegraphics[alt={A [b] c}]{figs/srcs/a_alt}' '\includegraphics[0,0][1,1]{figs/srcs/a_box}' \
     > "${WORK_DIR}/manus/chaps/02_method.tex"
 expect_pass file_names_option_brackets
 for asset in alt box; do
-    expect_log file_names_option_brackets "WARN: file name manus/figs/a_${asset}.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_${asset}.pdf)"
+    expect_log file_names_option_brackets "WARN: file name manus/figs/srcs/a_${asset}.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_${asset}.pdf)"
 done
 printf 'Method.\n\\includegraphics{01_plot}\n' > "${WORK_DIR}/manus/chaps/02_method.tex"
-printf '\\newcommand{\\thesisname}{Fran\347ais}\n\\graphicspath{{figs/}}\n' > "${WORK_DIR}/manus/stys/latin.sty"
+printf '\\newcommand{\\thesisname}{Fran\347ais}\n\\graphicspath{{figs/srcs/}}\n' > "${WORK_DIR}/manus/stys/latin.sty"
 LC_ALL="${UTF8_LOCALE}" expect_pass file_names_latin1_preamble
-expect_log file_names_latin1_preamble 'WARN: file name manus/figs/01_plot.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_plot.pdf)'
+expect_log file_names_latin1_preamble 'WARN: file name manus/figs/srcs/01_plot.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_plot.pdf)'
 rm "${WORK_DIR}/manus/stys/latin.sty"
 # A \graphicspath is read from lines joined as TeX joins them, so it may span
-# lines, and only its own path groups count.
-printf '%s\n' '\graphicspath{%' '  {figs/}}' > "${WORK_DIR}/manus/stys/paths.sty"
+# lines, and only a figs/srcs/ group among its own path groups counts.
+printf '%s\n' '\graphicspath{%' '  {figs/srcs/}}' > "${WORK_DIR}/manus/stys/paths.sty"
 expect_pass file_names_graphicspath_comment
-expect_log file_names_graphicspath_comment 'WARN: file name manus/figs/01_plot.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_plot.pdf)'
-printf '%s\n' '\graphicspath{' '  {./figs/}' '}' > "${WORK_DIR}/manus/stys/paths.sty"
+expect_log file_names_graphicspath_comment 'WARN: file name manus/figs/srcs/01_plot.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_plot.pdf)'
+printf '%s\n' '\graphicspath{' '  {./figs/srcs/}' '}' > "${WORK_DIR}/manus/stys/paths.sty"
 expect_pass file_names_graphicspath_lines
-expect_log file_names_graphicspath_lines 'WARN: file name manus/figs/01_plot.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_plot.pdf)'
-printf '%s\n' '\graphicspath{{images/}} \newcommand{\figdir}{figs/}' > "${WORK_DIR}/manus/stys/paths.sty"
+expect_log file_names_graphicspath_lines 'WARN: file name manus/figs/srcs/01_plot.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_plot.pdf)'
+printf '%s\n' '\graphicspath{{images/} {figs/}} \newcommand{\figdir}{figs/srcs/}' > "${WORK_DIR}/manus/stys/paths.sty"
 expect_pass file_names_graphicspath_elsewhere
-refute_log file_names_graphicspath_elsewhere 'manus/figs/01_plot.pdf'
+refute_log file_names_graphicspath_elsewhere 'manus/figs/srcs/01_plot.pdf'
 rm "${WORK_DIR}/manus/stys/paths.sty"
-printf '%s\n' '\graphicspath{{figs/}}' > "${SHARED_DIR}/thesis.sty"
+printf '%s\n' '\graphicspath{{figs/srcs/}}' > "${SHARED_DIR}/thesis.sty"
 printf '%s\n' '\input{tabs/01_scores}' > "${SHARED_DIR}/03_linked.tex"
 ln -s "${SHARED_DIR}/thesis.sty" "${WORK_DIR}/manus/stys/thesis.sty"
 ln -s "${SHARED_DIR}/03_linked.tex" "${WORK_DIR}/manus/chaps/03_linked.tex"
-ln -s 01_plot.pdf "${WORK_DIR}/manus/figs/07_linked.pdf"
+ln -s 01_plot.pdf "${WORK_DIR}/manus/figs/srcs/07_linked.pdf"
 ln -s missing.tex "${WORK_DIR}/manus/backs/a_gone.tex"
 expect_pass file_names_symlinks
-for expected in 'manus/figs/07_linked.pdf has no owner: its key 07' \
+for expected in 'manus/figs/srcs/07_linked.pdf has no owner: its key 07' \
         'manus/tabs/01_scores.tex does not carry the key of manus/chaps/03_linked.tex, which includes it: expected key 03 (03_scores.tex)' \
-        'manus/figs/01_plot.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_plot.pdf)'; do
+        'manus/figs/srcs/01_plot.pdf does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_plot.pdf)'; do
     expect_log file_names_symlinks "WARN: file name ${expected}"
 done
 refute_log file_names_symlinks 'a_gone'
 rm "${WORK_DIR}/manus/stys/thesis.sty" "${WORK_DIR}/manus/chaps/03_linked.tex" \
-    "${WORK_DIR}/manus/figs/07_linked.pdf" "${WORK_DIR}/manus/backs/a_gone.tex"
+    "${WORK_DIR}/manus/figs/srcs/07_linked.pdf" "${WORK_DIR}/manus/backs/a_gone.tex"
 # A chapter that is not UTF-8 still reaches the verdict under a UTF-8 locale:
 # its todo is counted and its includes are checked, and the prose review, the
-# one check that needs the locale, skips it by name. iconv tells, or perl
-# without iconv; with neither, the verdict still comes.
+# one check that needs the locale, skips it by name. perl tells, or iconv
+# without perl; with neither, the verdict still comes.
 printf 'Caf\351.\n\\input{tabs/01_scores}\n\\todo{check the accent}\n' > "${WORK_DIR}/manus/chaps/02_method.tex"
 LC_ALL="${UTF8_LOCALE}" expect_fail file_names_latin1_chapter
 for expected in 'WARN: file name manus/tabs/01_scores.tex does not carry the key of manus/chaps/02_method.tex, which includes it: expected key 02 (02_scores.tex)' \
@@ -460,6 +475,27 @@ expect_log latin1_chapter_unvalidated 'Degree level: master.'
 expect_log latin1_chapter_unvalidated 'Result: 1 hard failure(s)'
 write_profile master "A Master's Thesis" 'Master of Science'
 rm -rf "${NO_ICONV_BIN}"
+# A chapter whose Chinese runs long is valid UTF-8, and lint reads it so:
+# perl's strict decoder tells, and without perl an iconv that rejects such a
+# run, as the macOS 26 one does, is never asked, so the prose review still
+# reads the chapter. Without perl a Latin-1 chapter is still caught.
+NO_PERL_BIN="${WORK_DIR}/no-perl-bin"
+mkdir -p "${NO_PERL_BIN}"
+for tool in bash awk sed grep find wc tr xargs sort cut tail basename dirname iconv; do
+    if type -P "${tool}" >/dev/null 2>&1; then
+        ln -s "$(type -P "${tool}")" "${NO_PERL_BIN}/${tool}"
+    fi
+done
+LINT_PATH="${NO_PERL_BIN}" LC_ALL="${UTF8_LOCALE}" expect_fail latin1_chapter_no_perl
+expect_log latin1_chapter_no_perl 'WARN: manus/chaps/02_method.tex is not valid UTF-8, so its prose went unreviewed; save it as UTF-8.'
+LC_ALL=C awk 'BEGIN { for (i = 0; i < 2000; i++) printf "\344\270\255"; print "\343\200\202" }' \
+    > "${WORK_DIR}/manus/chaps/02_method.tex"
+LC_ALL="${UTF8_LOCALE}" expect_pass long_chinese_chapter
+refute_log long_chinese_chapter 'is not valid UTF-8'
+LINT_PATH="${NO_PERL_BIN}" LC_ALL="${UTF8_LOCALE}" expect_pass long_chinese_chapter_no_perl
+refute_log long_chinese_chapter_no_perl 'is not valid UTF-8'
+rm -rf "${NO_PERL_BIN}"
+printf 'Caf\351.\n\\input{tabs/01_scores}\n\\todo{check the accent}\n' > "${WORK_DIR}/manus/chaps/02_method.tex"
 
 # A profile that is not UTF-8 is read byte by byte, its level and degree field
 # still checked, with one warning for the Chinese that reading may miss; an

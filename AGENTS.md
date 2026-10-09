@@ -42,7 +42,7 @@ This repository uses STORY — **Systematic Toolchain for Organizing Research ov
 - `manus/fronts/`: abstract, acknowledgements, declarations, and other front matter.
 - `manus/chaps/`: numbered chapters `<nn>_<slug>.tex`, a two-digit key in outline order.
 - `manus/backs/`: appendices and other back matter, `<letter>_<slug>.tex`.
-- `manus/figs/`, `manus/tabs/`, `manus/bibs/`, `manus/stys/`: figures, tables, bibliography, and template layers. A figure, its source under `figs/srcs/`, and a table are `<owner>_<slug>.<ext>`, keyed by the one file that includes them; `manus/fronts/` stays unprefixed (conventions §5).
+- `manus/figs/`, `manus/tabs/`, `manus/bibs/`, `manus/stys/`: figures, tables, bibliography, and template layers. A figure file `figs/<owner>_<slug>.tex`, its rendered graphic and editable sources (PDF, PPTX, …) under `figs/srcs/`, and a table are `<owner>_<slug>.<ext>`, keyed by the one file that includes them; `manus/fronts/` stays unprefixed (conventions §5).
 - `degree/`: profile, committee record, and institutional checklist.
 - `notes/`: thesis story, outline, claims, contribution/publication maps, notation, style, adoption record, and reading notes.
 - A fresh clone keeps only `notes/.gitkeep` and `notes/refs/.gitkeep`; the owning workflow skill creates each `notes/*.md` artifact on first use. Treat absence as an uninitialized stage and route consumers to the skill that creates it.

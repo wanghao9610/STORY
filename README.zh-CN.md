@@ -83,7 +83,7 @@ STORY/
 │   ├── fronts/                    # 摘要、致谢、声明等前置部分
 │   ├── chaps/                     # 编号章节：<nn>_<slug>.tex
 │   ├── backs/                     # 附录等后置部分：<letter>_<slug>.tex
-│   ├── figs/                      # 成图 <owner>_<slug>.pdf；figs/srcs/ 保存可编辑源文件
+│   ├── figs/                      # 图文件 <owner>_<slug>.tex；figs/srcs/ 保存 PDF 与可编辑源文件
 │   ├── tabs/                      # 有证据支持的 LaTeX 表格：<owner>_<slug>.tex
 │   ├── bibs/                      # reference.bib（首次使用时创建）
 │   └── stys/                      # story.cls、story.sty、story.bst
@@ -131,7 +131,7 @@ STORY/
 | `fronts/` | Front matter | 摘要、致谢、声明等前置材料 |
 | `chaps/` | Chapters | 每章一个 `<nn>_<slug>.tex` 文件，按大纲顺序编键 |
 | `backs/` | Back matter | 正文章节后的附录及其他材料，`<letter>_<slug>.tex` |
-| `figs/` | Figures | 成图 `<owner>_<slug>.pdf`；`srcs/` 保存可编辑源文件 |
+| `figs/` | Figures | 图文件 `<owner>_<slug>.tex`；`srcs/` 保存成图与可编辑源文件（PDF、PPTX 等） |
 | `tabs/` | Tables | 有证据支持的表格 `<owner>_<slug>.tex` |
 | `bibs/` | Bibliographies | 学位论文参考文献 |
 | `stys/` | Styles | 可复用 class、package 与参考文献样式 |
@@ -142,7 +142,7 @@ STORY/
 | `mds/` | Markdowns | 按主题组织的 Markdown 文档 |
 | `srcs/` | Static sources | 文档图片与可编辑视觉源文件 |
 
-`chaps/`、`backs/`、`figs/`、`figs/srcs/` 与 `tabs/` 下的文件一律命名为 `<key>_<slug>.<ext>`：只有一个下划线，其后是小写 slug，词与词之间用 `-` 连接，中文对照版以 `-zh` 结尾。章节的键是两位数编号，附录的键是字母；图、其源文件与表格取 `<owner>`，即引用它的那一个章节或附录文件的键（前置部分用 `00`，保留一位数章节键的论文用 `0`），自身不带序号；`fronts/` 保持无前缀。这样命名后，同一目录在 git 与终端中的排列顺序与在 VS Code、Overleaf、Finder 中一致；文件名不合该方案时，`lint.sh` 会发出警告（[规约 §5](docs/mds/story-workflow/writing-workflow-conventions.md#manuscript-file-names)，英文）。
+`chaps/`、`backs/`、`figs/`、`figs/srcs/` 与 `tabs/` 下的文件一律命名为 `<key>_<slug>.<ext>`：只有一个下划线，其后是小写 slug，词与词之间用 `-` 连接，中文对照版以 `-zh` 结尾。章节的键是两位数编号，附录的键是字母；图文件、其成图或源文件与表格取 `<owner>`，即引用它的那一个章节或附录文件的键（前置部分用 `00`，保留一位数章节键的论文用 `0`），自身不带序号；`fronts/` 保持无前缀。这样命名后，同一目录在 git 与终端中的排列顺序与在 VS Code、Overleaf、Finder 中一致；文件名不合该方案时，`lint.sh` 会发出警告（[规约 §5](docs/mds/story-workflow/writing-workflow-conventions.md#manuscript-file-names)，英文）。
 
 有三条规则比目录名称更重要。`mates/` 除 `execs/scpts/import.sh` 与 `story-evid-curator` 外一律只读；`wkdrs/` 可以重新生成，因此持久结果应写入 `notes/`、`miles/` 或 `tasks/`；新克隆有意只包含 `notes/.gitkeep` 与 `notes/refs/.gitkeep`。各工作流在第一次使用时创建自己拥有的 `notes/*.md`——文件缺席表示“尚未初始化”，而不是“模板里缺了它”。
 
@@ -325,7 +325,7 @@ bash execs/scpts/fmt.sh --check
 | `story-outl-planner` † | 已确认的论文总叙事需要转化为章节结构 | 带章节简报的 `notes/outline.md`、`notation.md`、尚无文件的章节的骨架 |
 | `story-chap-drafter` | 一个章节或一份前置/后置部分文件需要以作者的学术声音依据证据起草或修改；`trace` 只补充缺失的来源锚点，不重写正文 | 一个 `manus/chaps/`、`manus/fronts/` 或 `manus/backs/` 文件及同步台账 |
 | `story-tabs-builder` | 需要一张结果、比较、映射或综合表格 | 一个 `manus/tabs/<owner>_<slug>.tex` 文件，每个带数值或比较的行都有来源锚点 |
-| `story-figs-designer` | 需要一张概念、方法、结果或综合图 | 成图 `manus/figs/<owner>_<slug>.pdf` 与 `manus/figs/srcs/` 下的可编辑源文件 |
+| `story-figs-designer` | 需要一张概念、方法、结果或综合图 | 图文件 `manus/figs/<owner>_<slug>.tex` 与 `manus/figs/srcs/` 下的成图及可编辑源文件 |
 | `story-refs-curator` | 需要添加、核验、阅读、去重或定位一项来源 | 参考文献条目与 `notes/refs/` 阅读笔记 |
 | `story-copy-editor` | 一个章节、一份前置/后置部分文件或整篇论文（`full`）需要润色作者声音、公式化表达、术语、衔接、重复或符号一致性 | 手稿修改、报告、建议性的 `tasks/prose.md` 或 `notes/style.md` |
 | `story-clms-auditor` | 数值、比较和学位贡献论断需要可追溯性检查，或某个数字看起来有误 | 论断与贡献状态、可重新生成的报告、`tasks/audits.md` 中的条目 |
@@ -566,6 +566,7 @@ bash execs/update.sh --skill story-flow-status
 
 按日期列出要点，最新在前。STORY 目前还没有给版本打 tag，因此 `bash execs/update.sh` 跟随 `main`；某个版本打了 tag 之后，把 tag 作为 `ref` 传入即可把更新固定到该版本。
 
+- **2026-10-09** —— 图改为一个 LaTeX 文件 `manus/figs/<owner>_<slug>.tex`，其中包含 figure 环境、图题与标签，以及绘图代码本身（TikZ、pgfplots）或 `\includegraphics{figs/srcs/<owner>_<slug>}`；所属文件用 `\input{figs/<owner>_<slug>}` 引入它，与引入表格的方式相同。所有非 LaTeX 文件——成图 PDF、PPTX、SVG、绘图脚本、证据映射——都放在 `manus/figs/srcs/` 下，与图文件同键同 slug（[规约 §5，Manuscript file names](docs/mds/story-workflow/writing-workflow-conventions.md#manuscript-file-names)，英文）。`story-figs-designer` 同时写出两者，`story-outl-planner` 在重新编号时一并移动两者。`lint.sh` 现在会对 `manus/figs/` 下任何不是 `<owner>_<slug>.tex` 的文件发出警告，也会对 `figs/srcs/` 下成图与图文件不同名的情况发出警告；当 `\graphicspath` 列出 `figs/srcs/` 时，裸文件名的 `\includegraphics` 按 `figs/srcs/` 解析。更新不会移动稿件文件，因此已有的论文仓库需手动处理：用 `git mv` 把每个 `manus/figs/<owner>_<slug>.pdf` 移入 `manus/figs/srcs/`，把它的 figure 环境移到新建的 `manus/figs/<owner>_<slug>.tex` 中，并在章节中改为 `\input{figs/<owner>_<slug>}`。`lint.sh` 现在也优先用 Perl 的严格解码器判断源文件是否为 UTF-8：macOS 26 的 `iconv` 在几百个多字节字符连在一起时会把合法文本判为非法，lint 因此把中文章节报成“不是合法的 UTF-8”，并跳过了它的文字审查。
 - **2026-10-08** —— LaTeX Workshop 改为通过 `bash execs/run.sh` 构建，编辑器与命令行使用同一个引擎和同一个 `TEXINPUTS`。此前入口文件中的 `% !TeX program` 一行优先于 `% !LW recipe`，会直接运行引擎，且 `TEXINPUTS` 中没有 `manus/stys/`，于是其中按裸文件名加载同目录文件的 class（例如随仓库保存的学校模板）会以 `File ... not found` 中止。仓库根目录新增 `latexmkrc`，为所有引擎加上 `-synctex=1`，命令行构建不再删除编辑器与 PDF 互相跳转所读取的 `.synctex.gz`。已有的论文仓库会保留自己的 `.vscode/settings.json`，更新也不会安装 `latexmkrc`，因此请从上游手动复制两个 `latex-workshop.latex.external.build.*` 键和 `latexmkrc`。
 - **2026-09-27** —— 稿件文件统一采用所属键（owner key）命名方案 `<key>_<slug>.<ext>`，使同一目录在 git 与终端中的排列顺序与在 VS Code、Overleaf、Finder 中一致（[规约 §5，Manuscript file names](docs/mds/story-workflow/writing-workflow-conventions.md#manuscript-file-names)，英文）：键与小写 slug 之间只有一个 `_`，slug 中的词用 `-` 连接。章节为 `manus/chaps/<nn>_<slug>.tex`，使用两位数键（不超过九章且已使用一位数键的论文可以保留，但同一目录内的键位数必须一致）；附录及其他后置部分为 `manus/backs/<letter>_<slug>.tex`；图、其可编辑源文件与表格取引用它们的那一个章节或附录文件的键（前置部分用 `00`，保留一位数章节键的论文用 `0`），自身不带序号：`manus/figs/<owner>_<slug>.pdf`、`manus/figs/srcs/<owner>_<slug>.*` 与 `manus/tabs/<owner>_<slug>.tex`。语言对照版以 `-zh` 结尾，因此附录起始文件现为 `manus/backs/a_supporting-material.tex` 与 `a_supporting-material-zh.tex`；`manus/fronts/` 保持无前缀。在已确认的重新编号、拆分或合并中，`story-outl-planner` 会把章节的图、源文件与表格随章节一起移动并改写其路径；`story-figs-designer` 与 `story-tabs-builder` 按大纲行的 `Chapter` 单元格为文件命名。`lint.sh` 现在会就以下情况发出警告（不判失败）：不合方案的文件名、字节顺序与数字顺序不一致、键位数不一或 slug 仅在数字前导零上有差别的目录、没有任何章节、附录或前置部分持有的键，以及所引用资源带着别的文件的键的引用。更新从不改动 `manus/`，因此已有的论文仓库请在一次提交中手动改名：运行 `git mv manus/backs/a_supporting_material.tex manus/backs/a_supporting-material.tex` 与 `git mv manus/backs/a_supporting_material_zh.tex manus/backs/a_supporting-material-zh.tex`，再把 `manus/main.tex` 中的 `\input{backs/a_supporting_material}` 与 `manus/main-zh.tex` 中的 `\input{backs/a_supporting_material_zh}` 改为新文件名（也可以保留旧文件名并接受 lint 警告）；可选地把一位数章节键扩为两位数；把每个图、源文件与表格改用引用它的文件的键；并改写 `\input`、`\includegraphics` 行以及 `notes/` 与 `tasks/` 中每个指向被改名文件的路径单元格。`lint.sh` 按 TeX 的方式读取稿件源文件。参数被注释或换行拆开的 `\todo`、`\verb|50%|` 之后的 `\todo`、以单独 CR 换行的文件中的 `\todo`，以及同一行中的多个 `\todo`，现在都会计入；以同样方式拆开的章节 `\input` 也算作已引入。`manus/` 下 lint 无法读取的 `.tex` 文件或目录、另存为 UTF-16 或 UTF-32 的 `.tex` 文件、无法读取的入口文件和 `degree/profile.tex`，现在会让 lint 失败，而不再当作无问题通过；源文件、学位档案、`.env` 或里程碑记录中不是 UTF-8 的字节，也不再中断 lint 或 `run.sh`：该文件改为按字节读取，并给出一条警告。状态扫描的 `todo markers:` 计数现在遵循 lint 的规则，并列出无法计数的文件。
 - **2026-09-24** —— 在全新会话中运行的场景测试发现了三处指令缺口，现已补上。`AGENTS.md` 现在写明规约 §8 对每次运行（无论是否经过 skill）早已提出的要求：修改 `manus/` 之后，先运行 `bash execs/run.sh`，只有它成功时才运行 `bash execs/scpts/lint.sh --no-build`；交接行写出最早未满足关口的确切命令、只有你能解除时的作者行动、解除受阻或失败步骤的操作，或者只有在整条流水线上已没有未满足的关口时，才逐字写出 `下一步：无——请求的工作流已完成。`，不改写措辞，也不附带第二条建议；完成报告须写明构建出的 PDF、页数、lint 结论、台账变更和剩余关口。对你指定的样本运行 `story-copy-editor style` 时，它记录样本路径，并在报告中提出其他字段的措辞，只有你确认后才写入该字段。字段一直只能留空或写入作者确认的内容，但早先对样本运行的 `style` 可能已把它自己的解读写进某个字段；如果你运行过，请检查 `notes/style.md`。运行发现旧版的记忆索引或 `.zh-CN.md` 对照版时，会把合并与删除作为你的操作指出，而不是主动提出代为执行（规约 §1 与 §10）。`AGENTS.md` 还写明更正后的人工材料可登记为新记录；`tasks/audits.md` 的各节在全论文审计写入日期之前记为 `Last full run: none`。`story-auto` 目标运行的最终回复现在以它的检查与所用级别开头，因为工具调用之间的文字可能不会送到你面前；`story-flow-status` 只通过常设导师记录的未兑现承诺来报告它。
