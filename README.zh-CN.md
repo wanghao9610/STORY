@@ -2,7 +2,7 @@
   <img src="docs/srcs/story-project-icon.png" alt="STORY 项目图标" width="128">
   <h1>STORY</h1>
   <p><strong>Systematic Toolchain for Organizing Research over Years</strong></p>
-  <p><em>STARS take the STAGE to tell a STORY.</em></p>
+  <p><em>STAR takes the STAGE to tell a STORY.</em></p>
   <p><a href="https://wanghao9610.github.io/STORY/"><strong>文档网站</strong></a></p>
 </div>
 
