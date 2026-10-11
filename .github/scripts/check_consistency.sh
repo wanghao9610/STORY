@@ -1035,7 +1035,7 @@ chmod -R u+rwx "${scan_fixture}"
 rm -rf "${scan_fixture}"
 
 grep -q 'Systematic Toolchain for Organizing Research over Years' README.md || fail 'README.md lacks the official expansion'
-grep -q 'A STAR takes the STAGE to tell a STORY' README.md || fail 'README.md lacks the official tagline'
+grep -q 'STARS take the STAGE to tell a STORY' README.md || fail 'README.md lacks the official tagline'
 for path in degree/profile.tex degree/requirements.md notes/.gitkeep notes/refs/.gitkeep mates/MANIFEST.md manus/main.tex manus/main-zh.tex manus/stys/story.cls manus/stys/story.sty miles/.gitkeep tasks/.gitkeep .story/memory/.gitkeep; do
     [[ -f "${path}" ]] || fail "missing core path: ${path}"
 done
